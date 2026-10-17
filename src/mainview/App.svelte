@@ -89,7 +89,7 @@
 				project = res.project;
 				documents = res.documents || [];
 				if (res.stacks) {
-					globalHistoryManager.restoreAll(res.stacks);
+					globalHistoryManager.restoreAll(res.stacks, project.targetWordCount || 50000);
 				}
 				const rec = buildRecentProjectRecord(project, documents, folderPath);
 				recentProjects = saveRecentProject(rec);
@@ -213,7 +213,7 @@
 		project = pendingImportData.project;
 		documents = pendingImportData.documents;
 		if (pendingImportData.stacks) {
-			globalHistoryManager.restoreAll(pendingImportData.stacks);
+			globalHistoryManager.restoreAll(pendingImportData.stacks, project.targetWordCount || 50000);
 		}
 
 		const rec = buildRecentProjectRecord(project, documents, pendingImportData.folderPath);

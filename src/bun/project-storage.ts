@@ -82,6 +82,20 @@ export function slugifyTitle(title: string): string {
 }
 
 /**
+ * Resolves a folder path, expanding tilde (~) to the user's home directory.
+ */
+export function resolveFolderPath(folderPath: string): string {
+	if (!folderPath) return "";
+	if (folderPath === "~") {
+		return os.homedir();
+	}
+	if (folderPath.startsWith("~/") || folderPath.startsWith("~\\")) {
+		return path.join(os.homedir(), folderPath.slice(2));
+	}
+	return path.resolve(folderPath);
+}
+
+/**
  * Atomic file writer: writes to a unique temporary file and renames it over the target.
  * Guarantees that target files are never left corrupted or partially written.
  */
@@ -239,7 +253,7 @@ export async function saveProjectToFolder(
 	stacks?: ProjectHistoryStacks,
 ): Promise<SaveProjectResult> {
 	try {
-		const absFolder = path.resolve(folderPath);
+		const absFolder = resolveFolderPath(folderPath);
 
 		if (!fs.existsSync(absFolder)) {
 			fs.mkdirSync(absFolder, { recursive: true });
@@ -373,7 +387,7 @@ export async function saveProjectToFolder(
  */
 export async function loadProjectFromFolder(folderPath: string): Promise<LoadProjectResult> {
 	try {
-		const absFolder = path.resolve(folderPath);
+		const absFolder = resolveFolderPath(folderPath);
 		const manifestPath = path.join(absFolder, "project.json");
 
 		if (!fs.existsSync(manifestPath)) {

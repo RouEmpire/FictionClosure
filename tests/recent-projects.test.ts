@@ -202,4 +202,35 @@ describe("Project Structure Analyzer", () => {
 		expect(result.status).toBe("warning");
 		expect(result.warnings.some((w) => w.includes("No documents"))).toBe(true);
 	});
+
+	test("HistoryManager restoreAll correctly restores serialized stacks", () => {
+		const { HistoryManager } = require("../src/mainview/services/historyManager");
+		const manager = new HistoryManager(50000);
+		const mockStacks = {
+			schemaVersion: 1,
+			updatedAt: "2026-01-01",
+			targetWordCount: 50000,
+			maxStackSize: 25000,
+			stacks: {
+				"doc-1": {
+					undo: [{ content: "Initial draft", timestamp: 1000, cursor: 0 }],
+					redo: [{ content: "Edited draft", timestamp: 2000, cursor: 5 }],
+				},
+			},
+		};
+		manager.restoreAll(mockStacks, 50000);
+		expect(manager.canUndo("doc-1")).toBe(true);
+		expect(manager.canRedo("doc-1")).toBe(true);
+	});
+
+	test("resolveFolderPath expands tildes to user home directory", () => {
+		const os = require("os");
+		const path = require("path");
+		const { resolveFolderPath } = require("../src/bun/project-storage");
+		expect(resolveFolderPath("~")).toBe(os.homedir());
+		expect(resolveFolderPath("~/FictionProjects/MyBook")).toBe(
+			path.join(os.homedir(), "FictionProjects/MyBook"),
+		);
+		expect(resolveFolderPath("/absolute/path")).toBe("/absolute/path");
+	});
 });

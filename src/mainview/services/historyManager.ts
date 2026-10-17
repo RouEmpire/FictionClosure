@@ -207,6 +207,17 @@ export class HistoryManager {
 	}
 
 	/**
+	 * Restores/imports history stacks from stored JSON data.
+	 * (Alias for importAllStacks).
+	 */
+	public restoreAll(
+		data: ProjectHistoryStacks | null | undefined,
+		targetWordCount: number = 50000,
+	): void {
+		this.importAllStacks(data, targetWordCount);
+	}
+
+	/**
 	 * Clear all stacks.
 	 */
 	public clear(): void {

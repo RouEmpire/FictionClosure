@@ -55,6 +55,17 @@
 	// Active document derived from id
 	const activeDoc = $derived(documents.find((d) => d.id === activeDocId) ?? null);
 
+	// Ensure activeDocId always points to a valid document in current project
+	$effect(() => {
+		if (documents.length > 0) {
+			if (!activeDocId || !documents.some((d) => d.id === activeDocId)) {
+				activeDocId = documents[0].id;
+			}
+		} else {
+			activeDocId = null;
+		}
+	});
+
 	function toggleWordWrap() {
 		wordWrap = !wordWrap;
 		onShowToast(wordWrap ? "Word wrap enabled" : "Word wrap disabled");
