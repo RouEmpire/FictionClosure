@@ -228,6 +228,49 @@
 		saveState = "unsaved";
 	}
 
+	function handleRenameDoc(id: string, newTitle: string) {
+		const doc = documents.find((d) => d.id === id);
+		if (!doc || !newTitle.trim()) return;
+		doc.title = newTitle.trim();
+		doc.updatedAt = new Date().toISOString();
+		saveState = "unsaved";
+		onShowToast(`Renamed to "${doc.title}"`);
+		void handleSave();
+	}
+
+	function handleDuplicateDoc(id: string) {
+		const doc = documents.find((d) => d.id === id);
+		if (!doc) return;
+		const newDoc: FictionDocument = {
+			id: `doc-${Date.now()}`,
+			title: `${doc.title} (Copy)`,
+			type: doc.type,
+			status: doc.status,
+			tags: [...doc.tags],
+			order: doc.order + 1,
+			createdAt: new Date().toISOString(),
+			updatedAt: new Date().toISOString(),
+			content: doc.content,
+			pov: doc.pov,
+			summary: doc.summary,
+		};
+		const idx = documents.findIndex((d) => d.id === id);
+		if (idx !== -1) {
+			documents.splice(idx + 1, 0, newDoc);
+		} else {
+			documents.push(newDoc);
+		}
+		activeDocId = newDoc.id;
+		saveState = "unsaved";
+		onShowToast(`Duplicated "${doc.title}"`);
+		void handleSave();
+	}
+
+	function handleOpenInspector(id: string) {
+		activeDocId = id;
+		showInspector = true;
+	}
+
 	async function handleCloseAndReturn() {
 		if (saveState === "unsaved" && project.folderPath) {
 			await handleSave();
@@ -420,9 +463,14 @@
 				{documents}
 				targetWordCount={project.targetWordCount}
 				{activeDocId}
+				folderPath={project.folderPath}
 				onSelectDoc={handleSelectDoc}
 				onNewDoc={handleOpenNewDocModal}
 				onDeleteDoc={handleDeleteDoc}
+				onRenameDoc={handleRenameDoc}
+				onDuplicateDoc={handleDuplicateDoc}
+				onOpenInspector={handleOpenInspector}
+				onShowToast={onShowToast}
 			/>
 		{/if}
 

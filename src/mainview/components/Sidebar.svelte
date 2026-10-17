@@ -1,23 +1,38 @@
 <script lang="ts">
 	import type { DocumentType, FictionDocument } from "../types";
-	import { calculateWordCount } from "../utils/markdown";
+	import { calculateWordCount, markdownToPlainText } from "../utils/markdown";
+	import {
+		getDocumentRelativePath,
+		getDocumentSystemPath,
+		copyToClipboard,
+	} from "../utils/documentPaths";
 
 	interface Props {
 		documents: FictionDocument[];
 		targetWordCount?: number;
 		activeDocId: string | null;
+		folderPath?: string;
 		onSelectDoc: (id: string) => void;
 		onNewDoc: (type?: DocumentType) => void;
 		onDeleteDoc: (id: string) => void;
+		onRenameDoc?: (id: string, newTitle: string) => void;
+		onDuplicateDoc?: (id: string) => void;
+		onOpenInspector?: (id: string) => void;
+		onShowToast?: (msg: string) => void;
 	}
 
 	let {
 		documents,
 		targetWordCount = 80000,
 		activeDocId,
+		folderPath,
 		onSelectDoc,
 		onNewDoc,
 		onDeleteDoc,
+		onRenameDoc,
+		onDuplicateDoc,
+		onOpenInspector,
+		onShowToast,
 	}: Props = $props();
 
 	let searchQuery = $state("");
@@ -93,6 +108,31 @@
 	let isFocused = $state(false);
 	let selectedIndex = $state(0);
 
+	// Context Menu State
+	let contextMenu = $state<{
+		isOpen: boolean;
+		x: number;
+		y: number;
+		doc: FictionDocument | null;
+	}>({
+		isOpen: false,
+		x: 0,
+		y: 0,
+		doc: null,
+	});
+
+	let activeSubmenu = $state<"copy" | "path" | null>(null);
+
+	const isNearRightEdge = $derived.by(() => {
+		if (typeof window === "undefined") return false;
+		return contextMenu.x + 220 + 200 > window.innerWidth;
+	});
+
+	// Inline Document Rename State
+	let editingDocId = $state<string | null>(null);
+	let editingTitle = $state<string>("");
+	let renameInputEl = $state<HTMLInputElement | null>(null);
+
 	export function focusSidebar() {
 		isFocused = true;
 		if (selectedIndex < 0 || selectedIndex >= visibleNavItems.length) {
@@ -109,14 +149,146 @@
 		}, 0);
 	}
 
+	// Rename actions
+	function startRename(doc: FictionDocument) {
+		editingDocId = doc.id;
+		editingTitle = doc.title;
+		closeContextMenu();
+		setTimeout(() => {
+			if (renameInputEl) {
+				renameInputEl.focus();
+				renameInputEl.select();
+			}
+		}, 30);
+	}
+
+	function commitRename() {
+		if (editingDocId && editingTitle.trim()) {
+			onRenameDoc?.(editingDocId, editingTitle.trim());
+		}
+		editingDocId = null;
+		editingTitle = "";
+	}
+
+	function cancelRename() {
+		editingDocId = null;
+		editingTitle = "";
+	}
+
+	function handleRenameKeyDown(e: KeyboardEvent) {
+		if (e.key === "Enter") {
+			e.preventDefault();
+			commitRename();
+		} else if (e.key === "Escape") {
+			e.preventDefault();
+			cancelRename();
+		}
+	}
+
+	// Context menu actions
+	function handleDocContextMenu(e: MouseEvent, doc: FictionDocument) {
+		e.preventDefault();
+		e.stopPropagation();
+
+		const menuWidth = 220;
+		const menuHeight = 280;
+		const viewportWidth = typeof window !== "undefined" ? window.innerWidth : 1200;
+		const viewportHeight = typeof window !== "undefined" ? window.innerHeight : 800;
+
+		const x = Math.min(e.clientX, viewportWidth - menuWidth - 10);
+		const y = Math.min(e.clientY, viewportHeight - menuHeight - 10);
+
+		contextMenu = {
+			isOpen: true,
+			x: Math.max(10, x),
+			y: Math.max(10, y),
+			doc,
+		};
+		activeSubmenu = null;
+	}
+
+	function closeContextMenu() {
+		contextMenu.isOpen = false;
+		contextMenu.doc = null;
+		activeSubmenu = null;
+	}
+
+	function toggleSubmenu(submenuName: "copy" | "path") {
+		activeSubmenu = activeSubmenu === submenuName ? null : submenuName;
+	}
+
+	async function handleCopyContent(format: "markdown" | "plaintext") {
+		const doc = contextMenu.doc;
+		if (!doc) return;
+		closeContextMenu();
+
+		if (format === "markdown") {
+			const text = doc.content || "";
+			await copyToClipboard(text);
+			onShowToast?.(`Copied "${doc.title}" as Markdown`);
+		} else {
+			const text = markdownToPlainText(doc.content || "");
+			await copyToClipboard(text);
+			onShowToast?.(`Copied "${doc.title}" as Plain text`);
+		}
+	}
+
+	async function handleCopyPath(type: "system" | "relative") {
+		const doc = contextMenu.doc;
+		if (!doc) return;
+		closeContextMenu();
+
+		if (type === "system") {
+			const sysPath = getDocumentSystemPath(doc, folderPath);
+			await copyToClipboard(sysPath);
+			onShowToast?.(`Copied system path: ${sysPath}`);
+		} else {
+			const relPath = getDocumentRelativePath(doc);
+			await copyToClipboard(relPath);
+			onShowToast?.(`Copied relative path: ${relPath}`);
+		}
+	}
+
+	function handleDuplicateFromContext() {
+		const doc = contextMenu.doc;
+		if (!doc) return;
+		closeContextMenu();
+		onDuplicateDoc?.(doc.id);
+	}
+
+	function handleDeleteFromContext() {
+		const doc = contextMenu.doc;
+		if (!doc) return;
+		closeContextMenu();
+		if (confirm(`Delete "${doc.title}"?`)) {
+			onDeleteDoc(doc.id);
+		}
+	}
+
+	function handleInspectFromContext() {
+		const doc = contextMenu.doc;
+		if (!doc) return;
+		closeContextMenu();
+		onSelectDoc(doc.id);
+		onOpenInspector?.(doc.id);
+		onShowToast?.(`Inspecting "${doc.title}"`);
+	}
+
 	function handleKeyDown(e: KeyboardEvent) {
 		const target = e.target as HTMLElement;
-		// If actively typing in the filter input, do not intercept WASD/arrows
+		// If actively typing in an input, do not intercept navigation keys
 		if (target.tagName === "INPUT") {
 			if (e.key === "Escape") {
 				target.blur();
 				sidebarEl?.focus();
 			}
+			return;
+		}
+
+		// Escape closes context menu if open
+		if (contextMenu.isOpen && e.key === "Escape") {
+			e.preventDefault();
+			closeContextMenu();
 			return;
 		}
 
@@ -129,6 +301,39 @@
 			const current = visibleNavItems[selectedIndex];
 			onNewDoc(current ? current.type : undefined);
 			return;
+		}
+
+		// F2: Inline rename focused document
+		if (e.key === "F2") {
+			const current = visibleNavItems[selectedIndex];
+			if (current?.kind === "doc") {
+				const doc = documents.find((d) => d.id === current.id);
+				if (doc) {
+					e.preventDefault();
+					startRename(doc);
+					return;
+				}
+			}
+		}
+
+		// ContextMenu key or Shift+F10: Open context menu for focused document
+		if (e.key === "ContextMenu" || (e.shiftKey && e.key === "F10")) {
+			const current = visibleNavItems[selectedIndex];
+			if (current?.kind === "doc") {
+				const doc = documents.find((d) => d.id === current.id);
+				if (doc && sidebarEl) {
+					e.preventDefault();
+					const rect = sidebarEl.getBoundingClientRect();
+					contextMenu = {
+						isOpen: true,
+						x: rect.left + 80,
+						y: rect.top + 120,
+						doc,
+					};
+					activeSubmenu = null;
+					return;
+				}
+			}
 		}
 
 		const key = e.key.toLowerCase();
@@ -207,6 +412,22 @@
 		}
 	}
 </script>
+
+<svelte:window
+	onclick={(e) => {
+		if (contextMenu.isOpen) {
+			const target = e.target as HTMLElement;
+			if (!target.closest(".doc-context-menu")) {
+				closeContextMenu();
+			}
+		}
+	}}
+	onkeydown={(e) => {
+		if (contextMenu.isOpen && e.key === "Escape") {
+			closeContextMenu();
+		}
+	}}
+/>
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <aside
@@ -292,45 +513,60 @@
 						{:else}
 							{#each sectionDocs as doc (doc.id)}
 								{@const isActive = doc.id === activeDocId}
+								{@const isEditing = editingDocId === doc.id}
 								{@const words = calculateWordCount(doc.content)}
 								<li
 									class="doc-item"
 									class:active={isActive}
 									class:nav-selected={isFocused && visibleNavItems[selectedIndex]?.kind === "doc" && visibleNavItems[selectedIndex]?.id === doc.id}
+									class:context-active={contextMenu.isOpen && contextMenu.doc?.id === doc.id}
 									role="treeitem"
 									aria-selected={isActive}
+									oncontextmenu={(e) => handleDocContextMenu(e, doc)}
 								>
-									<button
-										type="button"
-										class="doc-link-btn"
-										onclick={() => onSelectDoc(doc.id)}
-										title={doc.title}
-									>
-										<div class="doc-item-title-row">
+									{#if isEditing}
+										<div class="rename-container">
 											<span class="status-indicator status-{doc.status}"></span>
-											<span class="doc-item-title">{doc.title}</span>
+											<input
+												type="text"
+												class="inline-rename-input"
+												bind:value={editingTitle}
+												bind:this={renameInputEl}
+												onclick={(e) => e.stopPropagation()}
+												onkeydown={handleRenameKeyDown}
+												onblur={commitRename}
+												aria-label="Rename document"
+											/>
 										</div>
-										<div class="doc-item-meta">
-											{#if doc.type === "manuscript"}
-												<span class="word-counter">{words.toLocaleString()} words</span>
-											{:else if doc.tags.length > 0}
-												<span class="tag-label">{doc.tags[0]}</span>
-											{/if}
-										</div>
-									</button>
-									<button
-										type="button"
-										class="doc-delete-btn"
-										onclick={(e) => {
-											e.stopPropagation();
-											if (confirm(`Delete "${doc.title}"?`)) {
-												onDeleteDoc(doc.id);
-											}
-										}}
-										title="Delete document"
-									>
-										🗑️
-									</button>
+									{:else}
+										<button
+											type="button"
+											class="doc-link-btn"
+											onclick={() => onSelectDoc(doc.id)}
+											title={doc.title}
+										>
+											<div class="doc-item-title-row">
+												<span class="status-indicator status-{doc.status}"></span>
+												<span class="doc-item-title">{doc.title}</span>
+											</div>
+											<div class="doc-item-meta">
+												{#if doc.type === "manuscript"}
+													<span class="word-counter">{words.toLocaleString()} words</span>
+												{:else if doc.tags.length > 0}
+													<span class="tag-label">{doc.tags[0]}</span>
+												{/if}
+											</div>
+										</button>
+										<button
+											type="button"
+											class="doc-actions-trigger"
+											onclick={(e) => handleDocContextMenu(e, doc)}
+											title="Document options (or right-click)"
+											aria-label="Options for {doc.title}"
+										>
+											⋮
+										</button>
+									{/if}
 								</li>
 							{/each}
 						{/if}
@@ -358,30 +594,194 @@
 				<div class="progress-bar-fill" style="width: {progressPercent}%;"></div>
 			</div>
 		</div>
-
-		<div class="stat-row">
-			<span class="stat-label">Total Documents:</span>
-			<span class="stat-val">{documents.length}</span>
-		</div>
 	</div>
+
+	<!-- Document Right-Click Context Menu -->
+	{#if contextMenu.isOpen && contextMenu.doc}
+		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+		<div
+			class="doc-context-menu"
+			style="left: {contextMenu.x}px; top: {contextMenu.y}px;"
+			role="menu"
+			aria-label="Document options"
+			tabindex="-1"
+			onclick={(e) => e.stopPropagation()}
+			onkeydown={(e) => {
+				if (e.key === "Escape") {
+					closeContextMenu();
+				}
+			}}
+		>
+			<div class="context-menu-header">
+				<span class="context-doc-name" title={contextMenu.doc.title}>{contextMenu.doc.title}</span>
+			</div>
+
+			<!-- 1. Edit name -->
+			<button
+				type="button"
+				class="context-menu-item"
+				onclick={() => {
+					const d = contextMenu.doc;
+					if (d) startRename(d);
+				}}
+				role="menuitem"
+			>
+				<span class="item-icon">✏️</span>
+				<span class="item-text">Edit name</span>
+				<kbd>F2</kbd>
+			</button>
+
+			<!-- 2. Copy (Submenu) -->
+			<div
+				class="submenu-wrapper"
+				role="none"
+				onmouseenter={() => (activeSubmenu = "copy")}
+				onmouseleave={() => {
+					if (activeSubmenu === "copy") activeSubmenu = null;
+				}}
+			>
+				<button
+					type="button"
+					class="context-menu-item has-submenu"
+					class:submenu-open={activeSubmenu === "copy"}
+					onclick={() => toggleSubmenu("copy")}
+					role="menuitem"
+					aria-haspopup="true"
+					aria-expanded={activeSubmenu === "copy"}
+				>
+					<span class="item-icon">📋</span>
+					<span class="item-text">Copy</span>
+					<span class="submenu-arrow">▶</span>
+				</button>
+				{#if activeSubmenu === "copy"}
+					<div class="context-submenu" class:open-left={isNearRightEdge} role="menu">
+						<button
+							type="button"
+							class="context-menu-item"
+							onclick={() => handleCopyContent("markdown")}
+							role="menuitem"
+						>
+							<span class="item-icon">📄</span>
+							<span class="item-text">Markdown</span>
+						</button>
+						<button
+							type="button"
+							class="context-menu-item"
+							onclick={() => handleCopyContent("plaintext")}
+							role="menuitem"
+						>
+							<span class="item-icon">📝</span>
+							<span class="item-text">Plain text (Cleaned)</span>
+						</button>
+					</div>
+				{/if}
+			</div>
+
+			<!-- 3. Copy File Path (Submenu) -->
+			<div
+				class="submenu-wrapper"
+				role="none"
+				onmouseenter={() => (activeSubmenu = "path")}
+				onmouseleave={() => {
+					if (activeSubmenu === "path") activeSubmenu = null;
+				}}
+			>
+				<button
+					type="button"
+					class="context-menu-item has-submenu"
+					class:submenu-open={activeSubmenu === "path"}
+					onclick={() => toggleSubmenu("path")}
+					role="menuitem"
+					aria-haspopup="true"
+					aria-expanded={activeSubmenu === "path"}
+				>
+					<span class="item-icon">🔗</span>
+					<span class="item-text">Copy File Path</span>
+					<span class="submenu-arrow">▶</span>
+				</button>
+				{#if activeSubmenu === "path"}
+					<div class="context-submenu" class:open-left={isNearRightEdge} role="menu">
+						<button
+							type="button"
+							class="context-menu-item"
+							onclick={() => handleCopyPath("system")}
+							role="menuitem"
+						>
+							<span class="item-icon">💻</span>
+							<span class="item-text">System path</span>
+						</button>
+						<button
+							type="button"
+							class="context-menu-item"
+							onclick={() => handleCopyPath("relative")}
+							role="menuitem"
+						>
+							<span class="item-icon">📁</span>
+							<span class="item-text">Relative path</span>
+						</button>
+					</div>
+				{/if}
+			</div>
+
+			<!-- 4. Duplicate -->
+			<button
+				type="button"
+				class="context-menu-item"
+				onclick={handleDuplicateFromContext}
+				role="menuitem"
+			>
+				<span class="item-icon">📑</span>
+				<span class="item-text">Duplicate</span>
+			</button>
+
+			<!-- 5. Delete -->
+			<button
+				type="button"
+				class="context-menu-item danger-item"
+				onclick={handleDeleteFromContext}
+				role="menuitem"
+			>
+				<span class="item-icon">🗑️</span>
+				<span class="item-text">Delete</span>
+			</button>
+
+			<!-- 6. Horizontal separator -->
+			<div class="context-menu-divider" role="separator"></div>
+
+			<!-- 7. Inspect -->
+			<button
+				type="button"
+				class="context-menu-item"
+				onclick={handleInspectFromContext}
+				role="menuitem"
+			>
+				<span class="item-icon">🔍</span>
+				<span class="item-text">Inspect</span>
+			</button>
+		</div>
+	{/if}
 </aside>
 
 <style>
 	.sidebar {
-		width: var(--sidebar-width);
+		width: var(--sidebar-width, 280px);
+		min-width: 200px;
+		max-width: 450px;
+		height: 100%;
 		background-color: var(--bg-secondary);
 		border-right: 1px solid var(--border-subtle);
 		display: flex;
 		flex-direction: column;
-		flex-shrink: 0;
-		height: calc(100vh - var(--header-height));
 		user-select: none;
+		outline: none;
+		position: relative;
 	}
 
 	.sidebar-search {
-		padding: 10px;
 		display: flex;
+		align-items: center;
 		gap: 6px;
+		padding: 10px 12px;
 		border-bottom: 1px solid var(--border-subtle);
 	}
 
@@ -389,37 +789,44 @@
 		flex: 1;
 		display: flex;
 		align-items: center;
-		background-color: var(--bg-tertiary);
+		background-color: var(--bg-primary);
 		border: 1px solid var(--border-subtle);
 		border-radius: 6px;
 		padding: 4px 8px;
 		gap: 6px;
 	}
 
+	.search-box:focus-within {
+		border-color: var(--accent-primary);
+		box-shadow: 0 0 0 1px var(--accent-subtle);
+	}
+
 	.search-glyph {
-		font-size: 11px;
-		color: var(--text-muted);
+		font-size: 12px;
+		opacity: 0.6;
 	}
 
 	.search-box input {
-		width: 100%;
+		flex: 1;
 		background: transparent;
 		border: none;
 		outline: none;
 		color: var(--text-primary);
 		font-size: 12px;
-	}
-
-	.search-box input::placeholder {
-		color: var(--text-muted);
+		font-family: inherit;
 	}
 
 	.clear-btn {
 		background: transparent;
 		border: none;
 		color: var(--text-muted);
+		font-size: 10px;
 		cursor: pointer;
-		font-size: 11px;
+		padding: 0 2px;
+	}
+
+	.clear-btn:hover {
+		color: var(--text-primary);
 	}
 
 	.new-doc-top-btn {
@@ -434,58 +841,58 @@
 		justify-content: center;
 		cursor: pointer;
 		font-size: 16px;
-		font-weight: 500;
-		transition: all 0.15s ease;
+		line-height: 1;
+		transition: background-color 0.15s ease;
 	}
 
 	.new-doc-top-btn:hover {
-		background: var(--accent-subtle);
-		border-color: var(--accent-primary);
-		color: var(--accent-primary);
+		background-color: var(--bg-hover);
+		border-color: var(--border-bold);
 	}
 
 	.tree-content {
 		flex: 1;
 		overflow-y: auto;
-		padding: 8px 6px;
+		padding: 8px;
 	}
 
 	.tree-section {
-		margin-bottom: 8px;
+		margin-bottom: 10px;
 	}
 
 	.section-header {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
 		padding: 4px 6px;
-		border-radius: 4px;
+		border-radius: 6px;
+		transition: background-color 0.1s ease;
 	}
 
 	.section-header:hover {
-		background-color: var(--bg-tertiary);
+		background-color: var(--bg-hover);
 	}
 
 	.section-toggle {
+		flex: 1;
 		display: flex;
 		align-items: center;
 		gap: 6px;
 		background: transparent;
 		border: none;
 		color: var(--text-secondary);
-		font-size: 11px;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
 		cursor: pointer;
-		flex: 1;
+		font-size: 12px;
+		font-weight: 600;
 		text-align: left;
+		padding: 2px 0;
 	}
 
 	.arrow {
+		font-size: 10px;
 		display: inline-block;
 		transition: transform 0.15s ease;
-		font-size: 10px;
+		width: 12px;
+		text-align: center;
 	}
 
 	.arrow.collapsed {
@@ -493,7 +900,11 @@
 	}
 
 	.section-icon {
-		font-size: 12px;
+		font-size: 13px;
+	}
+
+	.section-title {
+		flex: 1;
 	}
 
 	.count-badge {
@@ -548,6 +959,11 @@
 
 	.doc-item.active {
 		background-color: var(--bg-active);
+	}
+
+	.doc-item.context-active {
+		background-color: var(--bg-hover);
+		box-shadow: 0 0 0 1px var(--accent-subtle);
 	}
 
 	.section-header.nav-selected,
@@ -631,86 +1047,232 @@
 		border-radius: 3px;
 	}
 
-	.doc-delete-btn {
-		display: none;
+	.doc-actions-trigger {
 		background: transparent;
 		border: none;
 		cursor: pointer;
-		font-size: 11px;
-		padding: 4px;
+		font-size: 14px;
+		line-height: 1;
+		color: var(--text-muted);
+		padding: 4px 6px;
 		margin-right: 4px;
 		border-radius: 4px;
-		opacity: 0.7;
+		opacity: 0;
+		transition: opacity 0.12s ease, background-color 0.12s ease, color 0.12s ease;
 	}
 
-	.doc-item:hover .doc-delete-btn {
-		display: block;
+	.doc-item:hover .doc-actions-trigger,
+	.doc-item:focus-within .doc-actions-trigger,
+	.doc-item.context-active .doc-actions-trigger {
+		opacity: 0.8;
 	}
 
-	.doc-delete-btn:hover {
+	.doc-actions-trigger:hover {
 		opacity: 1;
-		background-color: rgba(248, 81, 73, 0.2);
+		color: var(--text-primary);
+		background-color: var(--bg-tertiary);
+	}
+
+	.rename-container {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		flex: 1;
+		padding: 4px 6px;
+	}
+
+	.inline-rename-input {
+		flex: 1;
+		min-width: 0;
+		background-color: var(--bg-primary);
+		border: 1px solid var(--accent-primary);
+		border-radius: 4px;
+		color: var(--text-primary);
+		font-size: 13px;
+		font-family: inherit;
+		padding: 3px 6px;
+		outline: none;
+		box-shadow: 0 0 0 1px var(--accent-subtle);
+	}
+
+	/* Document Right-Click Context Menu */
+	.doc-context-menu {
+		position: fixed;
+		min-width: 220px;
+		background-color: var(--bg-secondary, #161b22);
+		border: 1px solid var(--border-bold, #3f4756);
+		border-radius: 8px;
+		box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+		padding: 6px;
+		z-index: 10000;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		user-select: none;
+		animation: contextMenuPop 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	@keyframes contextMenuPop {
+		from {
+			opacity: 0;
+			transform: scale(0.96);
+		}
+		to {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
+
+	.context-menu-header {
+		padding: 4px 8px 6px 8px;
+		font-size: 11px;
+		font-weight: 600;
+		color: var(--text-muted);
+		border-bottom: 1px solid var(--border-subtle);
+		margin-bottom: 4px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.context-doc-name {
+		display: block;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		color: var(--accent-primary);
+	}
+
+	.context-menu-item {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		width: 100%;
+		padding: 6px 8px;
+		background: transparent;
+		border: none;
+		border-radius: 5px;
+		color: var(--text-primary);
+		font-size: 13px;
+		font-family: inherit;
+		text-align: left;
+		cursor: pointer;
+		transition: background-color 0.1s ease, color 0.1s ease;
+		position: relative;
+	}
+
+	.context-menu-item:hover,
+	.context-menu-item:focus-visible,
+	.context-menu-item.submenu-open {
+		background-color: var(--bg-hover);
+		color: var(--text-primary);
+	}
+
+	.context-menu-item.danger-item:hover,
+	.context-menu-item.danger-item:focus-visible {
+		background-color: rgba(248, 81, 73, 0.18);
+		color: var(--danger-color, #f85149);
+	}
+
+	.context-menu-item .item-icon {
+		font-size: 13px;
+		width: 18px;
+		display: flex;
+		justify-content: center;
+		flex-shrink: 0;
+	}
+
+	.context-menu-item .item-text {
+		flex: 1;
+		white-space: nowrap;
+	}
+
+	.context-menu-item kbd {
+		font-size: 10px;
+		padding: 1px 4px;
+		color: var(--text-muted);
+		background-color: var(--bg-tertiary);
+		border-radius: 3px;
+		margin-left: auto;
+	}
+
+	.context-menu-divider {
+		height: 1px;
+		background-color: var(--border-subtle);
+		margin: 4px 0;
+	}
+
+	.submenu-wrapper {
+		position: relative;
+		width: 100%;
+	}
+
+	.context-menu-item.has-submenu {
+		justify-content: space-between;
+	}
+
+	.submenu-arrow {
+		font-size: 9px;
+		color: var(--text-muted);
+		margin-left: auto;
+	}
+
+	.context-submenu {
+		position: absolute;
+		left: 100%;
+		top: -4px;
+		min-width: 190px;
+		background-color: var(--bg-secondary, #161b22);
+		border: 1px solid var(--border-bold, #3f4756);
+		border-radius: 8px;
+		box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6);
+		padding: 5px;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		z-index: 10001;
+		animation: contextMenuPop 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	.context-submenu.open-left {
+		left: auto;
+		right: 100%;
 	}
 
 	.sidebar-footer {
-		padding: 12px 14px;
-		background-color: var(--bg-tertiary);
+		padding: 12px;
 		border-top: 1px solid var(--border-subtle);
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-		font-size: 11px;
+		background-color: var(--bg-secondary);
 	}
 
 	.progress-box {
 		display: flex;
 		flex-direction: column;
-		gap: 5px;
+		gap: 6px;
 	}
 
 	.progress-label-row {
 		display: flex;
 		justify-content: space-between;
-		font-size: 10px;
-	}
-
-	.progress-title {
-		color: var(--accent-primary);
-		font-weight: 600;
+		font-size: 11px;
+		color: var(--text-secondary);
 	}
 
 	.progress-nums {
-		color: var(--text-muted);
 		font-family: var(--font-editor);
+		color: var(--text-muted);
 	}
 
 	.progress-bar-track {
-		width: 100%;
-		height: 5px;
-		background-color: var(--bg-active);
+		height: 6px;
+		background-color: var(--bg-tertiary);
 		border-radius: 3px;
 		overflow: hidden;
 	}
 
 	.progress-bar-fill {
 		height: 100%;
-		background: linear-gradient(90deg, var(--accent-primary) 0%, var(--accent-hover) 100%);
+		background: linear-gradient(90deg, var(--accent-primary), var(--accent-hover));
 		border-radius: 3px;
 		transition: width 0.3s ease;
-	}
-
-	.stat-row {
-		display: flex;
-		justify-content: space-between;
-	}
-
-	.stat-label {
-		color: var(--text-muted);
-	}
-
-	.stat-val {
-		color: var(--text-secondary);
-		font-family: var(--font-editor);
-		font-weight: 500;
 	}
 </style>

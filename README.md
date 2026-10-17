@@ -63,12 +63,24 @@ Desktop-first, Markdown-first fiction-writing workspace. Built with Electrobun, 
 - `?` or `F1`: Open keyboard shortcuts cheat sheet
 - `Esc`: Exit Zen mode / close open modal or floating drawer panel
 
-### Sidebar Tree Navigation
+### Sidebar Tree Navigation & Document Management
 - `Ctrl + Tab`: Focus sidebar tree
 - `↑ / ↓` or `W / S`: Move selection up / down through folders and documents
 - `← / →` or `A / D`: Collapse / expand selected folder
 - `Enter` or `Space`: Select document or toggle folder
 - `Ctrl + N`: Create new file under the selected folder category
+- `F2`: Inline rename selected document
+- `Right-Click` or `⋮`: Open Document Context Menu
+  - **Edit name**: Rename document inline
+  - **Copy**:
+    - **Markdown**: Copy raw document content
+    - **Plain text**: Copy cleaned content stripped of markdown syntax
+  - **Copy File Path**:
+    - **System path**: Absolute path (Unix `/` or Windows `C:\`)
+    - **Relative path**: Relative path from project root
+  - **Duplicate**: Clone document with all content and tags
+  - **Delete**: Remove document from project
+  - **Inspect**: Open document in metadata Inspector drawer
 
 ### Text Formatting & Markdown
 - `Ctrl + B`: Bold selected text (`**...**`)

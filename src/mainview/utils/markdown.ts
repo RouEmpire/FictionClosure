@@ -207,3 +207,46 @@ function formatInline(text: string): string {
 
 	return escaped;
 }
+
+/**
+ * Strips all Markdown syntax, frontmatter, and formatting to produce clean, natural plain text.
+ */
+export function markdownToPlainText(markdown: string): string {
+	if (!markdown) return "";
+
+	return markdown
+		// Remove YAML frontmatter
+		.replace(/^---[\s\S]*?---\n*/, "")
+		// Remove HTML comments
+		.replace(/<!--[\s\S]*?-->/g, "")
+		// Remove fenced code blocks delimiters (preserve code contents)
+		.replace(/```[^\n]*\n([\s\S]*?)```/g, "$1")
+		// Remove inline code ticks
+		.replace(/`([^`]+)`/g, "$1")
+		// Remove images ![alt](url) -> alt
+		.replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+		// Convert Markdown links [text](url) -> text
+		.replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+		// Convert wikilinks [[target|label]] -> label, [[target]] -> target
+		.replace(/\[\[([^|\]]+)\|([^\]]+)\]\]/g, "$2")
+		.replace(/\[\[([^\]]+)\]\]/g, "$1")
+		// Remove headers markers (# Header -> Header)
+		.replace(/^(#{1,6})\s+(.*)$/gm, "$2")
+		// Remove blockquote markers (> Quote -> Quote)
+		.replace(/^>\s*/gm, "")
+		// Remove task list markers (- [x] Task -> Task)
+		.replace(/^(\s*)[-*+]\s+\[[ xX]\]\s+/gm, "$1")
+		// Remove bullet list markers (- Item -> Item)
+		.replace(/^(\s*)[-*+]\s+/gm, "$1")
+		// Remove ordered list numbers (1. Item -> Item)
+		.replace(/^(\s*)\d+\.\s+/gm, "$1")
+		// Remove horizontal rules
+		.replace(/^[-*_]{3,}\s*$/gm, "")
+		// Remove bold and italic formatting (**bold**, *italic*, __bold__, _italic_, ~~strike~~)
+		.replace(/(\*\*|__)(.*?)\1/g, "$2")
+		.replace(/(\*|_)(.*?)\1/g, "$2")
+		.replace(/~~(.*?)~~/g, "$1")
+		// Clean up multiple consecutive empty lines
+		.replace(/\n{3,}/g, "\n\n")
+		.trim();
+}
