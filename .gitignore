@@ -8,3 +8,4 @@ ignore/
 stacks.json
 .stacks.json
 *.stack.json
+.cottontail-tmp/
