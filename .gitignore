@@ -1,0 +1,10 @@
+.hutch/
+node_modules/
+build/
+dist/
+artifacts/
+*.tsbuildinfo
+ignore/
+stacks.json
+.stacks.json
+*.stack.json

@@ -1,0 +1,124 @@
+:root {
+	--bg-primary: #0d1117;
+	--bg-secondary: #161b22;
+	--bg-tertiary: #1f242c;
+	--bg-hover: #262c36;
+	--bg-active: #303744;
+
+	--border-subtle: #2b323c;
+	--border-bold: #3f4756;
+
+	--text-primary: #f0f3f6;
+	--text-secondary: #9da7b3;
+	--text-muted: #6b7582;
+
+	--accent-primary: #e69d45;
+	--accent-hover: #f3ae5c;
+	--accent-subtle: rgba(230, 157, 69, 0.15);
+
+	--success-color: #3fb950;
+	--warning-color: #d29922;
+	--danger-color: #f85149;
+
+	--font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+	--font-editor: "JetBrains Mono", "Fira Code", "Cascadia Code", "Courier New", monospace;
+	--font-prose: "Merriweather", "Georgia", "Cambria", "Times New Roman", serif;
+
+	--sidebar-width: 280px;
+	--inspector-width: 300px;
+	--header-height: 48px;
+	--status-height: 32px;
+}
+
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+html, body {
+	height: 100%;
+	width: 100%;
+	overflow: hidden;
+	background-color: var(--bg-primary);
+	color: var(--text-primary);
+	font-family: var(--font-ui);
+	font-size: 14px;
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+	height: 100%;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+/* Accessible focus styling */
+:focus-visible {
+	outline: 2px solid var(--accent-primary);
+	outline-offset: 1px;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background: var(--border-bold);
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: var(--text-muted);
+}
+
+/* Keyboard hint chips */
+kbd {
+	display: inline-block;
+	padding: 2px 6px;
+	font-family: var(--font-editor);
+	font-size: 11px;
+	line-height: 1;
+	color: var(--text-secondary);
+	background-color: var(--bg-tertiary);
+	border: 1px solid var(--border-subtle);
+	border-radius: 4px;
+	box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive adjustments for narrow windows */
+@media (max-width: 950px) {
+	:root {
+		--sidebar-width: 230px;
+		--inspector-width: 250px;
+	}
+
+	.project-title {
+		display: none;
+	}
+}
+
+@media (max-width: 768px) {
+	:root {
+		--sidebar-width: 220px;
+		--inspector-width: 100%;
+	}
+
+	.folder-name {
+		max-width: 80px;
+	}
+
+	.active-title {
+		max-width: 160px;
+	}
+}
+
