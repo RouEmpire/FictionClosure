@@ -4,7 +4,7 @@
 
 	interface Props {
 		document: FictionDocument;
-		allDocuments: FictionDocument[];
+		allDocuments?: FictionDocument[];
 		onUpdateDocMeta: (updates: Partial<FictionDocument>) => void;
 		onNavigateToDocTitle: (title: string) => void;
 		onClose: () => void;
@@ -12,7 +12,7 @@
 
 	let {
 		document,
-		allDocuments,
+		allDocuments = [],
 		onUpdateDocMeta,
 		onNavigateToDocTitle,
 		onClose,
@@ -21,15 +21,17 @@
 	let newTagInput = $state("");
 
 	// Extract outgoing links from content
-	const outgoingLinks = $derived(extractWikilinks(document.content));
+	const outgoingLinks = $derived(extractWikilinks(document.content || ""));
 
 	// Find backlinks (documents mentioning this document's title)
 	const backlinks = $derived.by(() => {
+		if (!document?.title || !Array.isArray(allDocuments)) return [];
 		const docTitle = document.title.toLowerCase();
 		return allDocuments.filter(
 			(d) =>
+				d &&
 				d.id !== document.id &&
-				extractWikilinks(d.content).some((link) => link.toLowerCase() === docTitle),
+				extractWikilinks(d.content || "").some((link) => link.toLowerCase() === docTitle),
 		);
 	});
 

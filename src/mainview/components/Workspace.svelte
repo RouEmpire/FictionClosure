@@ -29,7 +29,7 @@
 
 	let {
 		project = $bindable(),
-		documents = $bindable(),
+		documents = $bindable([]),
 		editorFont = "",
 		onCloseProject,
 		onOpenSettings,
@@ -479,9 +479,10 @@
 		{#if showInspector && activeDoc && zenMode === "none"}
 			<Inspector
 				document={activeDoc}
+				allDocuments={documents}
+				onUpdateDocMeta={handleUpdateDocMeta}
+				onNavigateToDocTitle={handleNavigateToDocTitle}
 				onClose={() => (showInspector = false)}
-				onUpdateMeta={handleUpdateDocMeta}
-				onNavigateToDoc={handleSelectDoc}
 			/>
 		{/if}
 	</div>
