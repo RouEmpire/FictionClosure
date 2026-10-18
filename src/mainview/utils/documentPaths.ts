@@ -1,4 +1,4 @@
-import type { DocumentType } from "../types";
+import type { DocumentType } from "../../shared/types";
 
 /**
  * Safe filename slugifier that removes filesystem-hostile characters.

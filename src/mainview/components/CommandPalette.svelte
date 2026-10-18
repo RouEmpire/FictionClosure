@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { FictionDocument, ViewMode } from "../types";
+	import type { FictionDocument, ViewMode } from "../../shared/types";
 
 	interface Props {
 		isOpen: boolean;

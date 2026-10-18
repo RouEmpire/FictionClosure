@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import type { DocumentType, FictionDocument, ProjectInfo, SaveState, ViewMode, ZenModeType } from "../types";
+	import type { DocumentType, FictionDocument, ProjectInfo, SaveState, ViewMode, ZenModeType } from "../../shared/types";
 	import {
 		promptSelectFolder,
 		saveProject,

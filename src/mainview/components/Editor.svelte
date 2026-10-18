@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { FictionDocument, ZenModeType } from "../types";
+    import type { FictionDocument, ZenModeType } from "../../shared/types";
     import { calculateWordCount } from "../utils/markdown";
     import {
         calculateRenderedLines,

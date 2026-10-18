@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { FictionDocument, SaveState, ViewMode, ZenModeType } from "../types";
+	import type { FictionDocument, SaveState, ViewMode, ZenModeType } from "../../shared/types";
 
 	interface Props {
 		projectName: string;

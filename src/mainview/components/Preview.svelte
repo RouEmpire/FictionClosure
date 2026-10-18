@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { FictionDocument } from "../types";
+	import type { FictionDocument } from "../../shared/types";
 	import {
 		renderMarkdown,
 		calculateWordCount,

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { DocumentType, FictionDocument } from "../types";
+	import type { DocumentType, FictionDocument } from "../../shared/types";
 
 	interface Props {
 		isOpen: boolean;

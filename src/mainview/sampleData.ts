@@ -1,4 +1,4 @@
-import type { FictionDocument, ProjectInfo } from "./types";
+import type { FictionDocument, ProjectInfo } from "../shared/types";
 
 export const initialProject: ProjectInfo = {
 	name: "The Whispering Tide",

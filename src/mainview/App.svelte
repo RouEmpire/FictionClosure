@@ -5,7 +5,7 @@
         ProjectAnalysisResult,
         ProjectInfo,
         RecentProject,
-    } from "./types";
+    } from "../shared/types";
     import { initialProject, sampleDocuments } from "./sampleData";
     import {
         loadProject,
