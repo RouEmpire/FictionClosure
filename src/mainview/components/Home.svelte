@@ -6,7 +6,7 @@
 
     interface Props {
         recentProjects: RecentProject[];
-        onOpenProject: (folderPath: string) => void;
+        onOpenProject: (folderPath: string, projectName?: string) => void;
         onDeleteRecentProject: (id: string, name: string) => void;
         onImportProject: () => void;
         onNewProject: () => void;
@@ -192,7 +192,10 @@
                                         type="button"
                                         class="project-card-clickable"
                                         onclick={() =>
-                                            onOpenProject(project.folderPath)}
+                                            onOpenProject(
+                                                project.folderPath,
+                                                project.name,
+                                            )}
                                         title="Open {project.name}"
                                     >
                                         <div class="card-header-row">
@@ -266,6 +269,7 @@
                                             onclick={() =>
                                                 onOpenProject(
                                                     project.folderPath,
+                                                    project.name,
                                                 )}
                                             title="Open project in workspace"
                                         >

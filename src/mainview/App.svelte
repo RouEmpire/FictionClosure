@@ -26,10 +26,21 @@
     import ShortcutsModal from "./components/ShortcutsModal.svelte";
     import AboutModal from "./components/AboutModal.svelte";
     import ProjectAnalysisModal from "./components/ProjectAnalysisModal.svelte";
+    import ProjectLoadingScreen from "./components/ProjectLoadingScreen.svelte";
     import { analyzeProject } from "../shared/domain/projectAnalysis";
+    import { formatLoadDuration } from "../shared/domain/timeFormatting";
 
     // Screen navigation: starts on "home" welcome screen
     let currentScreen = $state<"home" | "workspace">("home");
+
+    // Project Loading Screen state
+    let isLoadingProject = $state(false);
+    let loadingProjectName = $state("");
+    let loadingFolderPath = $state("");
+    let isProjectLoaded = $state(false);
+    let loadingError = $state<string | null>(null);
+    let loadingStats = $state<{ docCount: number; wordCount: number } | null>(null);
+    let pendingWorkspaceActivation = $state<(() => void) | null>(null);
 
     // Active project & documents in workspace
     let project = $state<ProjectInfo>(initialProject);
@@ -93,30 +104,61 @@
         );
     }
 
-    async function handleOpenProject(folderPath: string) {
+    async function handleOpenProject(folderPath: string, projectName?: string) {
+        const startTime = performance.now();
+        const resolvedName =
+            projectName ||
+            recentProjects.find((p) => p.folderPath === folderPath)?.name ||
+            folderPath.split("/").filter(Boolean).pop() ||
+            "Fiction Project";
+
+        loadingProjectName = resolvedName;
+        loadingFolderPath = folderPath;
+        isLoadingProject = true;
+        isProjectLoaded = false;
+        loadingError = null;
+        loadingStats = null;
+
         try {
             const res = await loadProject(folderPath);
             if (res.success && res.project) {
-                project = res.project;
-                documents = res.documents || [];
+                const loadedProject = res.project;
+                const loadedDocs = res.documents || [];
                 if (res.stacks) {
                     globalHistoryManager.restoreAll(
                         res.stacks,
-                        project.targetWordCount || 50000,
+                        loadedProject.targetWordCount || 50000,
                     );
                 }
                 const rec = buildRecentProjectRecord(
-                    project,
-                    documents,
+                    loadedProject,
+                    loadedDocs,
                     folderPath,
                 );
                 recentProjects = saveRecentProject(rec);
-                showToast(`Opened project "${project.name}"`);
-                currentScreen = "workspace";
-                setRememberedFolder(folderPath).catch((err) => {
-                    console.warn("Could not remember folder:", err);
-                    showToast("Could not remember folder:", err);
-                });
+
+                const totalWords = loadedDocs.reduce(
+                    (sum, d) => sum + (d.wordCount || 0),
+                    0,
+                );
+                loadingStats = {
+                    docCount: loadedDocs.length,
+                    wordCount: totalWords,
+                };
+
+                pendingWorkspaceActivation = () => {
+                    project = loadedProject;
+                    documents = loadedDocs;
+                    currentScreen = "workspace";
+                    isLoadingProject = false;
+                    const elapsedMs = Math.round(performance.now() - startTime);
+                    const durationStr = formatLoadDuration(elapsedMs);
+                    showToast(`Opened project "${project.name}" in ${durationStr}`);
+                    setRememberedFolder(folderPath).catch((err) => {
+                        console.warn("Could not remember folder:", err);
+                    });
+                };
+                isProjectLoaded = true;
             } else {
                 // Check for demo/sample initial project match
                 if (
@@ -124,17 +166,33 @@
                     folderPath === "~/FictionProjects/TheWhisperingTide" ||
                     folderPath.includes("TheWhisperingTide")
                 ) {
-                    project = initialProject;
-                    documents = sampleDocuments;
                     const rec = buildRecentProjectRecord(
-                        project,
-                        documents,
+                        initialProject,
+                        sampleDocuments,
                         folderPath,
                     );
                     recentProjects = saveRecentProject(rec);
-                    currentScreen = "workspace";
-                    showToast(`Opened demo project "${project.name}"`);
+                    const totalWords = sampleDocuments.reduce(
+                        (sum, d) => sum + (d.wordCount || 0),
+                        0,
+                    );
+                    loadingStats = {
+                        docCount: sampleDocuments.length,
+                        wordCount: totalWords,
+                    };
+
+                    pendingWorkspaceActivation = () => {
+                        project = initialProject;
+                        documents = sampleDocuments;
+                        currentScreen = "workspace";
+                        isLoadingProject = false;
+                        const elapsedMs = Math.round(performance.now() - startTime);
+                        const durationStr = formatLoadDuration(elapsedMs);
+                        showToast(`Opened demo project "${project.name}" in ${durationStr}`);
+                    };
+                    isProjectLoaded = true;
                 } else {
+                    loadingError = res.error || "Folder path not found on disk";
                     showToast(
                         `Could not open project: ${res.error || "Folder path not found on disk"}`,
                     );
@@ -142,10 +200,28 @@
             }
         } catch (err) {
             console.error("Open project error:", err);
+            loadingError = err instanceof Error ? err.message : String(err);
             showToast(
                 `Failed to open project: ${err instanceof Error ? err.message : String(err)}`,
             );
         }
+    }
+
+    function handleLoadingDone() {
+        if (pendingWorkspaceActivation) {
+            pendingWorkspaceActivation();
+            pendingWorkspaceActivation = null;
+        } else {
+            isLoadingProject = false;
+        }
+    }
+
+    function handleCancelLoading() {
+        isLoadingProject = false;
+        isProjectLoaded = false;
+        pendingWorkspaceActivation = null;
+        loadingError = null;
+        showToast("Project opening cancelled");
     }
 
     function handleCloseProject() {
@@ -486,6 +562,19 @@
         onConfirm={handleConfirmImport}
         onCancel={handleCancelImport}
     />
+
+    <!-- High-tech Hacker Terminal Loading Screen -->
+    {#if isLoadingProject}
+        <ProjectLoadingScreen
+            projectName={loadingProjectName}
+            folderPath={loadingFolderPath}
+            isLoaded={isProjectLoaded}
+            loadError={loadingError}
+            stats={loadingStats}
+            onDone={handleLoadingDone}
+            onCancel={handleCancelLoading}
+        />
+    {/if}
 
     <!-- Toast notification -->
     {#if toastMessage}
