@@ -15,10 +15,18 @@
         toggleTaskCheckbox,
         type TextTransformResult,
     } from "../../shared/domain/textFormatting";
+    import {
+        computeLineHeight,
+        formatFontFeatureSettings,
+        formatTextAutospace,
+        DEFAULT_TYPOGRAPHY_SETTINGS,
+        type EditorTypographySettings,
+    } from "../../shared/domain/typography";
 
     interface Props {
         document: FictionDocument;
         customFont?: string;
+        typography?: EditorTypographySettings;
         wordWrap?: boolean;
         zenMode?: ZenModeType;
         onContentChange: (newContent: string) => void;
@@ -31,6 +39,7 @@
     let {
         document,
         customFont = "",
+        typography = DEFAULT_TYPOGRAPHY_SETTINGS,
         wordWrap: externalWordWrap,
         zenMode = "none",
         onContentChange,
@@ -67,9 +76,40 @@
 
     const isFocusMode = $derived(zenMode === "focus" || zenMode === "czm");
 
+    const activeTypography = $derived(typography || DEFAULT_TYPOGRAPHY_SETTINGS);
+    const computedLineHeight = $derived(computeLineHeight(activeTypography.fontSize));
+    const fontFeatureSettingsCss = $derived(
+        formatFontFeatureSettings(
+            activeTypography.fontFeatures,
+            activeTypography.customFontFeaturesText,
+        ),
+    );
+    const textAutospaceCss = $derived(
+        formatTextAutospace(
+            activeTypography.textAutospace,
+            activeTypography.customTextAutospace,
+        ),
+    );
+    const firstLineIndentCss = $derived(`${activeTypography.firstLineIndent}%`);
+
+    let isMouseHidden = $state(false);
+
+    function handleTypingActivity() {
+        if (activeTypography.hideMouseOnTyping && !isMouseHidden) {
+            isMouseHidden = true;
+        }
+    }
+
+    function handlePointerMove() {
+        if (isMouseHidden) {
+            isMouseHidden = false;
+        }
+    }
+
     // Sync active font: custom font takes precedence, otherwise fallback to active preset
     const activeFont = $derived(
         customFont ||
+            activeTypography.fontFamily ||
             (fontStyle === "mono"
                 ? "var(--font-editor)"
                 : fontStyle === "serif"
@@ -97,7 +137,9 @@
             wordWrap,
             textareaEl,
             mirrorEl,
-            lineHeight: 26,
+            lineHeight: computedLineHeight,
+            fontSize: activeTypography.fontSize,
+            textIndent: firstLineIndentCss,
             activeFont,
         });
     }
@@ -107,6 +149,9 @@
         const _c = document.content;
         const _w = wordWrap;
         const _f = activeFont;
+        const _lh = computedLineHeight;
+        const _fs = activeTypography.fontSize;
+        const _ind = firstLineIndentCss;
         const _t = textareaEl;
         const _m = mirrorEl;
         updateRenderedLines();
@@ -200,6 +245,7 @@
             target.selectionStart,
         );
 
+        handleTypingActivity();
         onContentChange(newVal);
         updateCursorPosition();
         updateRenderedLines();
@@ -239,6 +285,8 @@
     }
 
     function handleKeyDown(e: KeyboardEvent) {
+        handleTypingActivity();
+
         const isMac =
             typeof navigator !== "undefined" &&
             /Mac|iPhone|iPad|iPod/.test(navigator.platform);
@@ -446,12 +494,28 @@
     }
 </script>
 
+<svelte:window onpointermove={handlePointerMove} />
+
 <div
     class="editor-container"
     class:is-czm={zenMode === "czm"}
     class:is-focus={isFocusMode}
-    style="--active-editor-font: {activeFont};"
+    class:mouse-hidden-on-typing={isMouseHidden}
+    style="
+        --active-editor-font: {activeFont};
+        --editor-font-size: {activeTypography.fontSize}px;
+        --editor-line-height: {computedLineHeight}px;
+        --editor-font-weight: {activeTypography.fontWeight};
+        --editor-font-feature-settings: {fontFeatureSettingsCss};
+        --editor-text-rendering: {activeTypography.textRendering};
+        --editor-text-indent: {firstLineIndentCss};
+        --editor-text-justify: {activeTypography.textJustify};
+        --editor-text-autospace: {textAutospaceCss};
+    "
 >
+    {#if isMouseHidden}
+        <div class="wayland-cursor-kick" aria-hidden="true"></div>
+    {/if}
     <!-- Editor Toolbar: hidden in CZM -->
     {#if zenMode !== "czm"}
         <div class="editor-toolbar">
@@ -567,46 +631,6 @@
             </div>
 
             <div class="toolbar-right">
-                <!-- Font Family Switcher (Presets) -->
-                {#if !customFont}
-                    <div class="font-toggle-group">
-                        <button
-                            type="button"
-                            class="font-toggle-btn"
-                            class:active={fontStyle === "serif"}
-                            onclick={() => (fontStyle = "serif")}
-                            title="Serif (Book / Literary)"
-                        >
-                            Serif
-                        </button>
-                        <button
-                            type="button"
-                            class="font-toggle-btn"
-                            class:active={fontStyle === "mono"}
-                            onclick={() => (fontStyle = "mono")}
-                            title="Monospace (Code / Strict)"
-                        >
-                            Mono
-                        </button>
-                        <button
-                            type="button"
-                            class="font-toggle-btn"
-                            class:active={fontStyle === "sans"}
-                            onclick={() => (fontStyle = "sans")}
-                            title="Sans-serif (Modern)"
-                        >
-                            Sans
-                        </button>
-                    </div>
-                {:else}
-                    <div
-                        class="custom-font-badge"
-                        title="Custom font active (Press Ctrl+P to change)"
-                    >
-                        Custom Font
-                    </div>
-                {/if}
-
                 <!-- Wrap toggle -->
                 <button
                     type="button"
@@ -785,38 +809,6 @@
         margin: 0 4px;
     }
 
-    .font-toggle-group {
-        display: flex;
-        background: var(--bg-tertiary);
-        border: 1px solid var(--border-subtle);
-        border-radius: 4px;
-        padding: 1px;
-    }
-
-    .font-toggle-btn {
-        background: transparent;
-        border: none;
-        color: var(--text-muted);
-        padding: 2px 6px;
-        border-radius: 3px;
-        font-size: 11px;
-        cursor: pointer;
-    }
-
-    .font-toggle-btn.active {
-        background: var(--bg-hover);
-        color: var(--text-primary);
-    }
-
-    .custom-font-badge {
-        font-size: 11px;
-        color: var(--accent-primary);
-        background: var(--accent-subtle);
-        border: 1px solid rgba(230, 157, 69, 0.3);
-        padding: 2px 8px;
-        border-radius: 4px;
-    }
-
     .writing-canvas {
         flex: 1;
         display: flex;
@@ -840,10 +832,26 @@
         box-sizing: border-box;
     }
 
+    .editor-container.mouse-hidden-on-typing,
+    .editor-container.mouse-hidden-on-typing * {
+        cursor: none !important;
+    }
+
+    .wayland-cursor-kick {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1px;
+        height: 1px;
+        opacity: 0.001;
+        pointer-events: none;
+        cursor: none !important;
+    }
+
     .gutter-number {
-        height: 26px;
-        line-height: 26px;
-        font-size: 13px;
+        height: var(--editor-line-height, 26px);
+        line-height: var(--editor-line-height, 26px);
+        font-size: calc(var(--editor-font-size, 15px) - 2px);
         opacity: 0.45;
         cursor: pointer;
         transition:
@@ -868,7 +876,7 @@
 
     .gutter-number.is-dash {
         font-weight: 400;
-        font-size: 13px;
+        font-size: calc(var(--editor-font-size, 15px) - 2px);
         opacity: 0.35;
     }
 
@@ -906,8 +914,8 @@
     }
 
     .dimmer-line {
-        height: 26px;
-        line-height: 26px;
+        height: var(--editor-line-height, 26px);
+        line-height: var(--editor-line-height, 26px);
         box-sizing: border-box;
         background-color: var(--bg-primary);
         opacity: 0.5;
@@ -939,8 +947,12 @@
         overflow-wrap: break-word;
         word-break: normal;
         font-family: var(--active-editor-font);
-        font-size: 15px;
-        line-height: 26px;
+        font-size: var(--editor-font-size, 15px);
+        line-height: var(--editor-line-height, 26px);
+        font-weight: var(--editor-font-weight, 400);
+        font-feature-settings: var(--editor-font-feature-settings, normal);
+        text-rendering: var(--editor-text-rendering, auto);
+        text-indent: var(--editor-text-indent, 0%);
         box-sizing: border-box;
         padding: 16px 20px;
         tab-size: 2;
@@ -955,8 +967,16 @@
         color: var(--text-primary);
         padding: 16px 20px;
         font-family: var(--active-editor-font);
-        font-size: 15px;
-        line-height: 26px;
+        font-size: var(--editor-font-size, 15px);
+        line-height: var(--editor-line-height, 26px);
+        font-weight: var(--editor-font-weight, 400);
+        font-feature-settings: var(--editor-font-feature-settings, normal);
+        text-rendering: var(--editor-text-rendering, auto);
+        text-indent: var(--editor-text-indent, 0%);
+        text-align: justify;
+        text-justify: var(--editor-text-justify, auto);
+        text-autospace: var(--editor-text-autospace, normal);
+        -webkit-text-autospace: var(--editor-text-autospace, normal);
         resize: none;
         overflow-y: auto;
         tab-size: 2;

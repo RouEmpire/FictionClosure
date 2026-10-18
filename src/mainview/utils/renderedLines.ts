@@ -28,6 +28,8 @@ export interface MeasureOptions {
 	textareaEl: HTMLTextAreaElement | null;
 	mirrorEl: HTMLDivElement | null;
 	lineHeight?: number;
+	fontSize?: number;
+	textIndent?: string;
 	activeFont?: string;
 }
 
@@ -44,8 +46,14 @@ interface CachedParagraphLines {
 const paragraphCache = new Map<string, CachedParagraphLines>();
 const MAX_CACHE_ENTRIES = 1000;
 
-function getCacheKey(font: string, width: number, text: string): string {
-	return `${font}:::${width}:::${text}`;
+function getCacheKey(
+	font: string,
+	width: number,
+	text: string,
+	fontSize: number = 15,
+	textIndent: string = "",
+): string {
+	return `${font}:::${fontSize}:::${textIndent}:::${width}:::${text}`;
 }
 
 function setCacheEntry(key: string, value: CachedParagraphLines) {
@@ -207,7 +215,16 @@ function measureParagraphLineStarts(
  * Calculates the exact rendered lines for the document, taking soft wrapping into account.
  */
 export function calculateRenderedLines(options: MeasureOptions): RenderedLine[] {
-	const { content, wordWrap, textareaEl, mirrorEl, lineHeight = 26, activeFont = "" } = options;
+	const {
+		content,
+		wordWrap,
+		textareaEl,
+		mirrorEl,
+		lineHeight = 26,
+		fontSize,
+		textIndent,
+		activeFont = "",
+	} = options;
 
 	if (!wordWrap || !textareaEl || !mirrorEl || typeof window === "undefined") {
 		return calculateUnwrappedLines(content);
@@ -236,7 +253,7 @@ export function calculateRenderedLines(options: MeasureOptions): RenderedLine[] 
 			continue;
 		}
 
-		const key = getCacheKey(activeFont, clientWidth, paraText);
+		const key = getCacheKey(activeFont, clientWidth, paraText, fontSize, textIndent);
 		const cached = paragraphCache.get(key);
 		if (cached) {
 			cachedParaData[i] = cached;
@@ -254,6 +271,12 @@ export function calculateRenderedLines(options: MeasureOptions): RenderedLine[] 
 		for (const idx of toMeasureIndices) {
 			const div = document.createElement("div");
 			div.style.lineHeight = `${lineHeight}px`;
+			if (fontSize) {
+				div.style.fontSize = `${fontSize}px`;
+			}
+			if (textIndent) {
+				div.style.textIndent = textIndent;
+			}
 			div.style.margin = "0";
 			div.style.padding = "0";
 			div.style.whiteSpace = "pre-wrap";
@@ -272,7 +295,7 @@ export function calculateRenderedLines(options: MeasureOptions): RenderedLine[] 
 			if (div) {
 				const measured = measureParagraphLineStarts(div, paragraphs[idx], lineHeight);
 				cachedParaData[idx] = measured;
-				setCacheEntry(getCacheKey(activeFont, clientWidth, paragraphs[idx]), measured);
+				setCacheEntry(getCacheKey(activeFont, clientWidth, paragraphs[idx], fontSize, textIndent), measured);
 			} else {
 				cachedParaData[idx] = { lineCount: 1, subStarts: [0] };
 			}

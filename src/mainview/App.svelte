@@ -32,6 +32,12 @@
     import CrashRecoveryModal from "./components/CrashRecoveryModal.svelte";
     import { analyzeProject } from "../shared/domain/projectAnalysis";
     import { formatLoadDuration } from "../shared/domain/timeFormatting";
+    import {
+        loadTypographySettings,
+        saveTypographySettings,
+        DEFAULT_TYPOGRAPHY_SETTINGS,
+        type EditorTypographySettings,
+    } from "../shared/domain/typography";
 
     // Screen navigation: starts on "home" welcome screen
     let currentScreen = $state<"home" | "workspace">("home");
@@ -52,7 +58,8 @@
     // Recent projects list persisted in localStorage
     let recentProjects = $state<RecentProject[]>([]);
 
-    // Editor custom font preference persisted in localStorage
+    // Editor typography settings persisted in localStorage
+    let typographySettings = $state<EditorTypographySettings>(DEFAULT_TYPOGRAPHY_SETTINGS);
     let editorFont = $state<string>("");
 
     // Modals
@@ -89,22 +96,23 @@
 
     onMount(() => {
         recentProjects = getRecentProjects();
-
-        if (typeof localStorage !== "undefined") {
-            const savedFont = localStorage.getItem(
-                "fictionclosure_editor_font",
-            );
-            if (savedFont) {
-                editorFont = savedFont;
-            }
-        }
+        typographySettings = loadTypographySettings();
+        editorFont = typographySettings.fontFamily;
     });
+
+    function handleUpdateTypography(newSettings: EditorTypographySettings) {
+        typographySettings = newSettings;
+        editorFont = newSettings.fontFamily;
+        saveTypographySettings(newSettings);
+    }
 
     function handleFontChange(newFont: string) {
         editorFont = newFont;
-        if (typeof localStorage !== "undefined") {
-            localStorage.setItem("fictionclosure_editor_font", newFont);
-        }
+        typographySettings = {
+            ...typographySettings,
+            fontFamily: newFont,
+        };
+        saveTypographySettings(typographySettings);
         showToast(
             newFont
                 ? `Editor font: ${newFont}`
@@ -591,6 +599,7 @@
                 bind:project
                 bind:documents
                 {editorFont}
+                typography={typographySettings}
                 onCloseProject={handleCloseProject}
                 onOpenSettings={() => (isSettingsOpen = true)}
                 onOpenShortcuts={() => (isShortcutsModalOpen = true)}
@@ -604,8 +613,10 @@
     <SettingsModal
         isOpen={isSettingsOpen}
         currentFont={editorFont}
+        typography={typographySettings}
         onClose={() => (isSettingsOpen = false)}
         onFontChange={handleFontChange}
+        onUpdateTypography={handleUpdateTypography}
     />
 
     <!-- Keyboard Shortcuts Cheatsheet Modal -->

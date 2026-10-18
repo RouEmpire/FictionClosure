@@ -107,8 +107,17 @@ export interface WorkspaceState {
 	showInspector?: boolean;
 	zenMode?: ZenModeType;
 	editorFont?: string;
+	typography?: import("./domain/typography").EditorTypographySettings;
 	updatedAt: string;
 }
+
+export type {
+	TextRenderingMode,
+	TextJustifyMode,
+	TextAutospaceMode,
+	EditorTypographySettings,
+	FontFeatureTag,
+} from "./domain/typography";
 
 export interface SessionState {
 	schemaVersion: number;

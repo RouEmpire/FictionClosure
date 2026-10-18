@@ -5,13 +5,34 @@
 		calculateWordCount,
 		estimateReadingTimeMinutes,
 	} from "../../shared/domain/markdown";
+	import {
+		formatFontFeatureSettings,
+		formatTextAutospace,
+		DEFAULT_TYPOGRAPHY_SETTINGS,
+		type EditorTypographySettings,
+	} from "../../shared/domain/typography";
 
 	interface Props {
 		document: FictionDocument;
+		typography?: EditorTypographySettings;
 		onSelectWikilink: (targetName: string) => void;
 	}
 
-	let { document, onSelectWikilink }: Props = $props();
+	let { document, typography = DEFAULT_TYPOGRAPHY_SETTINGS, onSelectWikilink }: Props = $props();
+
+	const activeTypography = $derived(typography || DEFAULT_TYPOGRAPHY_SETTINGS);
+	const fontFeatureSettingsCss = $derived(
+		formatFontFeatureSettings(
+			activeTypography.fontFeatures,
+			activeTypography.customFontFeaturesText,
+		),
+	);
+	const textAutospaceCss = $derived(
+		formatTextAutospace(
+			activeTypography.textAutospace,
+			activeTypography.customTextAutospace,
+		),
+	);
 
 	const renderedHtml = $derived(renderMarkdown(document.content));
 	const wordCount = $derived(calculateWordCount(document.content));
@@ -58,7 +79,17 @@
 	</div>
 
 	<!-- Rendered Content -->
-	<article class="prose-content">
+	<article
+		class="prose-content"
+		style="
+			{activeTypography.fontFamily ? `font-family: ${activeTypography.fontFamily};` : ''}
+			--preview-text-indent: {activeTypography.firstLineIndent}%;
+			--preview-text-justify: {activeTypography.textJustify};
+			--preview-text-rendering: {activeTypography.textRendering};
+			--preview-font-features: {fontFeatureSettingsCss};
+			--preview-autospace: {textAutospaceCss};
+		"
+	>
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html renderedHtml}
 	</article>
@@ -161,7 +192,12 @@
 	:global(.prose-content .doc-paragraph) {
 		margin-bottom: 1.4em;
 		text-align: justify;
-		text-justify: inter-word;
+		text-justify: var(--preview-text-justify, auto);
+		text-indent: var(--preview-text-indent, 0%);
+		text-rendering: var(--preview-text-rendering, auto);
+		font-feature-settings: var(--preview-font-features, normal);
+		text-autospace: var(--preview-autospace, normal);
+		-webkit-text-autospace: var(--preview-autospace, normal);
 	}
 
 	:global(.prose-content .doc-blockquote) {
