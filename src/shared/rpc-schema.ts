@@ -35,6 +35,18 @@ export type FictionClosureRPCSchema = {
 				params: { folderPath: string };
 				response: { success: boolean };
 			};
+			saveCrashCache: {
+				params: {
+					folderPath: string;
+					project: ProjectInfo;
+					documents: FictionDocument[];
+				};
+				response: { success: boolean; error?: string };
+			};
+			clearCrashCache: {
+				params: { folderPath: string };
+				response: { success: boolean; error?: string };
+			};
 		};
 		messages: {};
 	}>;

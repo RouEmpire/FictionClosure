@@ -38,6 +38,8 @@ export function getDocumentRelativePath(doc: {
 		return `characters/${safeSlug}.md`;
 	} else if (doc.type === "world") {
 		return `world/${safeSlug}.md`;
+	} else if (doc.type === "plot") {
+		return `plots/${safeSlug}.md`;
 	} else {
 		return `notes/${safeSlug}.md`;
 	}

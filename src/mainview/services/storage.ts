@@ -219,3 +219,60 @@ export async function setRememberedFolder(folderPath: string): Promise<void> {
 		}
 	}
 }
+
+/**
+ * Persists the uncommitted writing draft to .fictionclosure/cache/unsaved-recovery.json.
+ */
+export async function saveCrashCache(
+	folderPath: string,
+	project: ProjectInfo,
+	documents: FictionDocument[],
+): Promise<{ success: boolean; error?: string }> {
+	const rpc = getRpc();
+	if (rpc) {
+		try {
+			return await rpc.request.saveCrashCache({ folderPath, project, documents });
+		} catch (err) {
+			return { success: false, error: err instanceof Error ? err.message : String(err) };
+		}
+	}
+	// Fallback to localStorage in webview/browser mode
+	try {
+		if (typeof localStorage !== "undefined") {
+			localStorage.setItem(
+				"fictionclosure_crash_cache_v1",
+				JSON.stringify({
+					hasUnsavedChanges: true,
+					cachedAt: new Date().toISOString(),
+					projectName: project.name,
+					documents,
+				}),
+			);
+		}
+		return { success: true };
+	} catch {
+		return { success: false };
+	}
+}
+
+/**
+ * Clears the unsaved crash recovery cache (after a clean manual save).
+ */
+export async function clearCrashCache(folderPath: string): Promise<{ success: boolean; error?: string }> {
+	const rpc = getRpc();
+	if (rpc) {
+		try {
+			return await rpc.request.clearCrashCache({ folderPath });
+		} catch (err) {
+			return { success: false, error: err instanceof Error ? err.message : String(err) };
+		}
+	}
+	try {
+		if (typeof localStorage !== "undefined") {
+			localStorage.removeItem("fictionclosure_crash_cache_v1");
+		}
+		return { success: true };
+	} catch {
+		return { success: false };
+	}
+}

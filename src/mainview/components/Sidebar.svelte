@@ -39,6 +39,7 @@
 	let collapsedSections = $state<Record<DocumentType, boolean>>({
 		manuscript: false,
 		character: false,
+		plot: false,
 		world: false,
 		note: false,
 	});
@@ -50,6 +51,7 @@
 	const sections: { type: DocumentType; label: string; icon: string }[] = [
 		{ type: "manuscript", label: "Manuscript", icon: "📖" },
 		{ type: "character", label: "Characters", icon: "👤" },
+		{ type: "plot", label: "Plots & Arcs", icon: "📈" },
 		{ type: "world", label: "World & Lore", icon: "🗺️" },
 		{ type: "note", label: "Notes & Outlines", icon: "📝" },
 	];

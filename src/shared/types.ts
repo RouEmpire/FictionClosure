@@ -1,4 +1,4 @@
-export type DocumentType = "manuscript" | "character" | "world" | "note";
+export type DocumentType = "manuscript" | "character" | "world" | "note" | "plot";
 
 export type DocumentStatus = "draft" | "in-progress" | "revised" | "completed";
 
@@ -79,7 +79,43 @@ export interface LoadProjectResult {
 	project?: ProjectInfo;
 	documents?: FictionDocument[];
 	stacks?: ProjectHistoryStacks;
+	recoveryData?: CrashRecoveryData | null;
 	error?: string;
+}
+
+export interface CachedDocumentSnapshot {
+	id: string;
+	title: string;
+	type: DocumentType;
+	content: string;
+	wordCount: number;
+	lastModified: string;
+}
+
+export interface CrashRecoveryData {
+	hasUnsavedChanges: boolean;
+	cachedAt: string;
+	projectName: string;
+	documents: CachedDocumentSnapshot[];
+}
+
+export interface WorkspaceState {
+	schemaVersion: number;
+	lastActiveDocumentId?: string;
+	viewMode?: ViewMode;
+	isSidebarOpen?: boolean;
+	showInspector?: boolean;
+	zenMode?: ZenModeType;
+	editorFont?: string;
+	updatedAt: string;
+}
+
+export interface SessionState {
+	schemaVersion: number;
+	lastOpenedAt: string;
+	lastSavedAt: string;
+	totalWords: number;
+	appVersion: string;
 }
 
 export interface RecentProject {
@@ -95,6 +131,7 @@ export interface RecentProject {
 	characterCount: number;
 	worldCount: number;
 	notesCount: number;
+	plotCount?: number;
 	author?: string;
 	genre?: string;
 }
@@ -114,9 +151,12 @@ export interface ProjectAnalysisResult {
 	characterCount: number;
 	worldCount: number;
 	notesCount: number;
+	plotCount?: number;
 	totalWordCount: number;
 	hasStacks: boolean;
 	hasGitignore: boolean;
+	hasGitRepo?: boolean;
+	hasFictionClosureFolder?: boolean;
 	issues: string[];
 	warnings: string[];
 }

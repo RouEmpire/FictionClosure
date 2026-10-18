@@ -29,6 +29,8 @@
 				title = `Chapter ${existingCount + 1}`;
 			} else if (docType === "character") {
 				title = "New Character";
+			} else if (docType === "plot") {
+				title = "New Plot Arc";
 			} else if (docType === "world") {
 				title = "New Lore Entry";
 			} else {
@@ -58,6 +60,8 @@
 			initialContent = `# ${trimmedTitle}\n\n## Overview\n\n## Appearance\n\n## Motivation & Goals\n\n## Relationships\n`;
 		} else if (docType === "world") {
 			initialContent = `# ${trimmedTitle}\n\n## Description\n\n## History\n\n## Rules & Significance\n`;
+		} else if (docType === "plot") {
+			initialContent = `# ${trimmedTitle}\n\n## Premise & Stakes\n\n## Inciting Incident\n\n## Rising Action & Climax\n\n## Resolution\n`;
 		} else {
 			initialContent = `# ${trimmedTitle}\n\n## Objective\n\n- [ ] Initial beat\n- [ ] Key reveal\n`;
 		}
@@ -140,6 +144,19 @@
 						>
 							<span class="type-choice-icon">👤</span>
 							<span class="type-choice-label">Character</span>
+						</button>
+
+						<button
+							type="button"
+							class="type-choice-btn"
+							class:active={docType === "plot"}
+							onclick={() => {
+								docType = "plot";
+								title = "New Plot Arc";
+							}}
+						>
+							<span class="type-choice-icon">📈</span>
+							<span class="type-choice-label">Plot / Arc</span>
 						</button>
 
 						<button

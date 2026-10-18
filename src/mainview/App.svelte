@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import type {
+        CrashRecoveryData,
         FictionDocument,
         ProjectAnalysisResult,
         ProjectInfo,
@@ -8,6 +9,7 @@
     } from "../shared/types";
     import { initialProject, sampleDocuments } from "../shared/fixtures/sampleData";
     import {
+        clearCrashCache,
         loadProject,
         promptSelectFolder,
         saveProject,
@@ -27,6 +29,7 @@
     import AboutModal from "./components/AboutModal.svelte";
     import ProjectAnalysisModal from "./components/ProjectAnalysisModal.svelte";
     import ProjectLoadingScreen from "./components/ProjectLoadingScreen.svelte";
+    import CrashRecoveryModal from "./components/CrashRecoveryModal.svelte";
     import { analyzeProject } from "../shared/domain/projectAnalysis";
     import { formatLoadDuration } from "../shared/domain/timeFormatting";
 
@@ -58,6 +61,11 @@
     let isAboutModalOpen = $state(false);
     let isAnalysisModalOpen = $state(false);
     let analysisResult = $state<ProjectAnalysisResult | null>(null);
+
+    // Crash Recovery Modal state
+    let isCrashRecoveryOpen = $state(false);
+    let pendingRecoveryData = $state<CrashRecoveryData | null>(null);
+    let pendingDiskDocs = $state<FictionDocument[]>([]);
 
     // Pending imported project awaiting user confirmation in analysis modal
     let pendingImportData = $state<{
@@ -157,6 +165,13 @@
                     setRememberedFolder(folderPath).catch((err) => {
                         console.warn("Could not remember folder:", err);
                     });
+
+                    // Check if there was unsaved crash recovery cache
+                    if (res.recoveryData?.hasUnsavedChanges) {
+                        pendingRecoveryData = res.recoveryData;
+                        pendingDiskDocs = [...loadedDocs];
+                        isCrashRecoveryOpen = true;
+                    }
                 };
                 isProjectLoaded = true;
             } else {
@@ -222,6 +237,56 @@
         pendingWorkspaceActivation = null;
         loadingError = null;
         showToast("Project opening cancelled");
+    }
+
+    function handleRestoreCrashRecovery() {
+        if (!pendingRecoveryData) return;
+        const recoveryMap = new Map(pendingRecoveryData.documents.map((d) => [d.id, d]));
+        const updated = documents.map((doc) => {
+            const cached = recoveryMap.get(doc.id);
+            if (cached) {
+                return {
+                    ...doc,
+                    content: cached.content,
+                    updatedAt: cached.updatedAt,
+                    title: cached.title,
+                };
+            }
+            return doc;
+        });
+
+        // Add any cached docs that were created during the crashed session
+        for (const cached of pendingRecoveryData.documents) {
+            if (!updated.some((d) => d.id === cached.id)) {
+                updated.push({
+                    id: cached.id,
+                    title: cached.title,
+                    type: cached.type,
+                    status: "draft",
+                    tags: [],
+                    order: updated.length + 1,
+                    createdAt: cached.updatedAt,
+                    updatedAt: cached.updatedAt,
+                    content: cached.content,
+                });
+            }
+        }
+
+        documents = updated;
+        isCrashRecoveryOpen = false;
+        pendingRecoveryData = null;
+        pendingDiskDocs = [];
+        showToast("Restored unsaved draft from crash cache. Please review and save your work.");
+    }
+
+    async function handleDiscardCrashRecovery() {
+        if (project.folderPath) {
+            await clearCrashCache(project.folderPath);
+        }
+        isCrashRecoveryOpen = false;
+        pendingRecoveryData = null;
+        pendingDiskDocs = [];
+        showToast("Discarded crash cache. Loaded saved documents from disk.");
     }
 
     function handleCloseProject() {
@@ -561,6 +626,15 @@
         analysis={analysisResult}
         onConfirm={handleConfirmImport}
         onCancel={handleCancelImport}
+    />
+
+    <!-- Crash Recovery & Unsaved Work Restore Modal -->
+    <CrashRecoveryModal
+        isOpen={isCrashRecoveryOpen}
+        recoveryData={pendingRecoveryData}
+        diskDocuments={pendingDiskDocs}
+        onRestore={handleRestoreCrashRecovery}
+        onDiscard={handleDiscardCrashRecovery}
     />
 
     <!-- High-tech Hacker Terminal Loading Screen -->

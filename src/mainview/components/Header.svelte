@@ -141,6 +141,16 @@
 	</div>
 
 	<div class="header-right">
+		<!-- Subtle status badges for Git and Auto-save -->
+		<div class="tech-tag-group">
+			<span class="tech-tag" title="Git repository initialized. Interactive Git UI integration planned (TODO)">
+				<span class="tech-dot git-dot"></span>Git: main <span class="todo-pill">TODO</span>
+			</span>
+			<span class="tech-tag" title="Crash cache active in .fictionclosure/cache/. Background auto-save system planned (TODO)">
+				<span class="tech-dot auto-dot"></span>Auto-save <span class="todo-pill">TODO</span>
+			</span>
+		</div>
+
 		<!-- Save status badge with timestamp & location info -->
 		<div
 			class="save-status save-status-{saveState}"
@@ -502,10 +512,59 @@
 		border: 1px solid rgba(63, 185, 80, 0.3);
 	}
 
+	.doc-badge-plot {
+		background: rgba(240, 136, 62, 0.15);
+		color: #f0883e;
+		border: 1px solid rgba(240, 136, 62, 0.3);
+	}
+
 	.doc-badge-note {
 		background: rgba(188, 140, 255, 0.15);
 		color: #bc8cff;
 		border: 1px solid rgba(188, 140, 255, 0.3);
+	}
+
+	.tech-tag-group {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.tech-tag {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		font-family: var(--font-mono, monospace);
+		font-size: 10px;
+		color: var(--text-muted);
+		background: rgba(255, 255, 255, 0.03);
+		border: 1px solid rgba(255, 255, 255, 0.07);
+		border-radius: 4px;
+		padding: 2px 5px;
+		user-select: none;
+	}
+
+	.tech-dot {
+		width: 5px;
+		height: 5px;
+		border-radius: 50%;
+	}
+
+	.tech-dot.git-dot {
+		background: #f0883e;
+	}
+
+	.tech-dot.auto-dot {
+		background: #58a6ff;
+	}
+
+	.todo-pill {
+		font-size: 8px;
+		font-weight: 700;
+		color: #e3b341;
+		background: rgba(227, 179, 65, 0.12);
+		border-radius: 2px;
+		padding: 1px 3px;
 	}
 
 	.active-title {

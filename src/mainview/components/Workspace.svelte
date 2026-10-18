@@ -5,6 +5,8 @@
 		promptSelectFolder,
 		saveProject,
 		setRememberedFolder,
+		saveCrashCache,
+		clearCrashCache,
 		LOCAL_STORAGE_STACKS,
 	} from "../services/storage";
 	import { globalHistoryManager } from "../services/historyManager";
@@ -119,11 +121,24 @@
 		}
 	});
 
+	let crashCacheTimer: ReturnType<typeof setTimeout> | null = null;
+
+	function scheduleCrashCache() {
+		if (!project.folderPath) return;
+		if (crashCacheTimer) clearTimeout(crashCacheTimer);
+		crashCacheTimer = setTimeout(() => {
+			if (saveState === "unsaved" && project.folderPath) {
+				void saveCrashCache(project.folderPath, project, documents);
+			}
+		}, 800);
+	}
+
 	function handleContentChange(newContent: string) {
 		if (!activeDoc) return;
 		activeDoc.content = newContent;
 		activeDoc.updatedAt = new Date().toISOString();
 		saveState = "unsaved";
+		scheduleCrashCache();
 	}
 
 	async function handleSave() {
@@ -148,6 +163,10 @@
 		if (res.success) {
 			saveState = "saved";
 			project.lastSaved = res.savedAt;
+			if (crashCacheTimer) clearTimeout(crashCacheTimer);
+			if (project.folderPath) {
+				await clearCrashCache(project.folderPath);
+			}
 			onProjectSaved?.(project, documents);
 			onShowToast(`Saved to ${project.folderPath}`);
 		} else {
@@ -226,6 +245,7 @@
 		Object.assign(activeDoc, updates);
 		activeDoc.updatedAt = new Date().toISOString();
 		saveState = "unsaved";
+		scheduleCrashCache();
 	}
 
 	function handleRenameDoc(id: string, newTitle: string) {

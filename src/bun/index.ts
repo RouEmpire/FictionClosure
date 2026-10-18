@@ -2,8 +2,10 @@ import { BrowserWindow, Updater, BrowserView, Utils } from "electrobun/main";
 import * as os from "node:os";
 import type { FictionClosureRPCSchema } from "../shared/rpc-schema";
 import {
+	clearCrashCache,
 	getLastProjectFolder,
 	loadProjectFromFolder,
+	saveCrashCache,
 	saveProjectToFolder,
 	setLastProjectFolder,
 } from "./project-storage";
@@ -82,6 +84,14 @@ const rpc = BrowserView.defineRPC<FictionClosureRPCSchema>({
 			setLastProjectFolder: async (params) => {
 				setLastProjectFolder(params.folderPath);
 				return { success: true };
+			},
+
+			saveCrashCache: async (params) => {
+				return saveCrashCache(params.folderPath, params.project, params.documents);
+			},
+
+			clearCrashCache: async (params) => {
+				return clearCrashCache(params.folderPath);
 			},
 		},
 		messages: {},

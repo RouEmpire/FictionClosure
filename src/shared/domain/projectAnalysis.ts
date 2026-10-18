@@ -14,6 +14,8 @@ export function analyzeProject(
 	documents: FictionDocument[] = [],
 	hasStacks: boolean = false,
 	hasGitignore: boolean = false,
+	hasGitRepo: boolean = false,
+	hasFictionClosureFolder: boolean = false,
 ): ProjectAnalysisResult {
 	const issues: string[] = [];
 	const warnings: string[] = [];
@@ -33,6 +35,7 @@ export function analyzeProject(
 	let characterCount = 0;
 	let worldCount = 0;
 	let notesCount = 0;
+	let plotCount = 0;
 	let totalWordCount = 0;
 
 	for (const doc of documents) {
@@ -48,6 +51,9 @@ export function analyzeProject(
 				break;
 			case "world":
 				worldCount++;
+				break;
+			case "plot":
+				plotCount++;
 				break;
 			case "note":
 			default:
@@ -90,9 +96,12 @@ export function analyzeProject(
 		characterCount,
 		worldCount,
 		notesCount,
+		plotCount,
 		totalWordCount,
 		hasStacks,
 		hasGitignore,
+		hasGitRepo,
+		hasFictionClosureFolder,
 		issues,
 		warnings,
 	};
