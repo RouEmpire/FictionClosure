@@ -4,7 +4,7 @@
 		renderMarkdown,
 		calculateWordCount,
 		estimateReadingTimeMinutes,
-	} from "../utils/markdown";
+	} from "../../shared/domain/markdown";
 
 	interface Props {
 		document: FictionDocument;

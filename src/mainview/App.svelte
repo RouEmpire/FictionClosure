@@ -6,7 +6,7 @@
         ProjectInfo,
         RecentProject,
     } from "../shared/types";
-    import { initialProject, sampleDocuments } from "./sampleData";
+    import { initialProject, sampleDocuments } from "../shared/fixtures/sampleData";
     import {
         loadProject,
         promptSelectFolder,
@@ -26,7 +26,7 @@
     import ShortcutsModal from "./components/ShortcutsModal.svelte";
     import AboutModal from "./components/AboutModal.svelte";
     import ProjectAnalysisModal from "./components/ProjectAnalysisModal.svelte";
-    import { analyzeProject } from "./utils/projectAnalysis";
+    import { analyzeProject } from "../shared/domain/projectAnalysis";
 
     // Screen navigation: starts on "home" welcome screen
     let currentScreen = $state<"home" | "workspace">("home");

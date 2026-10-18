@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { DocumentStatus, DocumentType, FictionDocument } from "../../shared/types";
-	import { extractWikilinks } from "../utils/markdown";
+	import { extractWikilinks } from "../../shared/domain/markdown";
 
 	interface Props {
 		document: FictionDocument;

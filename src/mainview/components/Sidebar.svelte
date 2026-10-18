@@ -1,11 +1,11 @@
 <script lang="ts">
 	import type { DocumentType, FictionDocument } from "../../shared/types";
-	import { calculateWordCount, markdownToPlainText } from "../utils/markdown";
+	import { calculateWordCount, markdownToPlainText } from "../../shared/domain/markdown";
 	import {
 		getDocumentRelativePath,
 		getDocumentSystemPath,
 		copyToClipboard,
-	} from "../utils/documentPaths";
+	} from "../../shared/domain/documentPaths";
 
 	interface Props {
 		documents: FictionDocument[];

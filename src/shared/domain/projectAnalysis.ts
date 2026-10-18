@@ -2,7 +2,7 @@ import type {
 	FictionDocument,
 	ProjectAnalysisResult,
 	ProjectInfo,
-} from "../../shared/types";
+} from "../types";
 import { calculateWordCount } from "./markdown";
 
 /**

@@ -3,7 +3,7 @@ import {
 	wrapSelection,
 	toggleLinePrefix,
 	toggleTaskCheckbox,
-} from "../src/mainview/utils/textFormatting";
+} from "../src/shared/domain/textFormatting";
 
 describe("Text Formatting Shortcuts", () => {
 	describe("wrapSelection", () => {

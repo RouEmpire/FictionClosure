@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { FictionDocument, ZenModeType } from "../../shared/types";
-    import { calculateWordCount } from "../utils/markdown";
+    import { calculateWordCount } from "../../shared/domain/markdown";
     import {
         calculateRenderedLines,
         calculateUnwrappedLines,
@@ -14,7 +14,7 @@
         toggleLinePrefix,
         toggleTaskCheckbox,
         type TextTransformResult,
-    } from "../utils/textFormatting";
+    } from "../../shared/domain/textFormatting";
 
     interface Props {
         document: FictionDocument;

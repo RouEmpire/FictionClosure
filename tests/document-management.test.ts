@@ -1,10 +1,10 @@
 import { describe, test, expect } from "bun:test";
-import { markdownToPlainText } from "../src/mainview/utils/markdown";
+import { markdownToPlainText } from "../src/shared/domain/markdown";
 import {
 	slugifyTitle,
 	getDocumentRelativePath,
 	getDocumentSystemPath,
-} from "../src/mainview/utils/documentPaths";
+} from "../src/shared/domain/documentPaths";
 import type { FictionDocument } from "../src/shared/types";
 
 describe("Document Management & Formatting Utilities", () => {

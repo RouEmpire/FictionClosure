@@ -1,6 +1,6 @@
 import type { FictionDocument, ProjectInfo, RecentProject } from "../../shared/types";
-import { initialProject, sampleDocuments } from "../sampleData";
-import { calculateWordCount } from "../utils/markdown";
+import { initialProject, sampleDocuments } from "../../shared/fixtures/sampleData";
+import { calculateWordCount } from "../../shared/domain/markdown";
 
 export const LOCAL_STORAGE_RECENT_PROJECTS = "fictionclosure_recent_projects_v1";
 

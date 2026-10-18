@@ -7,7 +7,7 @@ import {
 	removeRecentProject,
 	LOCAL_STORAGE_RECENT_PROJECTS,
 } from "../src/mainview/services/recentProjects";
-import { analyzeProject } from "../src/mainview/utils/projectAnalysis";
+import { analyzeProject } from "../src/shared/domain/projectAnalysis";
 import type { FictionDocument, ProjectInfo, RecentProject } from "../src/shared/types";
 
 // Mock localStorage for headless tests
