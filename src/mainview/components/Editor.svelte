@@ -76,8 +76,12 @@
 
     const isFocusMode = $derived(zenMode === "focus" || zenMode === "czm");
 
-    const activeTypography = $derived(typography || DEFAULT_TYPOGRAPHY_SETTINGS);
-    const computedLineHeight = $derived(computeLineHeight(activeTypography.fontSize));
+    const activeTypography = $derived(
+        typography || DEFAULT_TYPOGRAPHY_SETTINGS,
+    );
+    const computedLineHeight = $derived(
+        computeLineHeight(activeTypography.fontSize),
+    );
     const fontFeatureSettingsCss = $derived(
         formatFontFeatureSettings(
             activeTypography.fontFeatures,
@@ -593,7 +597,7 @@
                         )}
                     title="Insert Wikilink (Ctrl+L)"
                 >
-                    [[ link ]]
+                    link
                 </button>
                 <button
                     type="button"
