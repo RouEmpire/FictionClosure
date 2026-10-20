@@ -860,7 +860,7 @@
                                         id="custom-features-raw"
                                         type="text"
                                         class="text-input"
-                                        placeholder="e.g. "ss01" 1, "cv01" 2, "zero" 1"
+                                        placeholder='e.g. "ss01" 1, "cv01" 2, "zero" 1'
                                         bind:value={customFontFeaturesText}
                                         oninput={emitChange}
                                     />
