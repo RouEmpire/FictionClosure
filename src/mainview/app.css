@@ -49,6 +49,10 @@ html, body {
 	-moz-osx-font-smoothing: grayscale;
 }
 
+select {
+    background-color: var(--bg-primary);
+}
+
 #app {
 	height: 100%;
 	width: 100%;
@@ -121,4 +125,3 @@ kbd {
 		max-width: 160px;
 	}
 }
-
