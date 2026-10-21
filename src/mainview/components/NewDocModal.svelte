@@ -112,7 +112,7 @@
 		>
 			<div class="modal-header">
 				<h2 id="modal-title" class="modal-heading">Create New Document</h2>
-				<button type="button" class="close-btn" onclick={onClose}>✕</button>
+				<button type="button" class="close-btn" onclick={onClose} aria-label="Close dialog"><i class="fa-solid fa-xmark"></i></button>
 			</div>
 
 			<div class="modal-body">
@@ -129,7 +129,7 @@
 								title = `Chapter ${existingCount + 1}`;
 							}}
 						>
-							<span class="type-choice-icon">📖</span>
+							<span class="type-choice-icon"><i class="fa-solid fa-book-open"></i></span>
 							<span class="type-choice-label">Chapter</span>
 						</button>
 
@@ -142,7 +142,7 @@
 								title = "New Character";
 							}}
 						>
-							<span class="type-choice-icon">👤</span>
+							<span class="type-choice-icon"><i class="fa-solid fa-user"></i></span>
 							<span class="type-choice-label">Character</span>
 						</button>
 
@@ -155,7 +155,7 @@
 								title = "New Plot Arc";
 							}}
 						>
-							<span class="type-choice-icon">📈</span>
+							<span class="type-choice-icon"><i class="fa-solid fa-chart-line"></i></span>
 							<span class="type-choice-label">Plot / Arc</span>
 						</button>
 
@@ -168,7 +168,7 @@
 								title = "New Lore Entry";
 							}}
 						>
-							<span class="type-choice-icon">🗺️</span>
+							<span class="type-choice-icon"><i class="fa-solid fa-map"></i></span>
 							<span class="type-choice-label">World Lore</span>
 						</button>
 
@@ -181,7 +181,7 @@
 								title = "New Note";
 							}}
 						>
-							<span class="type-choice-icon">📝</span>
+							<span class="type-choice-icon"><i class="fa-solid fa-file-lines"></i></span>
 							<span class="type-choice-label">Outline/Note</span>
 						</button>
 					</div>

@@ -289,7 +289,9 @@
             <!-- Header -->
             <div class="settings-header">
                 <div class="title-row">
-                    <span class="settings-icon">⚙️</span>
+                    <span class="settings-icon"
+                        ><i class="fa-solid fa-gear"></i></span
+                    >
                     <h2 id="settings-heading" class="settings-title">
                         Preferences & Settings
                     </h2>
@@ -298,7 +300,8 @@
                     type="button"
                     class="close-btn"
                     onclick={onClose}
-                    aria-label="Close settings">✕</button
+                    aria-label="Close settings"
+                    ><i class="fa-solid fa-xmark"></i></button
                 >
             </div>
 
@@ -312,7 +315,8 @@
                         class:active={activeTab === "editor"}
                         onclick={() => (activeTab = "editor")}
                     >
-                        <span>🖋️</span> Editor & Typography
+                        <span><i class="fa-solid fa-pen-nib"></i></span> Editor &
+                        Typography
                     </button>
 
                     <button
@@ -321,7 +325,8 @@
                         class:active={activeTab === "appearance"}
                         onclick={() => (activeTab = "appearance")}
                     >
-                        <span>🎨</span> Appearance
+                        <span><i class="fa-solid fa-palette"></i></span>
+                        Appearance
                         <span class="badge-todo">TODO</span>
                     </button>
 
@@ -331,7 +336,8 @@
                         class:active={activeTab === "persistence"}
                         onclick={() => (activeTab = "persistence")}
                     >
-                        <span>💾</span> Storage & Backups
+                        <span><i class="fa-solid fa-floppy-disk"></i></span>
+                        Storage & Backups
                         <span class="badge-todo">TODO</span>
                     </button>
 
@@ -341,7 +347,52 @@
                         class:active={activeTab === "keybindings"}
                         onclick={() => (activeTab = "keybindings")}
                     >
-                        <span>⌨️</span> Keybindings & Vim
+                        <span><i class="fa-solid fa-keyboard"></i></span>
+                        Keybindings
+                        <span class="badge-todo">TODO</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="tab-btn"
+                        class:active={activeTab === "vim-mode"}
+                        onclick={() => (activeTab = "vim-mode")}
+                    >
+                        <span><i class="fa-brands fa-vim"></i></span>
+                        Vim Mode
+                        <span class="badge-todo">TODO</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="tab-btn"
+                        class:active={activeTab === "git-integration"}
+                        onclick={() => (activeTab = "git-integration")}
+                    >
+                        <span><i class="fa-brands fa-git-alt"></i></span>
+                        Git Integration
+                        <span class="badge-todo">TODO</span>
+                    </button>
+                    
+                    <button
+                        type="button"
+                        class="tab-btn"
+                        class:active={activeTab === "custom-extension"}
+                        onclick={() => (activeTab = "custom-extension")}
+                    >
+                        <span><i class="fa-solid fa-oil-well"></i></span>
+                        Extension
+                        <span class="badge-todo">TODO</span>
+                    </button>
+                    
+                    <button
+                        type="button"
+                        class="tab-btn"
+                        class:active={activeTab === "language"}
+                        onclick={() => (activeTab = "language")}
+                    >
+                        <span><i class="fa-solid fa-language"></i></span>
+                        Language
                         <span class="badge-todo">TODO</span>
                     </button>
                 </nav>
@@ -722,7 +773,10 @@
 
                                     <!-- Wayland Notice Card -->
                                     <div class="wayland-notice-card">
-                                        <span class="notice-icon">🐧</span>
+                                        <span class="notice-icon"
+                                            ><i class="fa-brands fa-linux"
+                                            ></i></span
+                                        >
                                         <div class="notice-text">
                                             <strong
                                                 >Linux / Wayland Notice:</strong
@@ -778,11 +832,17 @@
                                                 <span class="feat-name"
                                                     >{feat.label}</span
                                                 >
-                                                <span class="feat-indicator"
-                                                    >{isEnabled
-                                                        ? "✓"
-                                                        : "+"}</span
-                                                >
+                                                <span class="feat-indicator">
+                                                    {#if isEnabled}
+                                                        <i
+                                                            class="fa-solid fa-check"
+                                                        ></i>
+                                                    {:else}
+                                                        <i
+                                                            class="fa-solid fa-plus"
+                                                        ></i>
+                                                    {/if}
+                                                </span>
                                             </button>
                                         {/each}
                                     </div>
@@ -840,7 +900,9 @@
                                                             )}
                                                         title="Remove feature {tag}"
                                                     >
-                                                        ✕
+                                                        <i
+                                                            class="fa-solid fa-xmark"
+                                                        ></i>
                                                     </button>
                                                 </span>
                                             {/each}
@@ -860,7 +922,7 @@
                                         id="custom-features-raw"
                                         type="text"
                                         class="text-input"
-                                        placeholder='e.g. "ss01" 1, "cv01" 2, "zero" 1'
+                                        placeholder="e.g. 'ss01' 1, 'cv01' 2, 'zero' 1"
                                         bind:value={customFontFeaturesText}
                                         oninput={emitChange}
                                     />
@@ -939,7 +1001,9 @@
                         </div>
                     {:else if activeTab === "appearance"}
                         <div class="placeholder-section">
-                            <span class="placeholder-icon">🎨</span>
+                            <span class="placeholder-icon"
+                                ><i class="fa-solid fa-palette"></i></span
+                            >
                             <h4>Appearance & Themes (TODO)</h4>
                             <p>
                                 Planned for future update: Zed theme
@@ -949,7 +1013,9 @@
                         </div>
                     {:else if activeTab === "persistence"}
                         <div class="placeholder-section">
-                            <span class="placeholder-icon">💾</span>
+                            <span class="placeholder-icon"
+                                ><i class="fa-solid fa-floppy-disk"></i></span
+                            >
                             <h4>Storage & Backups (TODO)</h4>
                             <p>
                                 Planned for future update: Auto-save interval
@@ -957,14 +1023,39 @@
                                 auto-commit hooks, and backup zip archives.
                             </p>
                         </div>
-                    {:else}
+                    {:else if activeTab === "keybindings"}
                         <div class="placeholder-section">
-                            <span class="placeholder-icon">⌨️</span>
-                            <h4>Keybindings & Vim (TODO)</h4>
+                            <span class="placeholder-icon"
+                                ><i class="fa-solid fa-keyboard"></i></span
+                            >
+                            <h4>Keybindings (TODO)</h4>
                             <p>
                                 Planned for future update: Configurable keyboard
-                                shortcuts, Vim navigation mode, and Emacs key
-                                bindings.
+                                shortcuts and keyboard navigation
+                            </p>
+                        </div>
+                    {:else if activeTab === "vim-mode"}
+                        <div class="placeholder-section">
+                            <span class="placeholder-icon"
+                                ><i class="fa-solid fa-keyboard"></i></span
+                            >
+                            <h4>Vim (TODO)</h4>
+                            <p>
+                                Planned for future update: Configurable Vim
+                                mode, Vim navigation and Emacs key bindings.
+                            </p>
+                        </div>
+                    {:else if activeTab === "git-integration"}
+                        <div class="placeholder-section">
+                            <span class="placeholder-icon"
+                                ><i class="fa-brands fa-git-alt"></i><i
+                                    class="fa-brands fa-git-alt"
+                                ></i></span
+                            >
+                            <h4>Git (TODO)</h4>
+                            <p>
+                                Planned for future update: Configurable Vim
+                                mode, Vim navigation and Emacs key bindings.
                             </p>
                         </div>
                     {/if}

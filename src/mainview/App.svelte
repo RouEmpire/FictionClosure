@@ -664,7 +664,7 @@
     <!-- Toast notification -->
     {#if toastMessage}
         <div class="toast-notification" role="status" aria-live="polite">
-            <span class="toast-icon">💾</span>
+            <span class="toast-icon"><i class="fa-solid fa-floppy-disk"></i></span>
             <span class="toast-text">{toastMessage}</span>
         </div>
     {/if}

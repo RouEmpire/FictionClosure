@@ -37,14 +37,20 @@
 			<div class="modal-header">
 				<div class="title-row">
 					<span class="status-glyph status-{analysis.status}">
-						{analysis.status === "valid" ? "✓" : analysis.status === "warning" ? "⚠️" : "✕"}
+						{#if analysis.status === "valid"}
+							<i class="fa-solid fa-check"></i>
+						{:else if analysis.status === "warning"}
+							<i class="fa-solid fa-triangle-exclamation"></i>
+						{:else}
+							<i class="fa-solid fa-xmark"></i>
+						{/if}
 					</span>
 					<div>
 						<h2 id="analysis-title" class="modal-heading">Project Structure Analysis</h2>
 						<span class="folder-path-label" title={analysis.folderPath}>{analysis.folderPath}</span>
 					</div>
 				</div>
-				<button type="button" class="close-btn" onclick={onCancel} aria-label="Close dialog">✕</button>
+				<button type="button" class="close-btn" onclick={onCancel} aria-label="Close dialog"><i class="fa-solid fa-xmark"></i></button>
 			</div>
 
 			<div class="modal-body">
@@ -94,22 +100,22 @@
 					<h3 class="section-heading">Discovered Content</h3>
 					<div class="content-stats-grid">
 						<div class="stat-card">
-							<span class="stat-icon">📖</span>
+							<span class="stat-icon"><i class="fa-solid fa-book-open"></i></span>
 							<span class="stat-num">{analysis.manuscriptCount}</span>
 							<span class="stat-title">Chapters</span>
 						</div>
 						<div class="stat-card">
-							<span class="stat-icon">👤</span>
+							<span class="stat-icon"><i class="fa-solid fa-user"></i></span>
 							<span class="stat-num">{analysis.characterCount}</span>
 							<span class="stat-title">Characters</span>
 						</div>
 						<div class="stat-card">
-							<span class="stat-icon">🗺️</span>
+							<span class="stat-icon"><i class="fa-solid fa-map"></i></span>
 							<span class="stat-num">{analysis.worldCount}</span>
 							<span class="stat-title">World & Lore</span>
 						</div>
 						<div class="stat-card">
-							<span class="stat-icon">📝</span>
+							<span class="stat-icon"><i class="fa-solid fa-file-lines"></i></span>
 							<span class="stat-num">{analysis.notesCount}</span>
 							<span class="stat-title">Notes</span>
 						</div>
@@ -126,19 +132,19 @@
 					<h3 class="section-heading">Structure Integrity</h3>
 					<ul class="integrity-list">
 						<li class="check-item" class:passed={analysis.manifestFound}>
-							<span class="check-icon">{analysis.manifestFound ? "✓" : "✕"}</span>
+							<span class="check-icon">{#if analysis.manifestFound}<i class="fa-solid fa-check"></i>{:else}<i class="fa-solid fa-xmark"></i>{/if}</span>
 							<span>Canonical Manifest (<code>project.json</code>)</span>
 						</li>
 						<li class="check-item" class:passed={analysis.documentsFound > 0}>
-							<span class="check-icon">{analysis.documentsFound > 0 ? "✓" : "⚠️"}</span>
+							<span class="check-icon">{#if analysis.documentsFound > 0}<i class="fa-solid fa-check"></i>{:else}<i class="fa-solid fa-triangle-exclamation"></i>{/if}</span>
 							<span>Markdown Documents ({analysis.documentsFound} found)</span>
 						</li>
 						<li class="check-item" class:passed={analysis.hasStacks}>
-							<span class="check-icon">{analysis.hasStacks ? "✓" : "ℹ️"}</span>
+							<span class="check-icon">{#if analysis.hasStacks}<i class="fa-solid fa-check"></i>{:else}<i class="fa-solid fa-circle-info"></i>{/if}</span>
 							<span>Edit History Stacks (<code>stacks.json</code> {analysis.hasStacks ? "present" : "will be created"})</span>
 						</li>
 						<li class="check-item" class:passed={analysis.hasGitignore}>
-							<span class="check-icon">{analysis.hasGitignore ? "✓" : "ℹ️"}</span>
+							<span class="check-icon">{#if analysis.hasGitignore}<i class="fa-solid fa-check"></i>{:else}<i class="fa-solid fa-circle-info"></i>{/if}</span>
 							<span>Git Integration (<code>.gitignore</code> {analysis.hasGitignore ? "present" : "will be configured"})</span>
 						</li>
 					</ul>

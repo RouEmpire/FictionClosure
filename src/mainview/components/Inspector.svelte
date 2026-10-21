@@ -82,7 +82,7 @@
 			title="Close Inspector"
 			aria-label="Close Inspector"
 		>
-			✕
+			<i class="fa-solid fa-xmark"></i>
 		</button>
 	</div>
 
@@ -160,7 +160,7 @@
 							onclick={() => handleRemoveTag(tag)}
 							title="Remove {tag}"
 						>
-							✕
+							<i class="fa-solid fa-xmark"></i>
 						</button>
 					</span>
 				{/each}
@@ -197,7 +197,7 @@
 								class="ref-link-btn"
 								onclick={() => onNavigateToDocTitle(link)}
 							>
-								<span class="ref-icon">🔗</span>
+								<span class="ref-icon"><i class="fa-solid fa-link"></i></span>
 								<span class="ref-text">{link}</span>
 							</button>
 						</li>
@@ -222,7 +222,7 @@
 								class="ref-link-btn"
 								onclick={() => onNavigateToDocTitle(backlink.title)}
 							>
-								<span class="ref-icon">↩</span>
+								<span class="ref-icon"><i class="fa-solid fa-reply"></i></span>
 								<span class="ref-text">{backlink.title}</span>
 							</button>
 						</li>

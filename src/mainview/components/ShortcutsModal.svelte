@@ -101,10 +101,10 @@
 		>
 			<div class="modal-header">
 				<div class="header-title-box">
-					<span class="header-icon">⌨️</span>
+					<span class="header-icon"><i class="fa-solid fa-keyboard"></i></span>
 					<h2 id="shortcuts-title" class="modal-heading">Keyboard Shortcuts</h2>
 				</div>
-				<button type="button" class="close-btn" onclick={onClose} aria-label="Close dialog">✕</button>
+				<button type="button" class="close-btn" onclick={onClose} aria-label="Close dialog"><i class="fa-solid fa-xmark"></i></button>
 			</div>
 
 			<div class="modal-body">

@@ -88,9 +88,9 @@
                 title="Close project and return to Home / Projects Overview"
                 aria-label="Return to Home"
             >
-                ⌂ Home
+                <i class="fa-solid fa-house"></i> Home
             </button>
-            <div class="divider-vertical"></div>
+            <!-- <div class="divider-vertical"></div> -->
         {/if}
 
         <!-- Sidebar Toggle Button -->
@@ -104,7 +104,7 @@
                 : `Show Sidebar (${modKey}+Alt+B)`}
             aria-label="Toggle document tree sidebar"
         >
-            ◨
+            <i class="fa-solid fa-sitemap"></i>
         </button>
 
         <div class="divider-vertical"></div>
@@ -118,7 +118,9 @@
             onclick={onOpenCommandPalette}
             title="Search documents & commands ({modKey}+K)"
         >
-            <span class="search-icon">🔍</span>
+            <span class="search-icon"
+                ><i class="fa-solid fa-magnifying-glass"></i></span
+            >
             <span class="search-text">Quick Search...</span>
         </button>
     </div>
@@ -242,7 +244,8 @@
                 aria-expanded={isZenDropdownOpen}
                 aria-label="Zen writing modes"
             >
-                🧘 <span class="dropdown-caret">▾</span>
+                <i class="fa-solid fa-spa"></i>
+                <span class="dropdown-caret">▾</span>
             </button>
 
             {#if isZenDropdownOpen}
@@ -263,7 +266,9 @@
                         }}
                         role="menuitem"
                     >
-                        <span class="row-icon">🧘</span>
+                        <span class="row-icon"
+                            ><i class="fa-solid fa-spa"></i></span
+                        >
                         <div class="row-content">
                             <div class="row-title-line">
                                 <span class="row-title">Zen Mode</span>
@@ -290,7 +295,9 @@
                         }}
                         role="menuitem"
                     >
-                        <span class="row-icon">🎯</span>
+                        <span class="row-icon"
+                            ><i class="fa-solid fa-bullseye"></i></span
+                        >
                         <div class="row-content">
                             <div class="row-title-line">
                                 <span class="row-title">Focus Zen Mode</span>
@@ -315,7 +322,9 @@
                         }}
                         role="menuitem"
                     >
-                        <span class="row-icon">⚡</span>
+                        <span class="row-icon"
+                            ><i class="fa-solid fa-bolt"></i></span
+                        >
                         <div class="row-content">
                             <div class="row-title-line">
                                 <span class="row-title"
@@ -343,7 +352,9 @@
                             }}
                             role="menuitem"
                         >
-                            <span class="row-icon">✕</span>
+                            <span class="row-icon"
+                                ><i class="fa-solid fa-xmark"></i></span
+                            >
                             <div class="row-content">
                                 <span class="row-title">Exit Zen Mode</span>
                             </div>
@@ -365,7 +376,7 @@
                 : `Show Inspector (${modKey}+J)`}
             aria-label="Toggle inspector panel"
         >
-            ℹ️
+            <i class="fa-solid fa-address-card"></i>
         </button>
 
         <!-- Shortcuts Cheat Sheet Button -->
@@ -376,7 +387,7 @@
             title="Keyboard Shortcuts (?)"
             aria-label="Open keyboard shortcuts"
         >
-            ⌨️
+            <i class="fa-solid fa-keyboard"></i>
         </button>
     </div>
 </header>

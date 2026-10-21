@@ -530,7 +530,7 @@
                     onclick={handleUndo}
                     title="Undo (Ctrl+Z)"
                 >
-                    ↶
+                    <i class="fa-solid fa-rotate-left"></i>
                 </button>
                 <button
                     type="button"
@@ -538,7 +538,7 @@
                     onclick={handleRedo}
                     title="Redo (Ctrl+Alt+Z)"
                 >
-                    ↷
+                    <i class="fa-solid fa-rotate-right"></i>
                 </button>
                 <div class="tool-divider"></div>
                 <button
@@ -575,7 +575,7 @@
                         )}
                     title="Bold (Ctrl+B)"
                 >
-                    <strong>B</strong>
+                    <i class="fa-solid fa-bold"></i>
                 </button>
                 <button
                     type="button"
@@ -586,7 +586,7 @@
                         )}
                     title="Italic (Ctrl+I)"
                 >
-                    <em>I</em>
+                    <i class="fa-solid fa-italic"></i>
                 </button>
                 <button
                     type="button"
@@ -597,7 +597,7 @@
                         )}
                     title="Insert Wikilink (Ctrl+L)"
                 >
-                    link
+                    <i class="fa-solid fa-anchor"></i>
                 </button>
                 <button
                     type="button"
@@ -608,7 +608,7 @@
                         )}
                     title="Blockquote (Ctrl+Q)"
                 >
-                    ❝
+                    <i class="fa-solid fa-quote-left"></i>
                 </button>
                 <button
                     type="button"
@@ -619,7 +619,7 @@
                         )}
                     title="Bullet List (Ctrl+-)"
                 >
-                    • List
+                    <i class="fa-solid fa-list-ul"></i>
                 </button>
                 <button
                     type="button"
@@ -630,7 +630,7 @@
                         )}
                     title="Task Item (Ctrl+Alt+T, Toggle: Ctrl+T)"
                 >
-                    ☑ Task
+                    <i class="fa-solid fa-square-check"></i>
                 </button>
             </div>
 

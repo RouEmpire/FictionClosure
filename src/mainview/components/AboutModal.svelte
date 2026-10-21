@@ -32,13 +32,13 @@
 		>
 			<div class="modal-header">
 				<div class="header-brand">
-					<span class="app-icon">🖋️</span>
+					<span class="app-icon"><i class="fa-solid fa-pen-nib"></i></span>
 					<div>
 						<h2 id="about-title" class="app-title">FictionClosure</h2>
 						<span class="version-tag">v1.0.0 • Desktop Edition</span>
 					</div>
 				</div>
-				<button type="button" class="close-btn" onclick={onClose} aria-label="Close dialog">✕</button>
+				<button type="button" class="close-btn" onclick={onClose} aria-label="Close dialog"><i class="fa-solid fa-xmark"></i></button>
 			</div>
 
 			<div class="modal-body">

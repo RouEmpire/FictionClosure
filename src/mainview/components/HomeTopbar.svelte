@@ -56,16 +56,6 @@
 
 <header class="home-topbar">
     <div class="topbar-left">
-        <button
-            type="button"
-            class="brand-btn"
-            onclick={onOpenAbout}
-            title="About FictionClosure"
-        >
-            <span class="brand-icon">🖋️</span>
-            <span class="brand-text">FictionClosure</span>
-        </button>
-
         <!-- Standard Application Menus -->
         <nav class="app-menu-bar" aria-label="Application menu">
             <!-- File Menu -->
@@ -304,7 +294,7 @@
             onclick={() => handleTodo("Interactive Writing Tutorial")}
             title="Tutorial: interactive walkthrough for authors [TODO]"
         >
-            <span class="btn-icon">💡</span>
+            <span class="btn-icon"><i class="fa-solid fa-lightbulb"></i></span>
             <span>Tutorial</span>
             <span class="todo-pill">TODO</span>
         </button>
@@ -316,7 +306,7 @@
             onclick={() => handleTodo("Product Documentation & Guides")}
             title="Documentation: Markdown syntax and writing guidelines [TODO]"
         >
-            <span class="btn-icon">📚</span>
+            <span class="btn-icon"><i class="fa-solid fa-book"></i></span>
             <span>Docs</span>
             <span class="todo-pill">TODO</span>
         </button>
@@ -329,7 +319,7 @@
             title="Preferences & Settings (Ctrl+P)"
             aria-label="Settings"
         >
-            ⚙️
+            <i class="fa-solid fa-gear"></i>
         </button>
     </div>
 </header>

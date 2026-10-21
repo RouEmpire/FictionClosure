@@ -52,7 +52,7 @@
 			<!-- Header -->
 			<div class="modal-header">
 				<div class="header-icon-badge">
-					<span class="warning-icon">⚡</span>
+					<span class="warning-icon"><i class="fa-solid fa-bolt"></i></span>
 				</div>
 				<div class="header-text-group">
 					<h2 id="recovery-title" class="modal-title">
@@ -67,10 +67,10 @@
 			<!-- Technical System Badges (TODO markings per requirements) -->
 			<div class="system-status-pills">
 				<span class="pill pill-autosave" title="Background auto-save daemon is planned for a future update">
-					⚙️ Auto-Save System: <strong class="todo-badge">TODO</strong>
+					<i class="fa-solid fa-gear"></i> Auto-Save System: <strong class="todo-badge">TODO</strong>
 				</span>
 				<span class="pill pill-git" title="Git repository initialized on project folder, interactive UI integration is planned">
-					📦 Git Integration: <span class="active-badge">Active (.git)</span> // UI Interact: <strong class="todo-badge">TODO</strong>
+					<i class="fa-solid fa-box"></i> Git Integration: <span class="active-badge">Active (.git)</span> // UI Interact: <strong class="todo-badge">TODO</strong>
 				</span>
 			</div>
 

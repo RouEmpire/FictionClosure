@@ -63,7 +63,7 @@
 			type: "action",
 			title: "Create New Chapter",
 			subtitle: "Add a new manuscript chapter",
-			icon: "📖",
+			icon: "fa-solid fa-book-open",
 			execute: () => onNewDoc("manuscript"),
 		},
 		{
@@ -71,7 +71,7 @@
 			type: "action",
 			title: "Create Character Sheet",
 			subtitle: "Add a new character profile",
-			icon: "👤",
+			icon: "fa-solid fa-user",
 			execute: () => onNewDoc("character"),
 		},
 		{
@@ -79,7 +79,7 @@
 			type: "action",
 			title: "Create Worldbuilding Note",
 			subtitle: "Add setting, magic, or lore entry",
-			icon: "🗺️",
+			icon: "fa-solid fa-map",
 			execute: () => onNewDoc("world"),
 		},
 		{
@@ -87,7 +87,7 @@
 			type: "action",
 			title: "Save Project",
 			subtitle: "Commit changes to disk (Ctrl+S)",
-			icon: "💾",
+			icon: "fa-solid fa-floppy-disk",
 			execute: () => onSave(),
 		},
 		{
@@ -95,7 +95,7 @@
 			type: "action",
 			title: "Change Project Save Folder...",
 			subtitle: "Select where on disk to store project Markdown files",
-			icon: "📁",
+			icon: "fa-solid fa-folder-open",
 			execute: () => onChangeFolder?.(),
 		},
 		{
@@ -103,7 +103,7 @@
 			type: "action",
 			title: "Preferences & Settings",
 			subtitle: "Customize editor font family and typography (Ctrl+P)",
-			icon: "⚙️",
+			icon: "fa-solid fa-gear",
 			execute: () => onOpenSettings?.(),
 		},
 		{
@@ -111,7 +111,7 @@
 			type: "action",
 			title: "View: Split Mode",
 			subtitle: "Editor and live preview side-by-side",
-			icon: "◫",
+			icon: "fa-solid fa-table-columns",
 			execute: () => onSetViewMode("split"),
 		},
 		{
@@ -119,7 +119,7 @@
 			type: "action",
 			title: "View: Editor Only",
 			subtitle: "Distraction-free markdown writing",
-			icon: "📝",
+			icon: "fa-solid fa-pen-to-square",
 			execute: () => onSetViewMode("editor"),
 		},
 		{
@@ -127,7 +127,7 @@
 			type: "action",
 			title: "View: Preview Only",
 			subtitle: "Clean formatted reading mode",
-			icon: "👁️",
+			icon: "fa-solid fa-eye",
 			execute: () => onSetViewMode("preview"),
 		},
 	];
@@ -208,7 +208,7 @@
 	>
 		<div class="palette-modal" role="dialog" aria-modal="true" aria-label="Command Palette">
 			<div class="palette-input-box">
-				<span class="palette-icon">🔍</span>
+				<span class="palette-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
 				<input
 					bind:this={inputEl}
 					type="text"
@@ -237,10 +237,11 @@
 						>
 							{#if item.type === "document"}
 								<span class="item-icon">
-									{#if item.doc.type === "manuscript"}📖
-									{:else if item.doc.type === "character"}👤
-									{:else if item.doc.type === "world"}🗺️
-									{:else}📝{/if}
+									{#if item.doc.type === "manuscript"}<i class="fa-solid fa-book-open"></i>
+									{:else if item.doc.type === "character"}<i class="fa-solid fa-user"></i>
+									{:else if item.doc.type === "plot"}<i class="fa-solid fa-chart-line"></i>
+									{:else if item.doc.type === "world"}<i class="fa-solid fa-map"></i>
+									{:else}<i class="fa-solid fa-file-lines"></i>{/if}
 								</span>
 								<div class="item-details">
 									<div class="item-title-row">
@@ -252,7 +253,7 @@
 									</div>
 								</div>
 							{:else}
-								<span class="item-icon">{item.icon}</span>
+								<span class="item-icon"><i class={item.icon}></i></span>
 								<div class="item-details">
 									<div class="item-title-row">
 										<span class="item-title">{item.title}</span>

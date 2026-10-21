@@ -49,11 +49,11 @@
 	}
 
 	const sections: { type: DocumentType; label: string; icon: string }[] = [
-		{ type: "manuscript", label: "Manuscript", icon: "📖" },
-		{ type: "character", label: "Characters", icon: "👤" },
-		{ type: "plot", label: "Plots & Arcs", icon: "📈" },
-		{ type: "world", label: "World & Lore", icon: "🗺️" },
-		{ type: "note", label: "Notes & Outlines", icon: "📝" },
+		{ type: "manuscript", label: "Manuscript", icon: "fa-solid fa-book-open" },
+		{ type: "character", label: "Characters", icon: "fa-solid fa-user" },
+		{ type: "plot", label: "Plots & Arcs", icon: "fa-solid fa-chart-line" },
+		{ type: "world", label: "World & Lore", icon: "fa-solid fa-map" },
+		{ type: "note", label: "Notes & Outlines", icon: "fa-solid fa-file-lines" },
 	];
 
 	// Filter documents by search query
@@ -448,7 +448,7 @@
 	<!-- Filter & Search Input -->
 	<div class="sidebar-search">
 		<div class="search-box">
-			<span class="search-glyph">🔍</span>
+			<span class="search-glyph"><i class="fa-solid fa-magnifying-glass"></i></span>
 			<input
 				type="text"
 				placeholder="Filter tree..."
@@ -462,7 +462,7 @@
 					onclick={() => (searchQuery = "")}
 					title="Clear filter"
 				>
-					✕
+					<i class="fa-solid fa-xmark"></i>
 				</button>
 			{/if}
 		</div>
@@ -472,7 +472,7 @@
 			onclick={() => onNewDoc()}
 			title="Create new document"
 		>
-			+
+			<i class="fa-solid fa-plus"></i>
 		</button>
 	</div>
 
@@ -492,7 +492,7 @@
 						aria-expanded={!collapsedSections[section.type]}
 					>
 						<span class="arrow" class:collapsed={collapsedSections[section.type]}>▾</span>
-						<span class="section-icon">{section.icon}</span>
+						<span class="section-icon"><i class={section.icon}></i></span>
 						<span class="section-title">{section.label}</span>
 						<span class="count-badge">{sectionDocs.length}</span>
 					</button>
@@ -502,7 +502,7 @@
 						onclick={() => onNewDoc(section.type)}
 						title="Add to {section.label}"
 					>
-						+
+						<i class="fa-solid fa-plus"></i>
 					</button>
 				</div>
 
@@ -628,7 +628,7 @@
 				}}
 				role="menuitem"
 			>
-				<span class="item-icon">✏️</span>
+				<span class="item-icon"><i class="fa-solid fa-pen"></i></span>
 				<span class="item-text">Edit name</span>
 				<kbd>F2</kbd>
 			</button>
@@ -651,7 +651,7 @@
 					aria-haspopup="true"
 					aria-expanded={activeSubmenu === "copy"}
 				>
-					<span class="item-icon">📋</span>
+					<span class="item-icon"><i class="fa-solid fa-clipboard"></i></span>
 					<span class="item-text">Copy</span>
 					<span class="submenu-arrow">▶</span>
 				</button>
@@ -663,7 +663,7 @@
 							onclick={() => handleCopyContent("markdown")}
 							role="menuitem"
 						>
-							<span class="item-icon">📄</span>
+							<span class="item-icon"><i class="fa-solid fa-file"></i></span>
 							<span class="item-text">Markdown</span>
 						</button>
 						<button
@@ -672,7 +672,7 @@
 							onclick={() => handleCopyContent("plaintext")}
 							role="menuitem"
 						>
-							<span class="item-icon">📝</span>
+							<span class="item-icon"><i class="fa-solid fa-file-lines"></i></span>
 							<span class="item-text">Plain text (Cleaned)</span>
 						</button>
 					</div>
@@ -697,7 +697,7 @@
 					aria-haspopup="true"
 					aria-expanded={activeSubmenu === "path"}
 				>
-					<span class="item-icon">🔗</span>
+					<span class="item-icon"><i class="fa-solid fa-link"></i></span>
 					<span class="item-text">Copy File Path</span>
 					<span class="submenu-arrow">▶</span>
 				</button>
@@ -709,7 +709,7 @@
 							onclick={() => handleCopyPath("system")}
 							role="menuitem"
 						>
-							<span class="item-icon">💻</span>
+							<span class="item-icon"><i class="fa-solid fa-laptop"></i></span>
 							<span class="item-text">System path</span>
 						</button>
 						<button
@@ -718,7 +718,7 @@
 							onclick={() => handleCopyPath("relative")}
 							role="menuitem"
 						>
-							<span class="item-icon">📁</span>
+							<span class="item-icon"><i class="fa-solid fa-folder"></i></span>
 							<span class="item-text">Relative path</span>
 						</button>
 					</div>
@@ -732,7 +732,7 @@
 				onclick={handleDuplicateFromContext}
 				role="menuitem"
 			>
-				<span class="item-icon">📑</span>
+				<span class="item-icon"><i class="fa-solid fa-copy"></i></span>
 				<span class="item-text">Duplicate</span>
 			</button>
 
@@ -743,7 +743,7 @@
 				onclick={handleDeleteFromContext}
 				role="menuitem"
 			>
-				<span class="item-icon">🗑️</span>
+				<span class="item-icon"><i class="fa-solid fa-trash-can"></i></span>
 				<span class="item-text">Delete</span>
 			</button>
 
@@ -757,7 +757,7 @@
 				onclick={handleInspectFromContext}
 				role="menuitem"
 			>
-				<span class="item-icon">🔍</span>
+				<span class="item-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
 				<span class="item-text">Inspect</span>
 			</button>
 		</div>

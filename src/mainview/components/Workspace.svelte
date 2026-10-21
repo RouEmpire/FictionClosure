@@ -586,7 +586,7 @@
             {:else}
                 <div class="empty-state">
                     <div class="empty-card">
-                        <span class="empty-icon">🖋️</span>
+                        <span class="empty-icon"><i class="fa-solid fa-pen-nib"></i></span>
                         <h2>No Document Selected</h2>
                         <p>
                             Select a chapter, character sheet, or lore note from
