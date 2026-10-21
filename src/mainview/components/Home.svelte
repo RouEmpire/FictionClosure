@@ -93,7 +93,9 @@
                         class="btn primary-action"
                         onclick={onNewProject}
                     >
-                        <span class="btn-icon"><i class="fa-solid fa-plus"></i></span>
+                        <span class="btn-icon"
+                            ><i class="fa-solid fa-plus"></i></span
+                        >
                         <span>New Project</span>
                     </button>
                     <button
@@ -101,7 +103,9 @@
                         class="btn secondary-action"
                         onclick={onImportProject}
                     >
-                        <span class="btn-icon"><i class="fa-solid fa-folder-open"></i></span>
+                        <span class="btn-icon"
+                            ><i class="fa-solid fa-folder-open"></i></span
+                        >
                         <span>Import / Open Folder</span>
                     </button>
                 </div>
@@ -126,7 +130,10 @@
 
                         <!-- Filter Search Box -->
                         <div class="filter-box">
-                            <span class="filter-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+                            <span class="filter-icon"
+                                ><i class="fa-solid fa-magnifying-glass"
+                                ></i></span
+                            >
                             <input
                                 type="text"
                                 placeholder="Filter projects..."
@@ -148,7 +155,9 @@
 
                     {#if filteredProjects.length === 0}
                         <div class="empty-projects-card">
-                            <span class="empty-icon"><i class="fa-solid fa-folder-open"></i></span>
+                            <span class="empty-icon"
+                                ><i class="fa-solid fa-folder-open"></i></span
+                            >
                             <h3>No Projects Found</h3>
                             <p>
                                 {searchQuery
@@ -220,7 +229,8 @@
                                             class="project-path"
                                             title={project.folderPath}
                                         >
-                                            <i class="fa-solid fa-folder"></i> {project.folderPath}
+                                            <i class="fa-solid fa-folder"></i>
+                                            {project.folderPath}
                                         </span>
 
                                         <!-- Word Count Goal Progress -->
@@ -286,7 +296,8 @@
                                             title="Remove from recent projects list"
                                             aria-label="Remove from recent list"
                                         >
-                                            <i class="fa-solid fa-trash-can"></i>
+                                            <i class="fa-solid fa-trash-can"
+                                            ></i>
                                         </button>
                                     </div>
                                 </div>
@@ -756,5 +767,9 @@
     .dashboard-section {
         display: flex;
         flex-direction: column;
+    }
+
+    .fa-solid.fa-trash-can {
+        color: white;
     }
 </style>

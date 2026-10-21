@@ -50,7 +50,9 @@ html, body {
 }
 
 select {
-    background-color: var(--bg-primary);
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
 }
 
 #app {
