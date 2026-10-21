@@ -1,30 +1,52 @@
 <script lang="ts">
-	import type { DocumentType, FictionDocument } from "../../shared/types";
+	import type { DocumentType, FictionDocument, ProjectFolder } from "../../shared/types";
+	import { slugifyTitle } from "../../shared/domain/documentPaths";
 
 	interface Props {
 		isOpen: boolean;
 		initialType?: DocumentType;
+		initialMode?: "document" | "folder";
+		initialParentFolderId?: string | null;
+		folders?: ProjectFolder[];
 		onClose: () => void;
 		onCreate: (doc: FictionDocument) => void;
+		onCreateFolder?: (folder: ProjectFolder) => void;
 		existingCount: number;
 	}
 
 	let {
 		isOpen,
 		initialType = "manuscript",
+		initialMode = "document",
+		initialParentFolderId = null,
+		folders = [],
 		onClose,
 		onCreate,
+		onCreateFolder,
 		existingCount,
 	}: Props = $props();
 
+	let createMode = $state<"document" | "folder">("document");
 	let docType = $state<DocumentType>("manuscript");
 	let title = $state("");
 	let tagsInput = $state("");
+	let parentFolderId = $state<string | null>(null);
+
+	// Folder-specific fields
+	let folderName = $state("");
+	let folderNote = $state("");
+	let folderTagsInput = $state("");
+	let folderIcon = $state("fa-solid fa-folder");
+
 	let inputEl: HTMLInputElement | null = $state(null);
+	let folderInputEl: HTMLInputElement | null = $state(null);
 
 	$effect(() => {
 		if (isOpen) {
+			createMode = initialMode;
 			docType = initialType;
+			parentFolderId = initialParentFolderId;
+
 			if (docType === "manuscript") {
 				title = `Chapter ${existingCount + 1}`;
 			} else if (docType === "character") {
@@ -36,15 +58,34 @@
 			} else {
 				title = "New Note";
 			}
+
+			folderName = "New Folder";
+			folderNote = "";
+			folderTagsInput = "";
+			folderIcon = "fa-solid fa-folder";
 			tagsInput = "";
+
 			setTimeout(() => {
-				inputEl?.focus();
-				inputEl?.select();
+				if (createMode === "folder") {
+					folderInputEl?.focus();
+					folderInputEl?.select();
+				} else {
+					inputEl?.focus();
+					inputEl?.select();
+				}
 			}, 50);
 		}
 	});
 
 	function handleSubmit() {
+		if (createMode === "folder") {
+			handleCreateFolder();
+		} else {
+			handleCreateDocument();
+		}
+	}
+
+	function handleCreateDocument() {
 		const trimmedTitle = title.trim();
 		if (!trimmedTitle) return;
 
@@ -66,6 +107,16 @@
 			initialContent = `# ${trimmedTitle}\n\n## Objective\n\n- [ ] Initial beat\n- [ ] Key reveal\n`;
 		}
 
+		// Calculate relativePath if inside a folder
+		let relativePath: string | undefined = undefined;
+		if (parentFolderId) {
+			const parentFolder = folders.find((f) => f.id === parentFolderId);
+			if (parentFolder) {
+				const prefix = docType === "manuscript" ? `${String(existingCount + 1).padStart(2, "0")}_` : "";
+				relativePath = `${parentFolder.relativePath}/${prefix}${slugifyTitle(trimmedTitle)}.md`;
+			}
+		}
+
 		const newDoc: FictionDocument = {
 			id: `doc-${Date.now()}`,
 			title: trimmedTitle,
@@ -74,6 +125,8 @@
 			tags,
 			summary: "",
 			order: existingCount + 1,
+			folderId: parentFolderId,
+			relativePath,
 			createdAt: new Date().toISOString(),
 			updatedAt: new Date().toISOString(),
 			content: initialContent,
@@ -83,11 +136,52 @@
 		onClose();
 	}
 
+	function handleCreateFolder() {
+		const trimmedName = folderName.trim();
+		if (!trimmedName) return;
+
+		const tags = folderTagsInput
+			.split(",")
+			.map((t) => t.trim())
+			.filter(Boolean);
+
+		const slug = slugifyTitle(trimmedName);
+		let relPath = slug;
+
+		if (parentFolderId) {
+			const parent = folders.find((f) => f.id === parentFolderId);
+			if (parent) {
+				relPath = `${parent.relativePath}/${slug}`;
+			}
+		} else {
+			// Place under canonical section folder matching docType
+			const typePrefix = docType === "character" ? "characters" : docType === "plot" ? "plots" : docType === "world" ? "world" : docType === "manuscript" ? "manuscript" : "notes";
+			relPath = `${typePrefix}/${slug}`;
+		}
+
+		const now = new Date().toISOString();
+		const newFolder: ProjectFolder = {
+			id: `folder-${Date.now()}`,
+			name: trimmedName,
+			type: docType,
+			icon: folderIcon || "fa-solid fa-folder",
+			tags,
+			note: folderNote.trim(),
+			parentId: parentFolderId,
+			relativePath: relPath,
+			createdAt: now,
+			updatedAt: now,
+		};
+
+		onCreateFolder?.(newFolder);
+		onClose();
+	}
+
 	function handleKeyDown(e: KeyboardEvent) {
 		if (e.key === "Escape") {
 			e.preventDefault();
 			onClose();
-		} else if (e.key === "Enter") {
+		} else if (e.key === "Enter" && !e.shiftKey) {
 			e.preventDefault();
 			handleSubmit();
 		}
@@ -111,111 +205,225 @@
 			onkeydown={handleKeyDown}
 		>
 			<div class="modal-header">
-				<h2 id="modal-title" class="modal-heading">Create New Document</h2>
+				<div class="modal-mode-tabs">
+					<button
+						type="button"
+						class="mode-tab-btn"
+						class:active={createMode === "document"}
+						onclick={() => (createMode = "document")}
+					>
+						<i class="fa-solid fa-file-lines"></i> Document
+					</button>
+					<button
+						type="button"
+						class="mode-tab-btn"
+						class:active={createMode === "folder"}
+						onclick={() => (createMode = "folder")}
+					>
+						<i class="fa-solid fa-folder-plus"></i> Folder
+					</button>
+				</div>
 				<button type="button" class="close-btn" onclick={onClose} aria-label="Close dialog"><i class="fa-solid fa-xmark"></i></button>
 			</div>
 
 			<div class="modal-body">
-				<!-- Type Selector -->
-				<div class="field-item">
-					<label class="field-label" for="doc-type-radio-group">Document Type</label>
-					<div id="doc-type-radio-group" class="type-selector-grid">
-						<button
-							type="button"
-							class="type-choice-btn"
-							class:active={docType === "manuscript"}
-							onclick={() => {
-								docType = "manuscript";
-								title = `Chapter ${existingCount + 1}`;
-							}}
-						>
-							<span class="type-choice-icon"><i class="fa-solid fa-book-open"></i></span>
-							<span class="type-choice-label">Chapter</span>
-						</button>
+				{#if createMode === "document"}
+					<!-- Type Selector -->
+					<div class="field-item">
+						<label class="field-label" for="doc-type-radio-group">Document Type</label>
+						<div id="doc-type-radio-group" class="type-selector-grid">
+							<button
+								type="button"
+								class="type-choice-btn"
+								class:active={docType === "manuscript"}
+								onclick={() => {
+									docType = "manuscript";
+									title = `Chapter ${existingCount + 1}`;
+								}}
+							>
+								<span class="type-choice-icon"><i class="fa-solid fa-book-open"></i></span>
+								<span class="type-choice-label">Chapter</span>
+							</button>
 
-						<button
-							type="button"
-							class="type-choice-btn"
-							class:active={docType === "character"}
-							onclick={() => {
-								docType = "character";
-								title = "New Character";
-							}}
-						>
-							<span class="type-choice-icon"><i class="fa-solid fa-user"></i></span>
-							<span class="type-choice-label">Character</span>
-						</button>
+							<button
+								type="button"
+								class="type-choice-btn"
+								class:active={docType === "character"}
+								onclick={() => {
+									docType = "character";
+									title = "New Character";
+								}}
+							>
+								<span class="type-choice-icon"><i class="fa-solid fa-user"></i></span>
+								<span class="type-choice-label">Character</span>
+							</button>
 
-						<button
-							type="button"
-							class="type-choice-btn"
-							class:active={docType === "plot"}
-							onclick={() => {
-								docType = "plot";
-								title = "New Plot Arc";
-							}}
-						>
-							<span class="type-choice-icon"><i class="fa-solid fa-chart-line"></i></span>
-							<span class="type-choice-label">Plot / Arc</span>
-						</button>
+							<button
+								type="button"
+								class="type-choice-btn"
+								class:active={docType === "plot"}
+								onclick={() => {
+									docType = "plot";
+									title = "New Plot Arc";
+								}}
+							>
+								<span class="type-choice-icon"><i class="fa-solid fa-chart-line"></i></span>
+								<span class="type-choice-label">Plot / Arc</span>
+							</button>
 
-						<button
-							type="button"
-							class="type-choice-btn"
-							class:active={docType === "world"}
-							onclick={() => {
-								docType = "world";
-								title = "New Lore Entry";
-							}}
-						>
-							<span class="type-choice-icon"><i class="fa-solid fa-map"></i></span>
-							<span class="type-choice-label">World Lore</span>
-						</button>
+							<button
+								type="button"
+								class="type-choice-btn"
+								class:active={docType === "world"}
+								onclick={() => {
+									docType = "world";
+									title = "New Lore Entry";
+								}}
+							>
+								<span class="type-choice-icon"><i class="fa-solid fa-map"></i></span>
+								<span class="type-choice-label">World Lore</span>
+							</button>
 
-						<button
-							type="button"
-							class="type-choice-btn"
-							class:active={docType === "note"}
-							onclick={() => {
-								docType = "note";
-								title = "New Note";
-							}}
-						>
-							<span class="type-choice-icon"><i class="fa-solid fa-file-lines"></i></span>
-							<span class="type-choice-label">Outline/Note</span>
-						</button>
+							<button
+								type="button"
+								class="type-choice-btn"
+								class:active={docType === "note"}
+								onclick={() => {
+									docType = "note";
+									title = "New Note";
+								}}
+							>
+								<span class="type-choice-icon"><i class="fa-solid fa-file-lines"></i></span>
+								<span class="type-choice-label">Outline/Note</span>
+							</button>
+						</div>
 					</div>
-				</div>
 
-				<!-- Document Title Input -->
-				<div class="field-item">
-					<label class="field-label" for="doc-title-input">Document Title</label>
-					<input
-						id="doc-title-input"
-						bind:this={inputEl}
-						type="text"
-						class="text-input"
-						placeholder="e.g. Chapter 3: The Midnight Fog"
-						bind:value={title}
-					/>
-				</div>
+					<!-- Parent Folder Selection -->
+					{#if folders.length > 0}
+						<div class="field-item">
+							<label class="field-label" for="doc-parent-folder">Parent Folder</label>
+							<select id="doc-parent-folder" class="text-input" bind:value={parentFolderId}>
+								<option value={null}>None (Root of Section)</option>
+								{#each folders as f (f.id)}
+									<option value={f.id}>{f.relativePath} ({f.name})</option>
+								{/each}
+							</select>
+						</div>
+					{/if}
 
-				<!-- Tags Input -->
-				<div class="field-item">
-					<label class="field-label" for="doc-tags-input">Initial Tags (comma separated)</label>
-					<input
-						id="doc-tags-input"
-						type="text"
-						class="text-input"
-						placeholder="e.g. Act I, Draft, POV: Elena"
-						bind:value={tagsInput}
-					/>
-				</div>
+					<!-- Document Title Input -->
+					<div class="field-item">
+						<label class="field-label" for="doc-title-input">Document Title</label>
+						<input
+							id="doc-title-input"
+							bind:this={inputEl}
+							type="text"
+							class="text-input"
+							placeholder="e.g. Chapter 3: The Midnight Fog"
+							bind:value={title}
+						/>
+					</div>
+
+					<!-- Tags Input -->
+					<div class="field-item">
+						<label class="field-label" for="doc-tags-input">Initial Tags (comma separated)</label>
+						<input
+							id="doc-tags-input"
+							type="text"
+							class="text-input"
+							placeholder="e.g. Act I, Draft, POV: Elena"
+							bind:value={tagsInput}
+						/>
+					</div>
+				{:else}
+					<!-- Folder Creation Mode -->
+					<!-- Folder Name Input -->
+					<div class="field-item">
+						<label class="field-label" for="folder-name-input">Folder Name</label>
+						<input
+							id="folder-name-input"
+							bind:this={folderInputEl}
+							type="text"
+							class="text-input"
+							placeholder="e.g. Act I: The Awakening, Locations, Subplots"
+							bind:value={folderName}
+						/>
+					</div>
+
+					<!-- Parent Folder Selection -->
+					<div class="field-item">
+						<label class="field-label" for="folder-parent-select">Parent Folder</label>
+						<select id="folder-parent-select" class="text-input" bind:value={parentFolderId}>
+							<option value={null}>Root Section ({docType})</option>
+							{#each folders as f (f.id)}
+								<option value={f.id}>{f.relativePath} ({f.name})</option>
+							{/each}
+						</select>
+					</div>
+
+					<!-- Category Section -->
+					<div class="field-item">
+						<label class="field-label" for="folder-type-select">Category</label>
+						<select id="folder-type-select" class="text-input" bind:value={docType}>
+							<option value="manuscript">Manuscript</option>
+							<option value="character">Characters</option>
+							<option value="plot">Plots & Arcs</option>
+							<option value="world">World & Lore</option>
+							<option value="note">Notes & Outlines</option>
+						</select>
+					</div>
+
+					<!-- Folder Tags Input -->
+					<div class="field-item">
+						<label class="field-label" for="folder-tags-input">Folder Tags (comma separated)</label>
+						<input
+							id="folder-tags-input"
+							type="text"
+							class="text-input"
+							placeholder="e.g. act-1, capital-cities, secondary-plots"
+							bind:value={folderTagsInput}
+						/>
+					</div>
+
+					<!-- Folder Short Note -->
+					<div class="field-item">
+						<label class="field-label" for="folder-note-input">Folder Short Note</label>
+						<textarea
+							id="folder-note-input"
+							class="text-input textarea-note"
+							rows="3"
+							placeholder="Brief description or purpose of this folder..."
+							bind:value={folderNote}
+						></textarea>
+					</div>
+
+					<!-- Folder Icon Selection -->
+					<div class="field-item">
+						<label class="field-label" for="folder-icon-input">Folder Icon (FontAwesome class)</label>
+						<div class="icon-picker-row">
+							<span class="icon-preview"><i class={folderIcon}></i></span>
+							<input
+								id="folder-icon-input"
+								type="text"
+								class="text-input"
+								placeholder="e.g. fa-solid fa-folder, fa-solid fa-compass"
+								bind:value={folderIcon}
+							/>
+						</div>
+					</div>
+				{/if}
 			</div>
 
 			<div class="modal-footer">
 				<button type="button" class="btn secondary" onclick={onClose}>Cancel</button>
-				<button type="button" class="btn primary" onclick={handleSubmit}>Create Document</button>
+				<button type="button" class="btn primary" onclick={handleSubmit}>
+					{#if createMode === "folder"}
+						<i class="fa-solid fa-folder-plus"></i> Create Folder
+					{:else}
+						<i class="fa-solid fa-plus"></i> Create Document
+					{/if}
+				</button>
 			</div>
 		</div>
 	</div>
@@ -255,9 +463,43 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 14px 18px;
+		padding: 12px 18px;
 		border-bottom: 1px solid var(--border-subtle);
 		background: var(--bg-tertiary);
+	}
+
+	.modal-mode-tabs {
+		display: flex;
+		background: var(--bg-secondary);
+		padding: 2px;
+		border-radius: 6px;
+		border: 1px solid var(--border-subtle);
+		gap: 2px;
+	}
+
+	.mode-tab-btn {
+		background: transparent;
+		border: none;
+		color: var(--text-muted);
+		padding: 5px 12px;
+		border-radius: 4px;
+		font-size: 12px;
+		font-weight: 500;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		transition: all 0.15s ease;
+	}
+
+	.mode-tab-btn:hover {
+		color: var(--text-primary);
+	}
+
+	.mode-tab-btn.active {
+		background: var(--bg-tertiary);
+		color: var(--accent-primary);
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 	}
 
 	.modal-heading {
@@ -265,6 +507,32 @@
 		font-weight: 600;
 		color: var(--text-primary);
 		margin: 0;
+	}
+
+	.textarea-note {
+		resize: vertical;
+		font-family: inherit;
+		min-height: 64px;
+	}
+
+	.icon-picker-row {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+
+	.icon-preview {
+		width: 36px;
+		height: 36px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: var(--bg-tertiary);
+		border: 1px solid var(--border-subtle);
+		border-radius: 6px;
+		font-size: 16px;
+		color: var(--accent-primary);
+		flex-shrink: 0;
 	}
 
 	.close-btn {

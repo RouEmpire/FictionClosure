@@ -1,10 +1,98 @@
-import type { FictionDocument, ProjectInfo } from "../types";
+import type { FictionDocument, ProjectFolder, ProjectInfo } from "../types";
+
+export const initialFolders: ProjectFolder[] = [
+	{
+		id: "folder-manuscript",
+		name: "Manuscript",
+		type: "manuscript",
+		icon: "fa-solid fa-book-open",
+		tags: ["manuscript"],
+		note: "Primary chapters of The Whispering Tide",
+		relativePath: "manuscript",
+		createdAt: "2026-10-10T09:00:00Z",
+		updatedAt: "2026-10-15T14:32:00Z",
+		parentId: null,
+	},
+	{
+		id: "folder-act-1",
+		name: "Act I: Port of Shadows",
+		type: "manuscript",
+		icon: "fa-solid fa-folder-open",
+		tags: ["act-1", "harbor"],
+		note: "Elena's arrival at Ash Harbor and discovery of the oceanic anomaly.",
+		relativePath: "manuscript/act-1",
+		createdAt: "2026-10-10T09:00:00Z",
+		updatedAt: "2026-10-15T14:32:00Z",
+		parentId: "folder-manuscript",
+	},
+	{
+		id: "folder-characters",
+		name: "Characters",
+		type: "character",
+		icon: "fa-solid fa-user",
+		tags: ["cast"],
+		note: "Cast dossiers and character sheets",
+		relativePath: "characters",
+		createdAt: "2026-10-10T09:00:00Z",
+		updatedAt: "2026-10-15T14:32:00Z",
+		parentId: null,
+	},
+	{
+		id: "folder-plots",
+		name: "Plots & Arcs",
+		type: "plot",
+		icon: "fa-solid fa-chart-line",
+		tags: ["structure"],
+		note: "Plot arcs and outlines",
+		relativePath: "plots",
+		createdAt: "2026-10-10T09:00:00Z",
+		updatedAt: "2026-10-15T14:32:00Z",
+		parentId: null,
+	},
+	{
+		id: "folder-world",
+		name: "World & Lore",
+		type: "world",
+		icon: "fa-solid fa-map",
+		tags: ["lore"],
+		note: "Islands, reefs, factions, and tide magic",
+		relativePath: "world",
+		createdAt: "2026-10-10T09:00:00Z",
+		updatedAt: "2026-10-15T14:32:00Z",
+		parentId: null,
+	},
+	{
+		id: "folder-world-locations",
+		name: "Locations",
+		type: "world",
+		icon: "fa-solid fa-location-dot",
+		tags: ["islands", "ports"],
+		note: "Archipelago islands and navigation waypoints",
+		relativePath: "world/locations",
+		createdAt: "2026-10-10T09:00:00Z",
+		updatedAt: "2026-10-15T14:32:00Z",
+		parentId: "folder-world",
+	},
+	{
+		id: "folder-notes",
+		name: "Notes & Outlines",
+		type: "note",
+		icon: "fa-solid fa-file-lines",
+		tags: ["research"],
+		note: "Tide chart research and ideas",
+		relativePath: "notes",
+		createdAt: "2026-10-10T09:00:00Z",
+		updatedAt: "2026-10-15T14:32:00Z",
+		parentId: null,
+	},
+];
 
 export const initialProject: ProjectInfo = {
 	name: "The Whispering Tide",
 	author: "A. R. Vance",
 	genre: "Naval Fantasy / Mystery",
 	targetWordCount: 80000,
+	folders: initialFolders,
 };
 
 export const sampleDocuments: FictionDocument[] = [
@@ -17,6 +105,7 @@ export const sampleDocuments: FictionDocument[] = [
 		pov: "Elena Vance",
 		summary: "Elena arrives at Ash Harbor seeking passage past the Reef of Whispers.",
 		order: 1,
+		folderId: "folder-act-1",
 		createdAt: "2026-10-10T09:00:00Z",
 		updatedAt: "2026-10-15T14:32:00Z",
 		content: `# Chapter 1: The Ash Harbor
@@ -47,6 +136,7 @@ Her fingers tightened on the brass clasp of her journal. If the charts were wron
 		pov: "Elena Vance",
 		summary: "Elena discovers anomalous magnetic shifts while recalibrating the sea compass.",
 		order: 2,
+		folderId: "folder-act-1",
 		createdAt: "2026-10-12T11:20:00Z",
 		updatedAt: "2026-10-16T18:15:00Z",
 		content: `# Chapter 2: The Cartographer's Needle
@@ -73,6 +163,7 @@ She cross-referenced the reading with her notes on [[Aether Resonance]]. When mi
 		pov: "Elena Vance",
 		summary: "A stubborn cartographer and scholar exiled from the mainland observatory.",
 		order: 1,
+		folderId: "folder-characters",
 		createdAt: "2026-10-08T10:00:00Z",
 		updatedAt: "2026-10-14T11:00:00Z",
 		content: `# Elena Vance
@@ -102,6 +193,7 @@ Protagonist. Former assistant archivist at the High Observatory; now an independ
 		tags: ["Companion", "Sailor", "Veteran"],
 		summary: "Veteran sea captain haunted by the loss of his corvette during the Third Blockade.",
 		order: 2,
+		folderId: "folder-characters",
 		createdAt: "2026-10-09T14:00:00Z",
 		updatedAt: "2026-10-15T16:20:00Z",
 		content: `# Captain Kaelen
@@ -126,6 +218,7 @@ Owner and captain of *The Peregrine*, an armored cutter refitted for shallow-wat
 		tags: ["Setting", "Archipelago", "Hazard"],
 		summary: "A shifting maze of petrified banyan groves and volcanic shallows.",
 		order: 1,
+		folderId: "folder-world-locations",
 		createdAt: "2026-10-09T16:00:00Z",
 		updatedAt: "2026-10-13T12:00:00Z",
 		content: `# The Driftwood Isles
@@ -150,6 +243,7 @@ During spring tides, water drains through subterranean caverns, creating whirlpo
 		tags: ["Magic System", "Rules", "Science"],
 		summary: "The natural interaction between tidal pressure and latent mineral harmonics.",
 		order: 2,
+		folderId: "folder-world",
 		createdAt: "2026-10-10T11:00:00Z",
 		updatedAt: "2026-10-14T09:45:00Z",
 		content: `# Aether Resonance
@@ -168,6 +262,7 @@ During spring tides, water drains through subterranean caverns, creating whirlpo
 		tags: ["Outline", "Planning", "Structure"],
 		summary: "Pacing notes and plot beats for the opening third of the manuscript.",
 		order: 1,
+		folderId: "folder-notes",
 		createdAt: "2026-10-07T08:30:00Z",
 		updatedAt: "2026-10-16T17:00:00Z",
 		content: `# Plot Outline — Act I

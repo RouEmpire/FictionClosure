@@ -1,11 +1,11 @@
 import { describe, test, expect } from "bun:test";
-import { markdownToPlainText } from "../src/shared/domain/markdown";
+import { markdownToPlainText, extractWikilinks } from "../src/shared/domain/markdown";
 import {
 	slugifyTitle,
 	getDocumentRelativePath,
 	getDocumentSystemPath,
 } from "../src/shared/domain/documentPaths";
-import type { FictionDocument } from "../src/shared/types";
+import type { FictionDocument, ProjectFolder } from "../src/shared/types";
 
 describe("Document Management & Formatting Utilities", () => {
 	test("markdownToPlainText strips markdown syntax and produces clean text", () => {
@@ -166,5 +166,93 @@ Read more in the [Archive](https://example.com/archive).
 
 		// Fallback when folderPath is empty
 		expect(getDocumentSystemPath(doc, "")).toBe("manuscript/01_chapter-1.md");
+	});
+
+	test("extractWikilinks identifies both document and folder mentions in manuscript prose", () => {
+		const prose = `# The Whispering Harbor
+
+Elena paused at the gates of [[Valdor Citadel]] and surveyed [[Port of Shadows]].
+She consulted her dossier on [[Elena Vance]] and cross-referenced [[Subplots/The Heist]].
+Also check the [[Magic Systems]] documentation.
+`;
+		const mentions = extractWikilinks(prose);
+		expect(mentions).toContain("Valdor Citadel");
+		expect(mentions).toContain("Port of Shadows");
+		expect(mentions).toContain("Elena Vance");
+		expect(mentions).toContain("Subplots/The Heist");
+		expect(mentions).toContain("Magic Systems");
+
+		// Test matching against folders and documents
+		const testFolders: ProjectFolder[] = [
+			{
+				id: "f-valdor",
+				name: "Valdor Citadel",
+				type: "world",
+				icon: "fa-solid fa-fort-awesome",
+				tags: ["capital"],
+				relativePath: "world/locations/valdor",
+				createdAt: "2026-10-20",
+				updatedAt: "2026-10-20",
+				parentId: null,
+			},
+			{
+				id: "f-systems",
+				name: "Magic Systems",
+				type: "world",
+				icon: "fa-solid fa-gears",
+				tags: ["systems"],
+				relativePath: "world/systems",
+				createdAt: "2026-10-20",
+				updatedAt: "2026-10-20",
+				parentId: null,
+			},
+		];
+
+		const testDocs: FictionDocument[] = [
+			{
+				id: "d-elena",
+				title: "Elena Vance",
+				type: "character",
+				status: "draft",
+				order: 1,
+				content: "Main protagonist",
+				tags: [],
+				createdAt: "2026-10-20",
+				updatedAt: "2026-10-20",
+			},
+		];
+
+		for (const mention of mentions) {
+			const targetLower = mention.toLowerCase();
+			const matchedDoc = testDocs.find((d) => d.title.toLowerCase() === targetLower);
+			const matchedFolder = testFolders.find((f) => f.name.toLowerCase() === targetLower);
+
+			if (mention === "Elena Vance") {
+				expect(matchedDoc).toBeDefined();
+				expect(matchedFolder).toBeUndefined();
+			} else if (mention === "Valdor Citadel" || mention === "Magic Systems") {
+				expect(matchedFolder).toBeDefined();
+				expect(matchedDoc).toBeUndefined();
+			}
+		}
+	});
+
+	test("preserves custom relativePath and folderId in document paths", () => {
+		const docInSubfolder: FictionDocument = {
+			id: "doc-nested",
+			title: "Heist Beat 1",
+			type: "plot",
+			status: "draft",
+			order: 1,
+			content: "",
+			tags: [],
+			folderId: "folder-plots-subplots",
+			relativePath: "plots/subplots/heist-beat-1.md",
+			createdAt: "2026-10-20",
+			updatedAt: "2026-10-20",
+		};
+
+		expect(getDocumentRelativePath(docInSubfolder)).toBe("plots/subplots/heist-beat-1.md");
+		expect(getDocumentSystemPath(docInSubfolder, "/project")).toBe("/project/plots/subplots/heist-beat-1.md");
 	});
 });

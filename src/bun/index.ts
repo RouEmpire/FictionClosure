@@ -70,6 +70,8 @@ const rpc = BrowserView.defineRPC<FictionClosureRPCSchema>({
 					params.project,
 					params.documents,
 					params.stacks,
+					undefined,
+					params.folders,
 				);
 			},
 

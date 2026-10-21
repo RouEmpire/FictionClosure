@@ -301,4 +301,123 @@ describe("project-storage", () => {
 		const loadResAfterClear = await loadProjectFromFolder(testDir);
 		expect(loadResAfterClear.recoveryData?.hasUnsavedChanges).toBe(false);
 	});
+
+	it("manages arbitrary nested folders with .directory.json and folder metadata", async () => {
+		const project: ProjectInfo = {
+			name: "Nested Folders Novel",
+			author: "Author C",
+			genre: "Epic Fantasy",
+			targetWordCount: 100000,
+		};
+
+		const folders = [
+			{
+				id: "folder-manuscript",
+				name: "Manuscript",
+				type: "manuscript" as const,
+				icon: "fa-solid fa-book-open",
+				tags: ["main"],
+				note: "Main manuscript chapters",
+				relativePath: "manuscript",
+				createdAt: "2026-10-20T00:00:00Z",
+				updatedAt: "2026-10-20T00:00:00Z",
+				parentId: null,
+			},
+			{
+				id: "folder-act-1",
+				name: "Act One: The Awakening",
+				type: "manuscript" as const,
+				icon: "fa-solid fa-folder-open",
+				tags: ["act-1", "intro"],
+				note: "The opening five chapters introducing the kingdom of Valdor.",
+				relativePath: "manuscript/act-one",
+				createdAt: "2026-10-20T00:00:00Z",
+				updatedAt: "2026-10-20T00:00:00Z",
+				parentId: "folder-manuscript",
+			},
+			{
+				id: "folder-act-1-part-a",
+				name: "Part A - Crossing",
+				type: "manuscript" as const,
+				icon: "fa-solid fa-compass",
+				tags: ["journey", "depth-3"],
+				note: "Subfolder at depth 3 containing early crossing drafts.",
+				relativePath: "manuscript/act-one/part-a",
+				createdAt: "2026-10-20T00:00:00Z",
+				updatedAt: "2026-10-20T00:00:00Z",
+				parentId: "folder-act-1",
+			},
+			{
+				id: "folder-valdor-citadel",
+				name: "Valdor Citadel",
+				type: "world" as const,
+				icon: "fa-solid fa-fort-awesome",
+				tags: ["capital", "citadel", "fortress"],
+				note: "Ancient fortified capital with three concentric walls.",
+				relativePath: "world/locations/valdor/citadel",
+				createdAt: "2026-10-20T00:00:00Z",
+				updatedAt: "2026-10-20T00:00:00Z",
+				parentId: null,
+			},
+		];
+
+		const documents: FictionDocument[] = [
+			{
+				id: "ch-deep-1",
+				title: "Chapter in Part A",
+				type: "manuscript",
+				status: "draft",
+				tags: ["nested"],
+				order: 1,
+				folderId: "folder-act-1-part-a",
+				createdAt: "2026-10-20T00:00:00Z",
+				updatedAt: "2026-10-20T00:00:00Z",
+				content: "# Chapter in Part A\n\nDeep nested content inside [[Act One: The Awakening]] and [[Valdor Citadel]].",
+			},
+		];
+
+		const saveRes = await saveProjectToFolder(testDir, project, documents, undefined, undefined, folders);
+		expect(saveRes.success).toBe(true);
+
+		// 1. Verify .directory.json exists in each nested folder
+		const act1DirJson = path.join(testDir, "manuscript", "act-one", ".directory.json");
+		expect(fs.existsSync(act1DirJson)).toBe(true);
+		const act1Meta = JSON.parse(fs.readFileSync(act1DirJson, "utf8"));
+		expect(act1Meta.id).toBe("folder-act-1");
+		expect(act1Meta.name).toBe("Act One: The Awakening");
+		expect(act1Meta.tags).toEqual(["act-1", "intro"]);
+		expect(act1Meta.note).toContain("The opening five chapters");
+
+		const partADirJson = path.join(testDir, "manuscript", "act-one", "part-a", ".directory.json");
+		expect(fs.existsSync(partADirJson)).toBe(true);
+		const partAMeta = JSON.parse(fs.readFileSync(partADirJson, "utf8"));
+		expect(partAMeta.id).toBe("folder-act-1-part-a");
+		expect(partAMeta.tags).toEqual(["journey", "depth-3"]);
+
+		const citadelDirJson = path.join(testDir, "world", "locations", "valdor", "citadel", ".directory.json");
+		expect(fs.existsSync(citadelDirJson)).toBe(true);
+		const citadelMeta = JSON.parse(fs.readFileSync(citadelDirJson, "utf8"));
+		expect(citadelMeta.name).toBe("Valdor Citadel");
+		expect(citadelMeta.tags).toContain("citadel");
+
+		// 2. Verify document written inside the nested folder
+		const deepDocPath = path.join(testDir, "manuscript", "act-one", "part-a", "01_chapter-in-part-a.md");
+		expect(fs.existsSync(deepDocPath)).toBe(true);
+
+		// 3. Load back project and verify folders hierarchy & document association
+		const loadRes = await loadProjectFromFolder(testDir);
+		expect(loadRes.success).toBe(true);
+		expect(loadRes.folders).toBeDefined();
+
+		const loadedAct1 = loadRes.folders?.find((f) => f.id === "folder-act-1" || f.relativePath === "manuscript/act-one");
+		expect(loadedAct1).toBeDefined();
+		expect(loadedAct1?.name).toBe("Act One: The Awakening");
+		expect(loadedAct1?.tags).toEqual(["act-1", "intro"]);
+		expect(loadedAct1?.note).toContain("The opening five chapters");
+
+		const loadedDoc = loadRes.documents?.find((d) => d.id === "ch-deep-1");
+		expect(loadedDoc).toBeDefined();
+		expect(loadedDoc?.title).toBe("Chapter in Part A");
+		expect(loadedDoc?.folderId).toBe("folder-act-1-part-a");
+	});
 });

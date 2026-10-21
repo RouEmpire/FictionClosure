@@ -2,6 +2,23 @@ export type DocumentType = "manuscript" | "character" | "world" | "note" | "plot
 
 export type DocumentStatus = "draft" | "in-progress" | "revised" | "completed";
 
+export interface DirectoryMeta {
+	id: string;
+	name: string;
+	icon?: string;
+	tags: string[];
+	note?: string;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface ProjectFolder extends DirectoryMeta {
+	parentId?: string | null;
+	relativePath: string;
+	type?: DocumentType;
+	order?: number;
+}
+
 export interface DocumentMeta {
 	id: string;
 	title: string;
@@ -13,6 +30,8 @@ export interface DocumentMeta {
 	order: number;
 	createdAt: string;
 	updatedAt: string;
+	folderId?: string | null;
+	relativePath?: string;
 }
 
 export interface FictionDocument extends DocumentMeta {
@@ -32,6 +51,7 @@ export interface ProjectInfo {
 	targetWordCount: number;
 	folderPath?: string;
 	lastSaved?: string;
+	folders?: ProjectFolder[];
 }
 
 export interface ProjectManifestDoc extends DocumentMeta {
@@ -46,6 +66,7 @@ export interface ProjectManifest {
 	targetWordCount: number;
 	updatedAt: string;
 	documents: ProjectManifestDoc[];
+	folders?: ProjectFolder[];
 }
 
 export interface HistorySnapshot {
@@ -78,6 +99,7 @@ export interface LoadProjectResult {
 	success: boolean;
 	project?: ProjectInfo;
 	documents?: FictionDocument[];
+	folders?: ProjectFolder[];
 	stacks?: ProjectHistoryStacks;
 	recoveryData?: CrashRecoveryData | null;
 	error?: string;

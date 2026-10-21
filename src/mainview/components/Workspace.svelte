@@ -3,12 +3,14 @@
     import type {
         DocumentType,
         FictionDocument,
+        ProjectFolder,
         ProjectInfo,
         SaveState,
         ViewMode,
         ZenModeType,
     } from "../../shared/types";
     import type { EditorTypographySettings } from "../../shared/domain/typography";
+    import { initialFolders } from "../../shared/fixtures/sampleData";
     import {
         promptSelectFolder,
         saveProject,
@@ -53,6 +55,13 @@
         onShowToast,
     }: Props = $props();
 
+    let folders = $state<ProjectFolder[]>(
+        project.folders && project.folders.length > 0
+            ? project.folders
+            : [...initialFolders],
+    );
+    let inspectedFolderId = $state<string | null>(null);
+
     let activeDocId = $state<string | null>(documents[0]?.id ?? null);
     let saveState = $state<SaveState>("saved");
     let viewMode = $state<ViewMode>("split");
@@ -64,6 +73,8 @@
     let wordWrap = $state<boolean>(true);
     let sidebarRef = $state<ReturnType<typeof Sidebar> | null>(null);
     let newDocInitialType = $state<DocumentType>("manuscript");
+    let newDocInitialMode = $state<"document" | "folder">("document");
+    let newDocParentFolderId = $state<string | null>(null);
 
     let preZenState = { sidebar: true, inspector: true };
 
@@ -71,6 +82,20 @@
     const activeDoc = $derived(
         documents.find((d) => d.id === activeDocId) ?? null,
     );
+
+    // Currently inspected folder derived from inspectedFolderId
+    const inspectedFolder = $derived(
+        inspectedFolderId
+            ? folders.find((f) => f.id === inspectedFolderId) ?? null
+            : null,
+    );
+
+    // Sync folders from project if updated externally
+    $effect(() => {
+        if (project.folders && project.folders.length > 0) {
+            folders = project.folders;
+        }
+    });
 
     // Ensure activeDocId always points to a valid document in current project
     $effect(() => {
@@ -177,11 +202,13 @@
             project.targetWordCount,
         );
 
+        project.folders = folders;
         const res = await saveProject(
             project.folderPath,
             project,
             documents,
             stacks,
+            folders,
         );
 
         if (res.success) {
@@ -209,50 +236,146 @@
     }
 
     function handleSelectDoc(id: string) {
-        if (activeDocId !== id) {
+        if (activeDocId !== id || inspectedFolderId !== null) {
             if (saveState === "unsaved" && project.folderPath) {
                 void handleSave();
             }
             activeDocId = id;
+            inspectedFolderId = null;
         }
     }
 
     function handleNavigateToDocTitle(title: string) {
         const targetLower = title.trim().toLowerCase();
-        const matched = documents.find(
+        const matchedDoc = documents.find(
             (d) => d.title.toLowerCase() === targetLower,
         );
-        if (matched) {
-            handleSelectDoc(matched.id);
-        } else {
-            if (confirm(`Document "${title}" not found. Create it now?`)) {
-                const newDoc: FictionDocument = {
-                    id: `doc-${Date.now()}`,
-                    title: title.trim(),
-                    type: "world",
-                    status: "draft",
-                    tags: [],
-                    order: documents.length + 1,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                    content: `# ${title.trim()}\n\nAdd your notes for ${title} here...\n`,
-                };
-                documents.push(newDoc);
-                activeDocId = newDoc.id;
-                void handleSave();
-            }
+        if (matchedDoc) {
+            handleSelectDoc(matchedDoc.id);
+            return;
+        }
+
+        const matchedFolder = folders.find(
+            (f) => f.name.toLowerCase() === targetLower,
+        );
+        if (matchedFolder) {
+            handleInspectFolder(matchedFolder.id);
+            onShowToast(`Opened folder "${matchedFolder.name}" in Inspector`);
+            return;
+        }
+
+        if (confirm(`Document or folder "${title}" not found. Create document now?`)) {
+            const newDoc: FictionDocument = {
+                id: `doc-${Date.now()}`,
+                title: title.trim(),
+                type: "world",
+                status: "draft",
+                tags: [],
+                order: documents.length + 1,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                content: `# ${title.trim()}\n\nAdd your notes for ${title} here...\n`,
+            };
+            documents.push(newDoc);
+            activeDocId = newDoc.id;
+            inspectedFolderId = null;
+            void handleSave();
         }
     }
 
-    function handleOpenNewDocModal(type: DocumentType = "manuscript") {
+    function handleOpenNewDocModal(type: DocumentType = "manuscript", parentFolderId?: string) {
         newDocInitialType = type;
+        newDocInitialMode = "document";
+        newDocParentFolderId = parentFolderId || null;
+        isNewDocModalOpen = true;
+    }
+
+    function handleOpenNewFolderModal(parentFolderId?: string) {
+        newDocInitialMode = "folder";
+        newDocParentFolderId = parentFolderId || null;
         isNewDocModalOpen = true;
     }
 
     function handleCreateDoc(newDoc: FictionDocument) {
         documents.push(newDoc);
         activeDocId = newDoc.id;
+        inspectedFolderId = null;
         void handleSave();
+    }
+
+    function handleCreateFolder(newFolder: ProjectFolder) {
+        folders.push(newFolder);
+        project.folders = folders;
+        inspectedFolderId = newFolder.id;
+        showInspector = true;
+        saveState = "unsaved";
+        onShowToast(`Created folder "${newFolder.name}"`);
+        void handleSave();
+    }
+
+    function handleDeleteFolder(folderId: string) {
+        const folderIndex = folders.findIndex((f) => f.id === folderId);
+        if (folderIndex === -1) return;
+        const target = folders[folderIndex];
+
+        // Find all subfolder IDs recursively
+        const folderIdsToDelete = new Set<string>([folderId]);
+        let added = true;
+        while (added) {
+            added = false;
+            for (const f of folders) {
+                if (f.parentId && folderIdsToDelete.has(f.parentId) && !folderIdsToDelete.has(f.id)) {
+                    folderIdsToDelete.add(f.id);
+                    added = true;
+                }
+            }
+        }
+
+        // Unlink documents residing in these folders
+        for (const doc of documents) {
+            if (doc.folderId && folderIdsToDelete.has(doc.folderId)) {
+                doc.folderId = null;
+            }
+        }
+
+        folders = folders.filter((f) => !folderIdsToDelete.has(f.id));
+        project.folders = folders;
+        if (inspectedFolderId && folderIdsToDelete.has(inspectedFolderId)) {
+            inspectedFolderId = null;
+        }
+        saveState = "unsaved";
+        onShowToast(`Deleted folder "${target.name}"`);
+        void handleSave();
+    }
+
+    function handleRenameFolder(folderId: string, newName: string) {
+        const f = folders.find((item) => item.id === folderId);
+        if (!f || !newName.trim()) return;
+        f.name = newName.trim();
+        f.updatedAt = new Date().toISOString();
+        project.folders = folders;
+        saveState = "unsaved";
+        onShowToast(`Renamed folder to "${f.name}"`);
+        void handleSave();
+    }
+
+    function handleInspectFolder(folderId: string) {
+        inspectedFolderId = folderId;
+        showInspector = true;
+    }
+
+    function handleSelectFolder(folderId: string) {
+        handleInspectFolder(folderId);
+    }
+
+    function handleUpdateFolderMeta(folderId: string, updates: Partial<ProjectFolder>) {
+        const target = folders.find((f) => f.id === folderId);
+        if (!target) return;
+        Object.assign(target, updates);
+        target.updatedAt = new Date().toISOString();
+        project.folders = folders;
+        saveState = "unsaved";
+        scheduleCrashCache();
     }
 
     function handleDeleteDoc(id: string) {
@@ -299,6 +422,7 @@
             content: doc.content,
             pov: doc.pov,
             summary: doc.summary,
+            folderId: doc.folderId,
         };
         const idx = documents.findIndex((d) => d.id === id);
         if (idx !== -1) {
@@ -307,6 +431,7 @@
             documents.push(newDoc);
         }
         activeDocId = newDoc.id;
+        inspectedFolderId = null;
         saveState = "unsaved";
         onShowToast(`Duplicated "${doc.title}"`);
         void handleSave();
@@ -314,6 +439,7 @@
 
     function handleOpenInspector(id: string) {
         activeDocId = id;
+        inspectedFolderId = null;
         showInspector = true;
     }
 
@@ -354,6 +480,7 @@
             if (showInspector) {
                 e.preventDefault();
                 showInspector = false;
+                inspectedFolderId = null;
                 return;
             }
         }
@@ -534,15 +661,22 @@
             <Sidebar
                 bind:this={sidebarRef}
                 {documents}
+                {folders}
                 targetWordCount={project.targetWordCount}
                 {activeDocId}
+                activeFolderId={inspectedFolderId}
                 folderPath={project.folderPath}
                 onSelectDoc={handleSelectDoc}
+                onSelectFolder={handleSelectFolder}
                 onNewDoc={handleOpenNewDocModal}
+                onNewFolder={handleOpenNewFolderModal}
                 onDeleteDoc={handleDeleteDoc}
+                onDeleteFolder={handleDeleteFolder}
                 onRenameDoc={handleRenameDoc}
+                onRenameFolder={handleRenameFolder}
                 onDuplicateDoc={handleDuplicateDoc}
                 onOpenInspector={handleOpenInspector}
+                onInspectFolder={handleInspectFolder}
                 {onShowToast}
             />
         {/if}
@@ -554,6 +688,8 @@
                     <section class="pane pane-editor" aria-label="Editor">
                         <Editor
                             document={activeDoc}
+                            allDocuments={documents}
+                            {folders}
                             customFont={editorFont}
                             {typography}
                             {wordWrap}
@@ -605,13 +741,24 @@
         </main>
 
         <!-- Right: Document Inspector / Metadata Drawer (collapsible) -->
-        {#if showInspector && activeDoc && zenMode === "none"}
+        {#if showInspector && zenMode === "none" && (activeDoc || inspectedFolder)}
             <Inspector
-                document={activeDoc}
+                document={inspectedFolder ? null : activeDoc}
+                folder={inspectedFolder}
                 allDocuments={documents}
+                allFolders={folders}
                 onUpdateDocMeta={handleUpdateDocMeta}
+                onUpdateFolderMeta={handleUpdateFolderMeta}
                 onNavigateToDocTitle={handleNavigateToDocTitle}
-                onClose={() => (showInspector = false)}
+                onSelectDoc={(docId) => {
+                    handleSelectDoc(docId);
+                    inspectedFolderId = null;
+                }}
+                onSelectFolder={handleInspectFolder}
+                onClose={() => {
+                    showInspector = false;
+                    inspectedFolderId = null;
+                }}
             />
         {/if}
     </div>
@@ -628,12 +775,16 @@
         {onOpenShortcuts}
     />
 
-    <!-- Create New Document Modal -->
+    <!-- Create New Document / Folder Modal -->
     <NewDocModal
         isOpen={isNewDocModalOpen}
         initialType={newDocInitialType}
+        initialMode={newDocInitialMode}
+        initialParentFolderId={newDocParentFolderId}
+        {folders}
         onClose={() => (isNewDocModalOpen = false)}
         onCreate={handleCreateDoc}
+        onCreateFolder={handleCreateFolder}
         existingCount={documents.length}
     />
 </div>

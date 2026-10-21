@@ -5,9 +5,12 @@ import * as child_process from "node:child_process";
 import { calculateWordCount } from "../shared/domain/markdown";
 import type {
 	CrashRecoveryData,
+	DirectoryMeta,
 	DocumentHistoryStack,
+	DocumentType,
 	FictionDocument,
 	LoadProjectResult,
+	ProjectFolder,
 	ProjectHistoryStacks,
 	ProjectInfo,
 	ProjectManifest,
@@ -245,6 +248,8 @@ export function parseDocumentFromMarkdown(rawContent: string, defaultMeta: Parti
 		order: typeof meta.order === "number" ? meta.order : (defaultMeta.order ?? 1),
 		createdAt: (meta.createdAt as string) || defaultMeta.createdAt || new Date().toISOString(),
 		updatedAt: (meta.updatedAt as string) || defaultMeta.updatedAt || new Date().toISOString(),
+		folderId: (meta.folderId as string) || (defaultMeta as Partial<FictionDocument & { folderId?: string }>).folderId,
+		relativePath: (meta.relativePath as string) || (defaultMeta as Partial<FictionDocument & { relativePath?: string }>).relativePath,
 		content,
 	};
 }
@@ -404,8 +409,360 @@ export function getCrashRecovery(absFolder: string): CrashRecoveryData | null {
 }
 
 /**
+ * Creates canonical default project folders for a fresh FictionClosure project.
+ */
+export function createDefaultProjectFolders(): ProjectFolder[] {
+	const now = new Date().toISOString();
+	return [
+		// Top-level sections
+		{
+			id: "folder-manuscript",
+			name: "Manuscript",
+			type: "manuscript",
+			icon: "fa-solid fa-book-open",
+			tags: ["manuscript"],
+			note: "Canonical fiction chapters and prose",
+			relativePath: "manuscript",
+			createdAt: now,
+			updatedAt: now,
+			parentId: null,
+		},
+		{
+			id: "folder-characters",
+			name: "Characters",
+			type: "character",
+			icon: "fa-solid fa-user",
+			tags: ["characters"],
+			note: "Dossiers, character arcs, and relationships",
+			relativePath: "characters",
+			createdAt: now,
+			updatedAt: now,
+			parentId: null,
+		},
+		{
+			id: "folder-plots",
+			name: "Plots & Arcs",
+			type: "plot",
+			icon: "fa-solid fa-chart-line",
+			tags: ["plots"],
+			note: "Main plots, subplots, and beat sheets",
+			relativePath: "plots",
+			createdAt: now,
+			updatedAt: now,
+			parentId: null,
+		},
+		{
+			id: "folder-world",
+			name: "World & Lore",
+			type: "world",
+			icon: "fa-solid fa-map",
+			tags: ["world"],
+			note: "Worldbuilding, locations, systems, and history",
+			relativePath: "world",
+			createdAt: now,
+			updatedAt: now,
+			parentId: null,
+		},
+		{
+			id: "folder-notes",
+			name: "Notes & Outlines",
+			type: "note",
+			icon: "fa-solid fa-file-lines",
+			tags: ["notes"],
+			note: "Research, ideas, and scratchpads",
+			relativePath: "notes",
+			createdAt: now,
+			updatedAt: now,
+			parentId: null,
+		},
+		// Subfolders
+		{
+			id: "folder-plots-subplots",
+			name: "Subplots",
+			type: "plot",
+			icon: "fa-solid fa-code-branch",
+			tags: ["subplots"],
+			note: "Secondary storylines and character subplots",
+			relativePath: path.join("plots", "subplots"),
+			createdAt: now,
+			updatedAt: now,
+			parentId: "folder-plots",
+		},
+		{
+			id: "folder-plots-arcs",
+			name: "Arcs",
+			type: "plot",
+			icon: "fa-solid fa-timeline",
+			tags: ["arcs"],
+			note: "Major story arcs and milestones",
+			relativePath: path.join("plots", "arcs"),
+			createdAt: now,
+			updatedAt: now,
+			parentId: "folder-plots",
+		},
+		{
+			id: "folder-world-locations",
+			name: "Locations",
+			type: "world",
+			icon: "fa-solid fa-location-dot",
+			tags: ["locations"],
+			note: "Geography, cities, landmarks, and realms",
+			relativePath: path.join("world", "locations"),
+			createdAt: now,
+			updatedAt: now,
+			parentId: "folder-world",
+		},
+		{
+			id: "folder-world-cultures",
+			name: "Cultures",
+			type: "world",
+			icon: "fa-solid fa-people-group",
+			tags: ["cultures"],
+			note: "Societies, traditions, languages, and factions",
+			relativePath: path.join("world", "cultures"),
+			createdAt: now,
+			updatedAt: now,
+			parentId: "folder-world",
+		},
+		{
+			id: "folder-world-systems",
+			name: "Systems",
+			type: "world",
+			icon: "fa-solid fa-gears",
+			tags: ["systems"],
+			note: "Magic systems, technology, economics, and laws",
+			relativePath: path.join("world", "systems"),
+			createdAt: now,
+			updatedAt: now,
+			parentId: "folder-world",
+		},
+		{
+			id: "folder-world-history",
+			name: "History",
+			type: "world",
+			icon: "fa-solid fa-landmark",
+			tags: ["history"],
+			note: "Chronology, ancient events, and lore timeline",
+			relativePath: path.join("world", "history"),
+			createdAt: now,
+			updatedAt: now,
+			parentId: "folder-world",
+		},
+		{
+			id: "folder-notes-outlines",
+			name: "Outlines",
+			type: "note",
+			icon: "fa-solid fa-list-check",
+			tags: ["outlines"],
+			note: "Chapter outlines and structure breakdowns",
+			relativePath: path.join("notes", "outlines"),
+			createdAt: now,
+			updatedAt: now,
+			parentId: "folder-notes",
+		},
+		{
+			id: "folder-notes-research",
+			name: "Research",
+			type: "note",
+			icon: "fa-solid fa-book",
+			tags: ["research"],
+			note: "Historical references, technical notes, and research",
+			relativePath: path.join("notes", "research"),
+			createdAt: now,
+			updatedAt: now,
+			parentId: "folder-notes",
+		},
+		{
+			id: "folder-notes-ideas",
+			name: "Ideas",
+			type: "note",
+			icon: "fa-solid fa-lightbulb",
+			tags: ["ideas"],
+			note: "Raw brain dumps, premise snippets, and prompts",
+			relativePath: path.join("notes", "ideas"),
+			createdAt: now,
+			updatedAt: now,
+			parentId: "folder-notes",
+		},
+	];
+}
+
+/**
+ * Creates fallback metadata for an unindexed directory found on disk.
+ */
+function createFallbackFolderMeta(dirName: string, relPath: string): DirectoryMeta {
+	const now = new Date().toISOString();
+	let displayName = dirName;
+	if (dirName === "manuscript") displayName = "Manuscript";
+	else if (dirName === "characters") displayName = "Characters";
+	else if (dirName === "plots") displayName = "Plots & Arcs";
+	else if (dirName === "world") displayName = "World & Lore";
+	else if (dirName === "notes") displayName = "Notes & Outlines";
+	else if (dirName === "subplots") displayName = "Subplots";
+	else if (dirName === "arcs") displayName = "Arcs";
+	else if (dirName === "locations") displayName = "Locations";
+	else if (dirName === "cultures") displayName = "Cultures";
+	else if (dirName === "systems") displayName = "Systems";
+	else if (dirName === "history") displayName = "History";
+	else if (dirName === "outlines") displayName = "Outlines";
+	else if (dirName === "research") displayName = "Research";
+	else if (dirName === "ideas") displayName = "Ideas";
+
+	return {
+		id: `folder-${slugifyTitle(relPath)}`,
+		name: displayName,
+		tags: [],
+		note: "",
+		createdAt: now,
+		updatedAt: now,
+	};
+}
+
+/**
+ * Saves a folder's .directory.json file safely.
+ */
+export function saveDirectoryMeta(folderDir: string, meta: DirectoryMeta): void {
+	const filePath = path.join(folderDir, ".directory.json");
+	const payload: DirectoryMeta = {
+		id: meta.id,
+		name: meta.name,
+		icon: meta.icon,
+		tags: Array.isArray(meta.tags) ? meta.tags : [],
+		note: meta.note || "",
+		createdAt: meta.createdAt || new Date().toISOString(),
+		updatedAt: new Date().toISOString(),
+	};
+	atomicWriteFile(filePath, JSON.stringify(payload, null, 2));
+}
+
+/**
+ * Reads a folder's .directory.json file safely.
+ */
+export function loadDirectoryMeta(folderDir: string, fallbackName: string): DirectoryMeta {
+	const filePath = path.join(folderDir, ".directory.json");
+	if (fs.existsSync(filePath)) {
+		try {
+			const raw = fs.readFileSync(filePath, "utf8");
+			const parsed = JSON.parse(raw);
+			return {
+				id: parsed.id || `folder-${Date.now()}`,
+				name: parsed.name || fallbackName,
+				icon: parsed.icon,
+				tags: Array.isArray(parsed.tags) ? parsed.tags : [],
+				note: parsed.note || "",
+				createdAt: parsed.createdAt || new Date().toISOString(),
+				updatedAt: parsed.updatedAt || new Date().toISOString(),
+			};
+		} catch (err) {
+			console.warn(`Could not parse ${filePath}:`, err);
+		}
+	}
+	return createFallbackFolderMeta(fallbackName, fallbackName);
+}
+
+/**
+ * Recursively scans all project directories and loads or synthesizes .directory.json metadata.
+ * Supports infinite arbitrary folder nesting.
+ */
+export function scanProjectDirectories(absFolder: string): ProjectFolder[] {
+	const folders: ProjectFolder[] = [];
+	const ignoredDirs = new Set([
+		".fictionclosure",
+		".git",
+		"node_modules",
+		"exports",
+		"media",
+		".hutch",
+		"dist",
+	]);
+
+	function walk(currentDir: string) {
+		let entries: fs.Dirent[] = [];
+		try {
+			entries = fs.readdirSync(currentDir, { withFileTypes: true });
+		} catch {
+			return;
+		}
+
+		for (const entry of entries) {
+			if (entry.isDirectory()) {
+				if (ignoredDirs.has(entry.name) || entry.name.startsWith(".tmp") || entry.name.startsWith(".git")) {
+					continue;
+				}
+				const fullSub = path.join(currentDir, entry.name);
+				const relPath = path.relative(absFolder, fullSub).replace(/\\/g, "/");
+
+				// Read .directory.json if present, or create fallback
+				const dirJsonPath = path.join(fullSub, ".directory.json");
+				let dirMeta: DirectoryMeta;
+
+				if (fs.existsSync(dirJsonPath)) {
+					try {
+						const raw = fs.readFileSync(dirJsonPath, "utf8");
+						const parsed = JSON.parse(raw);
+						dirMeta = {
+							id: parsed.id || `folder-${slugifyTitle(relPath)}`,
+							name: parsed.name || entry.name,
+							icon: parsed.icon,
+							tags: Array.isArray(parsed.tags) ? parsed.tags : [],
+							note: parsed.note || "",
+							createdAt: parsed.createdAt || new Date().toISOString(),
+							updatedAt: parsed.updatedAt || new Date().toISOString(),
+						};
+					} catch {
+						dirMeta = createFallbackFolderMeta(entry.name, relPath);
+					}
+				} else {
+					dirMeta = createFallbackFolderMeta(entry.name, relPath);
+				}
+
+				// Infer parentId based on relative path
+				const parentRel = path.dirname(relPath).replace(/\\/g, "/");
+				const parentId = parentRel === "." ? null : `folder-${slugifyTitle(parentRel)}`;
+
+				// Infer type from top-level segment
+				const topSegment = relPath.split("/")[0];
+				let type: DocumentType = "note";
+				if (topSegment === "manuscript") type = "manuscript";
+				else if (topSegment === "characters") type = "character";
+				else if (topSegment === "plots") type = "plot";
+				else if (topSegment === "world") type = "world";
+
+				folders.push({
+					...dirMeta,
+					relativePath: relPath,
+					parentId,
+					type,
+				});
+
+				// Recursively walk subdirectories (no depth limit)
+				walk(fullSub);
+			}
+		}
+	}
+
+	walk(absFolder);
+
+	// Normalize parentIds to match actual folder IDs
+	for (const f of folders) {
+		const parentRel = path.dirname(f.relativePath).replace(/\\/g, "/");
+		if (parentRel === ".") {
+			f.parentId = null;
+		} else {
+			const foundParent = folders.find((p) => p.relativePath === parentRel);
+			if (foundParent) {
+				f.parentId = foundParent.id;
+			}
+		}
+	}
+
+	return folders;
+}
+
+/**
  * Save project files to folder using the advanced FictionClosure project layout:
  * - Canonical content: manuscript/, characters/, plots/, world/, notes/, media/, exports/
+ * - Nested folder hierarchy with .directory.json in each directory
  * - Internal system: .fictionclosure/ (schema.json, state/, history/, index/, cache/, migrations/, extensions/)
  * - Git: auto-initializes repository and enforces .gitignore
  */
@@ -415,6 +772,7 @@ export async function saveProjectToFolder(
 	documents: FictionDocument[],
 	stacks?: ProjectHistoryStacks,
 	workspaceState?: WorkspaceState,
+	customFolders?: ProjectFolder[],
 ): Promise<SaveProjectResult> {
 	try {
 		const absFolder = resolveFolderPath(folderPath);
@@ -423,26 +781,55 @@ export async function saveProjectToFolder(
 			fs.mkdirSync(absFolder, { recursive: true });
 		}
 
-		// 1. Ensure all canonical content directories exist
-		const canonicalDirs = [
-			"manuscript",
-			"characters",
-			path.join("plots", "subplots"),
-			path.join("plots", "arcs"),
-			path.join("world", "locations"),
-			path.join("world", "cultures"),
-			path.join("world", "systems"),
-			path.join("world", "history"),
-			path.join("notes", "outlines"),
-			path.join("notes", "research"),
-			path.join("notes", "ideas"),
+		// 1. Resolve all project folders
+		const defaultFolders = createDefaultProjectFolders();
+		let effectiveFolders: ProjectFolder[] = [];
+
+		if (customFolders && customFolders.length > 0) {
+			effectiveFolders = [...customFolders];
+		} else if (project.folders && project.folders.length > 0) {
+			effectiveFolders = [...project.folders];
+		} else {
+			effectiveFolders = [...defaultFolders];
+		}
+
+		// Ensure default canonical folders are present in effectiveFolders
+		for (const def of defaultFolders) {
+			if (!effectiveFolders.some((f) => f.relativePath === def.relativePath || f.id === def.id)) {
+				effectiveFolders.push(def);
+			}
+		}
+
+		// 2. Ensure all folder directories exist and write their .directory.json
+		const now = new Date().toISOString();
+		for (const folder of effectiveFolders) {
+			const folderAbsPath = path.join(absFolder, folder.relativePath);
+			assertWithinRoot(absFolder, folderAbsPath);
+			if (!fs.existsSync(folderAbsPath)) {
+				fs.mkdirSync(folderAbsPath, { recursive: true });
+			}
+			const dirMeta: DirectoryMeta = {
+				id: folder.id,
+				name: folder.name,
+				icon: folder.icon,
+				tags: Array.isArray(folder.tags) ? folder.tags : [],
+				note: folder.note || "",
+				createdAt: folder.createdAt || now,
+				updatedAt: now,
+			};
+			const dirJsonPath = path.join(folderAbsPath, ".directory.json");
+			atomicWriteFile(dirJsonPath, JSON.stringify(dirMeta, null, 2));
+		}
+
+		// 3. Ensure media and export folders exist
+		const supportDirs = [
 			path.join("media", "images"),
 			path.join("media", "covers"),
 			path.join("media", "audio"),
 			path.join("media", "attachments"),
 			"exports",
 		];
-		for (const sub of canonicalDirs) {
+		for (const sub of supportDirs) {
 			const subPath = path.join(absFolder, sub);
 			if (!fs.existsSync(subPath)) {
 				fs.mkdirSync(subPath, { recursive: true });
@@ -501,7 +888,6 @@ export async function saveProjectToFolder(
 		atomicWriteFile(schemaPath, JSON.stringify(schemaPayload, null, 2));
 
 		// 4. Write .fictionclosure/state/workspace.json & session.json
-		const now = new Date().toISOString();
 		const workspaceStatePath = path.join(absFolder, ".fictionclosure", "state", "workspace.json");
 		const workspacePayload: WorkspaceState = workspaceState || {
 			schemaVersion: 1,
@@ -550,11 +936,19 @@ export async function saveProjectToFolder(
 				filename = `${safeSlug}.md`;
 			}
 
+			// If doc is explicitly assigned to a folder, resolve relativeFolder from that folder
+			if (doc.folderId) {
+				const parentFolder = effectiveFolders.find((f) => f.id === doc.folderId);
+				if (parentFolder) {
+					relativeFolder = parentFolder.relativePath;
+				}
+			}
+
 			// Preserve nested relative paths if already specified (e.g. plots/subplots/heist.md)
 			const customRelPath = (doc as unknown as { relativePath?: string }).relativePath;
 			const relativePath = customRelPath && customRelPath.trim() !== ""
-				? customRelPath
-				: path.join(relativeFolder, filename);
+				? customRelPath.replace(/\\/g, "/")
+				: path.join(relativeFolder, filename).replace(/\\/g, "/");
 
 			const fullDocPath = path.join(absFolder, relativePath);
 			assertWithinRoot(absFolder, fullDocPath);
@@ -573,19 +967,21 @@ export async function saveProjectToFolder(
 				order: doc.order,
 				createdAt: doc.createdAt,
 				updatedAt: doc.updatedAt,
+				folderId: doc.folderId,
 				relativePath,
 			});
 		}
 
 		// 6. Write project.json manifest
 		const manifest: ProjectManifest = {
-			schemaVersion: 2,
+			schemaVersion: 3,
 			name: project.name,
 			author: project.author,
 			genre: project.genre,
 			targetWordCount: project.targetWordCount,
 			updatedAt: now,
 			documents: manifestDocs,
+			folders: effectiveFolders,
 		};
 
 		const manifestPath = path.join(absFolder, "project.json");
@@ -718,11 +1114,15 @@ export async function loadProjectFromFolder(folderPath: string): Promise<LoadPro
 				if (fs.existsSync(fullDocPath)) {
 					const raw = fs.readFileSync(fullDocPath, "utf8");
 					const doc = parseDocumentFromMarkdown(raw, manifestDoc);
+					doc.relativePath = manifestDoc.relativePath;
+					doc.folderId = manifestDoc.folderId;
 					loadedDocs.push(doc);
 				} else {
 					// Fallback if file was moved or deleted externally
 					loadedDocs.push({
 						...manifestDoc,
+						relativePath: manifestDoc.relativePath,
+						folderId: manifestDoc.folderId,
 						content: `# ${manifestDoc.title}\n\n[File was not found on disk at ${manifestDoc.relativePath}]\n`,
 					});
 				}
@@ -790,7 +1190,76 @@ export async function loadProjectFromFolder(folderPath: string): Promise<LoadPro
 			}
 		}
 
-		// 3. Check for unsaved crash recovery cache
+		// 3. Load or scan all project folders and their .directory.json
+		const scannedFolders = scanProjectDirectories(absFolder);
+		let loadedFolders: ProjectFolder[] = [];
+
+		if (Array.isArray(manifest.folders) && manifest.folders.length > 0) {
+			const manifestMap = new Map(manifest.folders.map((f) => [f.relativePath, f]));
+			for (const scanned of scannedFolders) {
+				const fromMan = manifestMap.get(scanned.relativePath);
+				if (fromMan) {
+					loadedFolders.push({
+						...fromMan,
+						...scanned,
+						tags: scanned.tags && scanned.tags.length > 0 ? scanned.tags : fromMan.tags,
+						note: scanned.note || fromMan.note,
+						icon: scanned.icon || fromMan.icon,
+					});
+					manifestMap.delete(scanned.relativePath);
+				} else {
+					loadedFolders.push(scanned);
+				}
+			}
+			for (const leftover of manifestMap.values()) {
+				loadedFolders.push(leftover);
+			}
+		} else if (scannedFolders.length > 0) {
+			loadedFolders = scannedFolders;
+		} else {
+			loadedFolders = createDefaultProjectFolders();
+		}
+
+		// Also discover any markdown files present in folders that might not be in project.json yet
+		for (const folder of loadedFolders) {
+			const folderAbs = path.join(absFolder, folder.relativePath);
+			if (fs.existsSync(folderAbs)) {
+				try {
+					const entries = fs.readdirSync(folderAbs, { withFileTypes: true });
+					for (const entry of entries) {
+						if (entry.isFile() && entry.name.endsWith(".md") && !entry.name.startsWith(".")) {
+							const docRel = path.join(folder.relativePath, entry.name).replace(/\\/g, "/");
+							if (!loadedDocs.some((d) => (d as unknown as { relativePath?: string }).relativePath === docRel)) {
+								const raw = fs.readFileSync(path.join(folderAbs, entry.name), "utf8");
+								const parsedDoc = parseDocumentFromMarkdown(raw, {
+									id: `doc-${slugifyTitle(entry.name.replace(/\.md$/, ""))}-${Date.now()}`,
+									title: entry.name.replace(/^\d+[-_]/, "").replace(/\.md$/, "").replace(/[-_]/g, " "),
+									type: folder.type || "note",
+								});
+								parsedDoc.folderId = folder.id;
+								(parsedDoc as unknown as { relativePath?: string }).relativePath = docRel;
+								loadedDocs.push(parsedDoc);
+							}
+						}
+					}
+				} catch {
+					// continue
+				}
+			}
+		}
+
+		// Associate documents with folderId based on relativePath
+		for (const doc of loadedDocs) {
+			if (!doc.folderId && (doc as unknown as { relativePath?: string }).relativePath) {
+				const docDir = path.dirname((doc as unknown as { relativePath?: string }).relativePath!).replace(/\\/g, "/");
+				const matchedFolder = loadedFolders.find((f) => f.relativePath === docDir);
+				if (matchedFolder) {
+					doc.folderId = matchedFolder.id;
+				}
+			}
+		}
+
+		// 4. Check for unsaved crash recovery cache
 		const recoveryData = getCrashRecovery(absFolder);
 
 		const project: ProjectInfo = {
@@ -800,6 +1269,7 @@ export async function loadProjectFromFolder(folderPath: string): Promise<LoadPro
 			targetWordCount: manifest.targetWordCount,
 			folderPath: absFolder,
 			lastSaved: manifest.updatedAt,
+			folders: loadedFolders,
 		};
 
 		setLastProjectFolder(absFolder);
@@ -808,6 +1278,7 @@ export async function loadProjectFromFolder(folderPath: string): Promise<LoadPro
 			success: true,
 			project,
 			documents: loadedDocs,
+			folders: loadedFolders,
 			stacks: loadedStacks,
 			recoveryData,
 		};

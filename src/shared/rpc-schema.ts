@@ -2,6 +2,7 @@ import type { RPCSchema } from "electrobun";
 import type {
 	FictionDocument,
 	LoadProjectResult,
+	ProjectFolder,
 	ProjectHistoryStacks,
 	ProjectInfo,
 	SaveProjectResult,
@@ -19,6 +20,7 @@ export type FictionClosureRPCSchema = {
 					folderPath: string;
 					project: ProjectInfo;
 					documents: FictionDocument[];
+					folders?: ProjectFolder[];
 					stacks?: ProjectHistoryStacks;
 				};
 				response: SaveProjectResult;

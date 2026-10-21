@@ -3,6 +3,7 @@ import type { FictionClosureRPCSchema } from "../../shared/rpc-schema";
 import type {
 	FictionDocument,
 	LoadProjectResult,
+	ProjectFolder,
 	ProjectHistoryStacks,
 	ProjectInfo,
 	SaveProjectResult,
@@ -93,14 +94,16 @@ export async function saveProject(
 	project: ProjectInfo,
 	documents: FictionDocument[],
 	stacks?: ProjectHistoryStacks,
+	folders?: ProjectFolder[],
 ): Promise<SaveProjectResult> {
 	// Always backup to browser storage
 	try {
 		localStorage.setItem(
 			LOCAL_STORAGE_WORKSPACE,
 			JSON.stringify({
-				project: { ...project, folderPath },
+				project: { ...project, folderPath, folders: folders || project.folders },
 				documents,
+				folders: folders || project.folders,
 				activeDocId: documents[0]?.id ?? null,
 			}),
 		);
@@ -119,6 +122,7 @@ export async function saveProject(
 				folderPath,
 				project,
 				documents,
+				folders: folders || project.folders,
 				stacks,
 			});
 			return res;
@@ -167,6 +171,7 @@ export async function loadProject(folderPath: string): Promise<LoadProjectResult
 				success: true,
 				project: parsed.project,
 				documents: parsed.documents,
+				folders: parsed.folders || parsed.project?.folders,
 				stacks: cachedStacks ? JSON.parse(cachedStacks) : undefined,
 			};
 		}
