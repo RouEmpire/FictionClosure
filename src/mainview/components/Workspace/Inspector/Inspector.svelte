@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { FictionDocument, ProjectFolder } from "../../../../shared/types";
+    import type { FictionDocument, ProjectFolder } from "@shared/types";
     import InspectorHeader from "./InspectorHeader.svelte";
     import FolderInspector from "./FolderInspector.svelte";
     import DocumentInspector from "./DocumentInspector.svelte";

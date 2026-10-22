@@ -1,5 +1,5 @@
-import type { FictionDocument, ProjectInfo } from "../../../shared/types";
-import type { EditorTypographySettings } from "../../../shared/domain/typography";
+import type { FictionDocument, ProjectInfo } from "@shared/types";
+import type { EditorTypographySettings } from "@shared/domain/typography";
 
 export interface WorkspaceProps {
     project: ProjectInfo;

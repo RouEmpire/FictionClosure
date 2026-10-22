@@ -1,4 +1,4 @@
-import type { DocumentType, FictionDocument, ProjectFolder } from "../../../../shared/types";
+import type { DocumentType, FictionDocument, ProjectFolder } from "@shared/types";
 
 export interface NavTreeItem {
 	kind: "section" | "folder" | "doc";

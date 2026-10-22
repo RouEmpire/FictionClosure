@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { DocumentType, FictionDocument, ProjectFolder } from "../../../../shared/types";
-	import { calculateWordCount } from "../../../../shared/domain/markdown";
+	import type { DocumentType, FictionDocument, ProjectFolder } from "@shared/types";
+	import { calculateWordCount } from "@shared/domain/markdown";
 	import { buildVisibleNavItems, type NavTreeItem } from "./sidebarNav";
 	import Toolbar from "./Toolbar.svelte";
 	import ProgressBar from "./ProgressBar.svelte";

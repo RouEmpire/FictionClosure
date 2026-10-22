@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { CrashRecoveryData, FictionDocument } from "../../shared/types";
+	import type { CrashRecoveryData, FictionDocument } from "@shared/types";
 
 	interface Props {
 		isOpen: boolean;

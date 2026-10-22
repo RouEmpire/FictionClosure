@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { FictionDocument } from "../../../../shared/types";
-	import { calculateWordCount, countContentLines } from "../../../../shared/domain/markdown";
+	import type { FictionDocument } from "@shared/types";
+	import { calculateWordCount, countContentLines } from "@shared/domain/markdown";
 
 	interface Props {
 		doc: FictionDocument;

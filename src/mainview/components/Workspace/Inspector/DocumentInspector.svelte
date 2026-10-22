@@ -3,8 +3,8 @@
         DocumentStatus,
         DocumentType,
         FictionDocument,
-    } from "../../../../shared/types";
-    import { extractWikilinks } from "../../../../shared/domain/markdown";
+    } from "@shared/types";
+    import { extractWikilinks } from "@shared/domain/markdown";
     import TagsSection from "./TagsSection.svelte";
     import MetadataFooter from "./MetadataFooter.svelte";
 

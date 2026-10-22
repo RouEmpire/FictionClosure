@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { DocumentType, ProjectFolder } from "../../../../shared/types";
+	import type { DocumentType, ProjectFolder } from "@shared/types";
 
 	interface Props {
 		isOpen: boolean;

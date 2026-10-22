@@ -1,8 +1,8 @@
 <script lang="ts">
     import { onMount, onDestroy } from "svelte";
     import * as echarts from "echarts";
-    import type { DashboardStats } from "../services/recentProjects";
-    import type { RecentProject } from "../../shared/types";
+    import type { DashboardStats } from "@services/recentProjects";
+    import type { RecentProject } from "@shared/types";
 
     interface Props {
         stats: DashboardStats;

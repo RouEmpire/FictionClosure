@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { SaveState, ViewMode, ZenModeType } from "../../../../shared/types";
+    import type { SaveState, ViewMode, ZenModeType } from "@shared/types";
     import ZenDropdown from "./ZenDropdown.svelte";
 
     interface Props {

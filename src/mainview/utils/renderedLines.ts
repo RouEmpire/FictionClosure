@@ -5,7 +5,7 @@
  * the line-number gutter aligns 1:1 with soft-wrapped paragraphs in the textarea.
  */
 
-import type { ZenModeType } from "../../shared/types";
+import type { ZenModeType } from "@shared/types";
 
 export interface RenderedLine {
 	/** 1-based paragraph/logical line number (1, 2, 3...) */

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ProjectAnalysisResult } from "../../shared/types";
+	import type { ProjectAnalysisResult } from "@shared/types";
 
 	interface Props {
 		analysis: ProjectAnalysisResult | null;

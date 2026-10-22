@@ -4,7 +4,7 @@
         SaveState,
         ViewMode,
         ZenModeType,
-    } from "../../../../shared/types";
+    } from "@shared/types";
     import HeaderLeft from "./HeaderLeft.svelte";
     import HeaderCenter from "./HeaderCenter.svelte";
     import HeaderRight from "./HeaderRight.svelte";

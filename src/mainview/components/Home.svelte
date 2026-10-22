@@ -1,6 +1,6 @@
 <script lang="ts">
-    import type { RecentProject } from "../../shared/types";
-    import { calculateDashboardStats } from "../services/recentProjects";
+    import type { RecentProject } from "@shared/types";
+    import { calculateDashboardStats } from "@services/recentProjects";
     import HomeTopbar from "./HomeTopbar.svelte";
     import Dashboard from "./Dashboard.svelte";
 

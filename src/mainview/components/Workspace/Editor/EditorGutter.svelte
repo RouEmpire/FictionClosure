@@ -1,9 +1,9 @@
 <script lang="ts">
-    import type { ZenModeType } from "../../../../shared/types";
+    import type { ZenModeType } from "@shared/types";
     import {
         getGutterRowDisplay,
         type RenderedLine,
-    } from "../../../utils/renderedLines";
+    } from "@utils/renderedLines";
 
     interface Props {
         renderedLines: RenderedLine[];

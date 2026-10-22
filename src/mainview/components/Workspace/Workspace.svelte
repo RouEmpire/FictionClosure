@@ -7,10 +7,10 @@
         SaveState,
         ViewMode,
         ZenModeType,
-    } from "../../../shared/types";
-    import { initialFolders } from "../../../shared/fixtures/sampleData";
-    import { promptSelectFolder, setRememberedFolder, saveCrashCache } from "../../services/storage";
-    import { globalHistoryManager } from "../../services/historyManager";
+    } from "@shared/types";
+    import { initialFolders } from "@shared/fixtures/sampleData";
+    import { promptSelectFolder, setRememberedFolder, saveCrashCache } from "@services/storage";
+    import { globalHistoryManager } from "@services/historyManager";
     import Header from "./Header/Header.svelte";
     import Sidebar from "./Sidebar/Sidebar.svelte";
     import WorkspaceMain from "./WorkspaceMain.svelte";

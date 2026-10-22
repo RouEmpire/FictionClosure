@@ -1,4 +1,4 @@
-import type { ViewMode, ZenModeType } from "../../../shared/types";
+import type { ViewMode, ZenModeType } from "@shared/types";
 
 export interface WorkspaceKeyContext {
     isCommandPaletteOpen: boolean;

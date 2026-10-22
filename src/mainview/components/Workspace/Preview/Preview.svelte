@@ -1,13 +1,13 @@
 <script lang="ts">
-	import type { FictionDocument } from "../../../../shared/types";
+	import type { FictionDocument } from "@shared/types";
 	import {
 		calculateWordCount,
 		estimateReadingTimeMinutes,
-	} from "../../../../shared/domain/markdown";
+	} from "@shared/domain/markdown";
 	import {
 		DEFAULT_TYPOGRAPHY_SETTINGS,
 		type EditorTypographySettings,
-	} from "../../../../shared/domain/typography";
+	} from "@shared/domain/typography";
 	import PreviewHeader from "./PreviewHeader.svelte";
 	import PreviewBody from "./PreviewBody.svelte";
 

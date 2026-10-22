@@ -1,11 +1,11 @@
 <script lang="ts">
-	import type { FictionDocument } from "../../../../shared/types";
-	import { renderMarkdown } from "../../../../shared/domain/markdown";
+	import type { FictionDocument } from "@shared/types";
+	import { renderMarkdown } from "@shared/domain/markdown";
 	import {
 		formatFontFeatureSettings,
 		formatTextAutospace,
 		type EditorTypographySettings,
-	} from "../../../../shared/domain/typography";
+	} from "@shared/domain/typography";
 
 	interface Props {
 		document: FictionDocument;

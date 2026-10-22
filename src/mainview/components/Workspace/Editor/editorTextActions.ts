@@ -1,6 +1,6 @@
-import type { FictionDocument } from "../../../../shared/types";
-import { globalHistoryManager } from "../../../services/historyManager";
-import type { TextTransformResult } from "../../../../shared/domain/textFormatting";
+import type { FictionDocument } from "@shared/types";
+import { globalHistoryManager } from "@services/historyManager";
+import type { TextTransformResult } from "@shared/domain/textFormatting";
 
 export function performUndo(
 	textarea: HTMLTextAreaElement | null,

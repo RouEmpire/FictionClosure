@@ -1,21 +1,29 @@
 <script lang="ts">
-    import type { FictionDocument, ProjectFolder, ZenModeType } from "../../../../shared/types";
-    import { calculateWordCount } from "../../../../shared/domain/markdown";
+    import type {
+        FictionDocument,
+        ProjectFolder,
+        ZenModeType,
+    } from "@shared/types";
+    import { calculateWordCount } from "@shared/domain/markdown";
     import {
         calculateRenderedLines,
         calculateUnwrappedLines,
         resolveTeleportOffset,
         type RenderedLine,
-    } from "../../../utils/renderedLines";
-    import { globalHistoryManager } from "../../../services/historyManager";
-    import { wrapSelection, toggleLinePrefix, toggleTaskCheckbox } from "../../../../shared/domain/textFormatting";
+    } from "@utils/renderedLines";
+    import { globalHistoryManager } from "@services/historyManager";
+    import {
+        wrapSelection,
+        toggleLinePrefix,
+        toggleTaskCheckbox,
+    } from "@shared/domain/textFormatting";
     import {
         computeLineHeight,
         formatFontFeatureSettings,
         formatTextAutospace,
         DEFAULT_TYPOGRAPHY_SETTINGS,
         type EditorTypographySettings,
-    } from "../../../../shared/domain/typography";
+    } from "@shared/domain/typography";
     import EditorToolbar from "./EditorToolbar.svelte";
     import EditorGutter from "./EditorGutter.svelte";
     import EditorStatusbar from "./EditorStatusbar.svelte";
@@ -91,13 +99,23 @@
     let textareaScrollLeft = $state(0);
 
     const isFocusMode = $derived(zenMode === "focus" || zenMode === "czm");
-    const activeTypography = $derived(typography || DEFAULT_TYPOGRAPHY_SETTINGS);
-    const computedLineHeight = $derived(computeLineHeight(activeTypography.fontSize));
+    const activeTypography = $derived(
+        typography || DEFAULT_TYPOGRAPHY_SETTINGS,
+    );
+    const computedLineHeight = $derived(
+        computeLineHeight(activeTypography.fontSize),
+    );
     const fontFeatureSettingsCss = $derived(
-        formatFontFeatureSettings(activeTypography.fontFeatures, activeTypography.customFontFeaturesText),
+        formatFontFeatureSettings(
+            activeTypography.fontFeatures,
+            activeTypography.customFontFeaturesText,
+        ),
     );
     const textAutospaceCss = $derived(
-        formatTextAutospace(activeTypography.textAutospace, activeTypography.customTextAutospace),
+        formatTextAutospace(
+            activeTypography.textAutospace,
+            activeTypography.customTextAutospace,
+        ),
     );
     const firstLineIndentCss = $derived(`${activeTypography.firstLineIndent}%`);
 
@@ -173,7 +191,12 @@
 
     const mentionCandidates = $derived.by<MentionItem[]>(() => {
         if (!isMentionOpen) return [];
-        return buildMentionCandidates(mentionQuery, folders, allDocuments, document.id);
+        return buildMentionCandidates(
+            mentionQuery,
+            folders,
+            allDocuments,
+            document.id,
+        );
     });
 
     function checkMentionTrigger() {
@@ -205,7 +228,8 @@
         setTimeout(() => {
             if (textareaEl) {
                 textareaEl.focus();
-                textareaEl.selectionStart = textareaEl.selectionEnd = result.newCursor;
+                textareaEl.selectionStart = textareaEl.selectionEnd =
+                    result.newCursor;
                 updateCursorPosition();
             }
         }, 0);
@@ -239,7 +263,12 @@
         const target = e.target as HTMLTextAreaElement;
         const oldVal = document.content;
         const newVal = target.value;
-        globalHistoryManager.recordEdit(document.id, oldVal, newVal, target.selectionStart);
+        globalHistoryManager.recordEdit(
+            document.id,
+            oldVal,
+            newVal,
+            target.selectionStart,
+        );
         handleTypingActivity();
         onContentChange(newVal);
         onAfterTextChange();
@@ -258,16 +287,44 @@
             onExitZen,
             onToggleZenMode,
             onSave,
-            onUndo: () => performUndo(textareaEl, document, onContentChange, onAfterTextChange),
-            onRedo: () => performRedo(textareaEl, document, onContentChange, onAfterTextChange),
+            onUndo: () =>
+                performUndo(
+                    textareaEl,
+                    document,
+                    onContentChange,
+                    onAfterTextChange,
+                ),
+            onRedo: () =>
+                performRedo(
+                    textareaEl,
+                    document,
+                    onContentChange,
+                    onAfterTextChange,
+                ),
             onToggleWordWrap: toggleWordWrap,
-            applyTransform: (fn) => performTransform(textareaEl, document, fn, onContentChange, onAfterTextChange),
-            onInsertTab: () => performInsertTab(textareaEl, onContentChange, onAfterTextChange),
+            applyTransform: (fn) =>
+                performTransform(
+                    textareaEl,
+                    document,
+                    fn,
+                    onContentChange,
+                    onAfterTextChange,
+                ),
+            onInsertTab: () =>
+                performInsertTab(
+                    textareaEl,
+                    onContentChange,
+                    onAfterTextChange,
+                ),
         });
     }
 </script>
 
-<svelte:window onpointermove={() => { if (isMouseHidden) isMouseHidden = false; }} />
+<svelte:window
+    onpointermove={() => {
+        if (isMouseHidden) isMouseHidden = false;
+    }}
+/>
 
 <div
     class="editor-container"
@@ -293,21 +350,90 @@
     {#if zenMode !== "czm"}
         <EditorToolbar
             {wordWrap}
-            onUndo={() => performUndo(textareaEl, document, onContentChange, onAfterTextChange)}
-            onRedo={() => performRedo(textareaEl, document, onContentChange, onAfterTextChange)}
-            onInsertSnippet={(p, s) => performInsertSnippet(textareaEl, document, p, s, onContentChange, onAfterTextChange)}
-            onBold={() => performTransform(textareaEl, document, (t, s, end) => wrapSelection(t, s, end, "**", "**", "bold text"), onContentChange, onAfterTextChange)}
-            onItalic={() => performTransform(textareaEl, document, (t, s, end) => wrapSelection(t, s, end, "*", "*", "italic text"), onContentChange, onAfterTextChange)}
-            onWikilink={() => performTransform(textareaEl, document, (t, s, end) => wrapSelection(t, s, end, "[[", "]]", "Document"), onContentChange, onAfterTextChange)}
-            onBlockquote={() => performTransform(textareaEl, document, (t, s, end) => toggleLinePrefix(t, s, end, "> "), onContentChange, onAfterTextChange)}
-            onBulletList={() => performTransform(textareaEl, document, (t, s, end) => toggleLinePrefix(t, s, end, "- "), onContentChange, onAfterTextChange)}
-            onTaskItem={() => performTransform(textareaEl, document, (t, s, end) => toggleLinePrefix(t, s, end, "- [ ] "), onContentChange, onAfterTextChange)}
+            onUndo={() =>
+                performUndo(
+                    textareaEl,
+                    document,
+                    onContentChange,
+                    onAfterTextChange,
+                )}
+            onRedo={() =>
+                performRedo(
+                    textareaEl,
+                    document,
+                    onContentChange,
+                    onAfterTextChange,
+                )}
+            onInsertSnippet={(p, s) =>
+                performInsertSnippet(
+                    textareaEl,
+                    document,
+                    p,
+                    s,
+                    onContentChange,
+                    onAfterTextChange,
+                )}
+            onBold={() =>
+                performTransform(
+                    textareaEl,
+                    document,
+                    (t, s, end) =>
+                        wrapSelection(t, s, end, "**", "**", "bold text"),
+                    onContentChange,
+                    onAfterTextChange,
+                )}
+            onItalic={() =>
+                performTransform(
+                    textareaEl,
+                    document,
+                    (t, s, end) =>
+                        wrapSelection(t, s, end, "*", "*", "italic text"),
+                    onContentChange,
+                    onAfterTextChange,
+                )}
+            onWikilink={() =>
+                performTransform(
+                    textareaEl,
+                    document,
+                    (t, s, end) =>
+                        wrapSelection(t, s, end, "[[", "]]", "Document"),
+                    onContentChange,
+                    onAfterTextChange,
+                )}
+            onBlockquote={() =>
+                performTransform(
+                    textareaEl,
+                    document,
+                    (t, s, end) => toggleLinePrefix(t, s, end, "> "),
+                    onContentChange,
+                    onAfterTextChange,
+                )}
+            onBulletList={() =>
+                performTransform(
+                    textareaEl,
+                    document,
+                    (t, s, end) => toggleLinePrefix(t, s, end, "- "),
+                    onContentChange,
+                    onAfterTextChange,
+                )}
+            onTaskItem={() =>
+                performTransform(
+                    textareaEl,
+                    document,
+                    (t, s, end) => toggleLinePrefix(t, s, end, "- [ ] "),
+                    onContentChange,
+                    onAfterTextChange,
+                )}
             onToggleWordWrap={toggleWordWrap}
         />
     {/if}
 
     <div class="writing-canvas">
-        <div bind:this={mirrorEl} class="editor-mirror" aria-hidden="true"></div>
+        <div
+            bind:this={mirrorEl}
+            class="editor-mirror"
+            aria-hidden="true"
+        ></div>
 
         {#if zenMode !== "czm"}
             <EditorGutter

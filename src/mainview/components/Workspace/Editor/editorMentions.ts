@@ -1,4 +1,4 @@
-import type { FictionDocument, ProjectFolder } from "../../../../shared/types";
+import type { FictionDocument, ProjectFolder } from "@shared/types";
 
 export interface MentionItem {
 	kind: "folder" | "doc";

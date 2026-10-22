@@ -3,14 +3,14 @@ import type {
     ProjectFolder,
     ProjectInfo,
     SaveState,
-} from "../../../shared/types";
+} from "@shared/types";
 import {
     promptSelectFolder,
     saveProject,
     setRememberedFolder,
     clearCrashCache,
-} from "../../services/storage";
-import { globalHistoryManager } from "../../services/historyManager";
+} from "@services/storage";
+import { globalHistoryManager } from "@services/historyManager";
 
 export async function executeSave(
     project: ProjectInfo,

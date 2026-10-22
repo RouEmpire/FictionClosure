@@ -11,7 +11,7 @@ import type {
 	DocumentHistoryStack,
 	HistorySnapshot,
 	ProjectHistoryStacks,
-} from "../../shared/types";
+} from "@shared/types";
 
 export function calculateMaxStackSize(targetWordCount: number | undefined): number {
 	const count =

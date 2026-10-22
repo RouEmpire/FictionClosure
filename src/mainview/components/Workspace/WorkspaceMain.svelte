@@ -5,8 +5,8 @@
         ProjectFolder,
         ViewMode,
         ZenModeType,
-    } from "../../../shared/types";
-    import type { EditorTypographySettings } from "../../../shared/domain/typography";
+    } from "@shared/types";
+    import type { EditorTypographySettings } from "@shared/domain/typography";
     import Sidebar from "./Sidebar/Sidebar.svelte";
     import WorkspaceStage from "./WorkspaceStage.svelte";
     import Inspector from "./Inspector/Inspector.svelte";

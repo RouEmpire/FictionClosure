@@ -1,11 +1,11 @@
 <script lang="ts">
-	import type { FictionDocument, ProjectFolder } from "../../../../shared/types";
-	import { markdownToPlainText } from "../../../../shared/domain/markdown";
+	import type { FictionDocument, ProjectFolder } from "@shared/types";
+	import { markdownToPlainText } from "@shared/domain/markdown";
 	import {
 		getDocumentRelativePath,
 		getDocumentSystemPath,
 		copyToClipboard,
-	} from "../../../../shared/domain/documentPaths";
+	} from "@shared/domain/documentPaths";
 
 	interface Props {
 		isOpen: boolean;

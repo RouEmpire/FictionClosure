@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { DocumentType, FictionDocument, ProjectFolder } from "../../../../shared/types";
+	import type { DocumentType, FictionDocument, ProjectFolder } from "@shared/types";
 	import Document from "./Document.svelte";
 	import Folder from "./Folder.svelte";
 

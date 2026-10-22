@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { FictionDocument, ProjectFolder } from "../../../../shared/types";
+    import type { FictionDocument, ProjectFolder } from "@shared/types";
     import TagsSection from "./TagsSection.svelte";
     import MetadataFooter from "./MetadataFooter.svelte";
 

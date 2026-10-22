@@ -3,7 +3,7 @@
         DocumentType,
         FictionDocument,
         ProjectFolder,
-    } from "../../../shared/types";
+    } from "@shared/types";
     import CommandPalette from "../CommandPalette.svelte";
     import NewDocModal from "../NewDocModal.svelte";
 

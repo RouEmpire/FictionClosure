@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { DocumentType, FictionDocument, ProjectFolder } from "../../shared/types";
-	import { slugifyTitle } from "../../shared/domain/documentPaths";
+	import type { DocumentType, FictionDocument, ProjectFolder } from "@shared/types";
+	import { slugifyTitle } from "@shared/domain/documentPaths";
 
 	interface Props {
 		isOpen: boolean;

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
-	import type { DocumentType } from "../../../../shared/types";
+	import type { DocumentType } from "@shared/types";
 
 	interface Props {
 		type: DocumentType;

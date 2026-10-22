@@ -1,5 +1,5 @@
 import { Electroview } from "electrobun/view";
-import type { FictionClosureRPCSchema } from "../../shared/rpc-schema";
+import type { FictionClosureRPCSchema } from "@shared/rpc-schema";
 import type {
 	FictionDocument,
 	LoadProjectResult,
@@ -7,7 +7,7 @@ import type {
 	ProjectHistoryStacks,
 	ProjectInfo,
 	SaveProjectResult,
-} from "../../shared/types";
+} from "@shared/types";
 
 const LOCAL_STORAGE_LAST_FOLDER = "fictionclosure_last_project_folder";
 const LOCAL_STORAGE_WORKSPACE = "fictionclosure_workspace_state_v1";

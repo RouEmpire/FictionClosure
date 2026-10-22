@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { RenderedLine } from "../../../utils/renderedLines";
+    import type { RenderedLine } from "@utils/renderedLines";
 
     interface Props {
         isFocusMode: boolean;
