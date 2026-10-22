@@ -25,7 +25,7 @@
     import Home from "@components/Home/Home.svelte";
     import Workspace from "./components/Workspace/Workspace.svelte";
     import SettingsModal from "@components/SettingsModal/SettingsModal.svelte";
-    import ShortcutsModal from "./components/ShortcutsModal.svelte";
+    import ShortcutsModal from "@components/ShortcutsModal/ShortcutsModal.svelte";
     import AboutModal from "./components/AboutModal.svelte";
     import ProjectAnalysisModal from "./components/ProjectAnalysisModal.svelte";
     import ProjectLoadingScreen from "@components/ProjectLoadingScreen/ProjectLoadingScreen.svelte";

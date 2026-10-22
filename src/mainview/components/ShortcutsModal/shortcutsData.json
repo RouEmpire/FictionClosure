@@ -1,0 +1,83 @@
+{
+  "header": {
+    "title": "Keyboard Shortcuts",
+    "icon": "fa-solid fa-keyboard"
+  },
+  "footer": {
+    "tipPrefix": "Tip: Press ",
+    "tipKey": "?",
+    "tipSuffix": " anytime to view this guide",
+    "buttonText": "Done"
+  },
+  "groups": [
+    {
+      "id": "general",
+      "title": "General & Navigation",
+      "shortcuts": [
+        { "keys": ["$mod", "K"], "desc": "Open quick command palette / search documents" },
+        { "keys": ["$mod", "P"], "desc": "Open Preferences & Settings menu" },
+        { "keys": ["?"], "desc": "Open this keyboard shortcuts cheatsheet" },
+        { "keys": ["Esc"], "desc": "Close open modal or floating pane" }
+      ]
+    },
+    {
+      "id": "document",
+      "title": "Document & File Management",
+      "shortcuts": [
+        { "keys": ["$mod", "S"], "desc": "Save project and current document to folder" },
+        { "keys": ["$mod", "Shift", "S"], "desc": "Change project save folder (Save As...)" }
+      ]
+    },
+    {
+      "id": "workspace",
+      "title": "Workspace & View Panels",
+      "shortcuts": [
+        { "keys": ["$mod", "1"], "desc": "Switch to Edit view" },
+        { "keys": ["$mod", "2"], "desc": "Switch to Split view" },
+        { "keys": ["$mod", "3"], "desc": "Switch to Read view" },
+        { "keys": ["$mod", "W"], "desc": "Toggle editor word wrap" },
+        { "keys": ["$mod", "Alt", "B"], "desc": "Toggle document tree sidebar" },
+        { "keys": ["$mod", "J"], "desc": "Toggle document inspector drawer" },
+        { "keys": ["$mod", "\\"], "desc": "Toggle Zen Mode (centered canvas)" },
+        { "keys": ["$mod", "Shift", "\\"], "desc": "Toggle Focus Zen Mode (dims non-active paragraphs 50%)" },
+        { "keys": ["$mod", "Alt", "\\"], "desc": "Toggle Concentrate Zen Mode (CZM) (pure textarea only)" }
+      ]
+    },
+    {
+      "id": "sidebar",
+      "title": "Sidebar Tree Navigation",
+      "shortcuts": [
+        { "keys": ["$mod", "Tab"], "desc": "Focus sidebar tree" },
+        { "keys": ["↑ / ↓", "W / S"], "desc": "Navigate folders and documents" },
+        { "keys": ["← / →", "A / D"], "desc": "Collapse / expand selected folder" },
+        { "keys": ["Enter / Space"], "desc": "Select document or toggle folder" },
+        { "keys": ["$mod", "N"], "desc": "Create new file in selected folder" }
+      ]
+    },
+    {
+      "id": "formatting",
+      "title": "Text Formatting & Markdown",
+      "shortcuts": [
+        { "keys": ["$mod", "B"], "desc": "Bold selected text (**)" },
+        { "keys": ["$mod", "I"], "desc": "Italicize selected text (*)" },
+        { "keys": ["$mod", "L"], "desc": "Wrap selected text in Wikilink ([[ ]])" },
+        { "keys": ["$mod", "Q"], "desc": "Toggle blockquote prefix (> )" },
+        { "keys": ["$mod", "-"], "desc": "Toggle bullet list item (- )" },
+        { "keys": ["$mod", "Alt", "T"], "desc": "Insert task checkbox for paragraph (- [ ])" },
+        { "keys": ["$mod", "T"], "desc": "Toggle task checkbox between [ ] and [x]" }
+      ]
+    },
+    {
+      "id": "editor",
+      "title": "Editor & Gutter Navigation",
+      "shortcuts": [
+        { "keys": ["$mod", "Z"], "desc": "Undo edit" },
+        { "keys": ["$mod", "Alt", "Z"], "desc": "Redo edit" },
+        { "keys": ["Click"], "desc": "Click gutter row to jump cursor to start of line" },
+        { "keys": ["Alt", "Click"], "desc": "Alt+Click gutter row to jump cursor to end of line" },
+        { "keys": ["Tab"], "desc": "Indent by 2 spaces (keeps focus in editor)" },
+        { "keys": ["[[", "]]"], "desc": "Wikilink reference to another character, lore, or chapter" }
+      ]
+    }
+  ]
+}
