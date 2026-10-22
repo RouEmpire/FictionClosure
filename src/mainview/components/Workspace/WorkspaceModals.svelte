@@ -4,7 +4,7 @@
         FictionDocument,
         ProjectFolder,
     } from "@shared/types";
-    import CommandPalette from "../CommandPalette.svelte";
+    import CommandPalette from "@components/CommandPalette/CommandPalette.svelte";
     import NewDocModal from "@components/NewDocModal/NewDocModal.svelte";
 
     interface Props {
