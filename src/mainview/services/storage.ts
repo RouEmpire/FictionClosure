@@ -281,3 +281,22 @@ export async function clearCrashCache(folderPath: string): Promise<{ success: bo
 		return { success: false };
 	}
 }
+
+/**
+ * Saves an exported PDF file to the project's `exports/` directory on disk.
+ */
+export async function savePdfToDisk(
+	folderPath: string,
+	fileName: string,
+	pdfBase64: string,
+): Promise<{ success: boolean; filePath?: string; error?: string }> {
+	const rpc = getRpc();
+	if (rpc) {
+		try {
+			return await rpc.request.exportPdfFile({ folderPath, fileName, pdfBase64 });
+		} catch (err) {
+			return { success: false, error: err instanceof Error ? err.message : String(err) };
+		}
+	}
+	return { success: false, error: "Native file export is available in desktop app" };
+}

@@ -49,6 +49,14 @@ export type FictionClosureRPCSchema = {
 				params: { folderPath: string };
 				response: { success: boolean; error?: string };
 			};
+			exportPdfFile: {
+				params: {
+					folderPath: string;
+					fileName: string;
+					pdfBase64: string;
+				};
+				response: { success: boolean; filePath?: string; error?: string };
+			};
 		};
 		messages: {};
 	}>;

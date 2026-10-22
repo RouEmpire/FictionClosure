@@ -9,6 +9,7 @@ import * as os from "node:os";
 import type { FictionClosureRPCSchema } from "../shared/rpc-schema";
 import {
 	clearCrashCache,
+	exportPdfToFile,
 	getLastProjectFolder,
 	loadProjectFromFolder,
 	saveCrashCache,
@@ -110,6 +111,14 @@ const rpc = BrowserView.defineRPC<FictionClosureRPCSchema>({
 
 			clearCrashCache: async (params: { folderPath: string }) => {
 				return clearCrashCache(params.folderPath);
+			},
+
+			exportPdfFile: async (params: {
+				folderPath: string;
+				fileName: string;
+				pdfBase64: string;
+			}) => {
+				return exportPdfToFile(params.folderPath, params.fileName, params.pdfBase64);
 			},
 		},
 		messages: {},

@@ -8,10 +8,13 @@
         canRenderBrowserPreview,
     } from "@shared/domain/coverSupport";
     import { renderMarkdown } from "@shared/domain/markdown";
+    import type { FictionDocument } from "@shared/types";
+    import ExportTab from "./ExportTab/ExportTab.svelte";
 
     interface Props {
         isOpen: boolean;
         project: ProjectInfo;
+        documents?: FictionDocument[];
         onClose: () => void;
         onSaveSettings: (updated: {
             name: string;
@@ -21,11 +24,19 @@
             coverImage?: string;
             readme?: string;
         }) => void;
+        onShowToast?: (msg: string) => void;
     }
 
-    let { isOpen, project, onClose, onSaveSettings }: Props = $props();
+    let {
+        isOpen,
+        project,
+        documents = [],
+        onClose,
+        onSaveSettings,
+        onShowToast,
+    }: Props = $props();
 
-    type TabType = "general" | "cover" | "readme";
+    type TabType = "general" | "cover" | "readme" | "export";
     let activeTab = $state<TabType>("general");
 
     // Form fields
@@ -217,6 +228,16 @@
                     aria-selected={activeTab === "readme"}
                 >
                     <i class="fa-solid fa-file-lines"></i> README.md
+                </button>
+                <button
+                    type="button"
+                    class="tab-btn"
+                    class:active={activeTab === "export"}
+                    onclick={() => (activeTab = "export")}
+                    role="tab"
+                    aria-selected={activeTab === "export"}
+                >
+                    <i class="fa-solid fa-file-export"></i> Export
                 </button>
             </div>
 
@@ -436,6 +457,12 @@
                                 aria-label="Project README.md markdown content"
                             ></textarea>
                         {/if}
+                    </div>
+                {/if}
+
+                {#if activeTab === "export"}
+                    <div class="tab-pane">
+                        <ExportTab {project} {documents} {onShowToast} />
                     </div>
                 {/if}
             </div>

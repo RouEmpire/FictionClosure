@@ -1439,3 +1439,30 @@ export async function loadProjectFromFolder(folderPath: string): Promise<LoadPro
 		};
 	}
 }
+
+/**
+ * Saves an exported PDF file to the project's `exports/` folder atomically.
+ */
+export function exportPdfToFile(
+	folderPath: string,
+	fileName: string,
+	pdfBase64: string,
+): { success: boolean; filePath?: string; error?: string } {
+	try {
+		const root = resolveFolderPath(folderPath);
+		const exportsDir = path.join(root, "exports");
+		if (!fs.existsSync(exportsDir)) {
+			fs.mkdirSync(exportsDir, { recursive: true });
+		}
+		const safeName = path.basename(fileName);
+		const targetPath = path.join(exportsDir, safeName);
+		const buffer = Buffer.from(pdfBase64, "base64");
+		atomicWriteFile(targetPath, buffer);
+		return { success: true, filePath: targetPath };
+	} catch (err) {
+		return {
+			success: false,
+			error: err instanceof Error ? err.message : String(err),
+		};
+	}
+}

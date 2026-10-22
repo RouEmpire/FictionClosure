@@ -41,6 +41,7 @@
         }) => void;
         onSetViewMode?: (mode: ViewMode) => void;
         onChangeFolder?: () => void;
+        onShowToast?: (msg: string) => void;
     }
 
     let {
@@ -67,6 +68,7 @@
         onSaveProjectSettings,
         onSetViewMode = () => {},
         onChangeFolder,
+        onShowToast,
     }: Props = $props();
 </script>
 
@@ -98,6 +100,8 @@
 <ProjectSettingsModal
     isOpen={isProjectSettingsOpen}
     {project}
+    {documents}
     onClose={onCloseProjectSettings}
     onSaveSettings={onSaveProjectSettings}
+    {onShowToast}
 />

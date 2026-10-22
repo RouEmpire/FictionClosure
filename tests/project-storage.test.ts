@@ -5,6 +5,7 @@ import * as os from "node:os";
 import {
 	atomicWriteFile,
 	clearCrashCache,
+	exportPdfToFile,
 	loadProjectFromFolder,
 	parseDocumentFromMarkdown,
 	saveCrashCache,
@@ -516,5 +517,20 @@ describe("project-storage", () => {
 		expect(loaded.covers).toBeDefined();
 		expect(loaded.covers?.length).toBe(2);
 		expect(loaded.covers?.some((c) => c.endsWith("alternate-jacket.psd"))).toBe(true);
+	});
+
+	it("saves exported PDF to exports/ directory atomically", () => {
+		const pdfBytes = Buffer.from("%PDF-1.4 Mock PDF Binary Content");
+		const base64 = pdfBytes.toString("base64");
+		const fileName = "The_Obsidian_Spire_2026.pdf";
+
+		const res = exportPdfToFile(testDir, fileName, base64);
+		expect(res.success).toBe(true);
+		expect(res.filePath).toBeDefined();
+
+		const expectedFile = path.join(testDir, "exports", fileName);
+		expect(fs.existsSync(expectedFile)).toBe(true);
+		const content = fs.readFileSync(expectedFile);
+		expect(content.toString()).toContain("%PDF-1.4");
 	});
 });

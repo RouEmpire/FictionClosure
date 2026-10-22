@@ -420,6 +420,7 @@
         onCreateDoc={handleCreateDoc}
         onCreateFolder={handleCreateFolder}
         onSaveProjectSettings={handleUpdateProjectSettings}
+        {onShowToast}
     />
 </div>
 
