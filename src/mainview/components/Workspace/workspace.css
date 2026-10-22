@@ -1,0 +1,73 @@
+.fictionclosure-workspace {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    background-color: var(--bg-primary, #0d1117);
+    position: relative;
+}
+
+.workspace-main {
+    display: flex;
+    flex: 1;
+    height: calc(100vh - var(--header-height, 46px));
+    overflow: hidden;
+    position: relative;
+}
+
+.czm-active .workspace-main {
+    height: 100vh;
+}
+
+.center-stage {
+    flex: 1;
+    display: flex;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--bg-primary, #0d1117);
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.zen-active .center-stage {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.czm-active .center-stage {
+    max-width: 100%;
+    margin: 0;
+}
+
+.pane {
+    height: 100%;
+    overflow: hidden;
+}
+
+.view-editor .pane-editor {
+    flex: 1;
+    width: 100%;
+}
+
+.view-preview .pane-preview {
+    flex: 1;
+    width: 100%;
+}
+
+.view-split .pane-editor {
+    flex: 1;
+    width: 50%;
+}
+
+.view-split .pane-preview {
+    flex: 1;
+    width: 50%;
+}
+
+.pane-divider {
+    width: 1px;
+    background-color: var(--border-subtle, #30363d);
+    height: 100%;
+    flex-shrink: 0;
+}

@@ -1,42 +1,34 @@
 <script lang="ts">
-	import type { FictionDocument } from "../../shared/types";
-	import {
-		renderMarkdown,
-		calculateWordCount,
-		estimateReadingTimeMinutes,
-	} from "../../shared/domain/markdown";
+	import type { FictionDocument } from "../../../../shared/types";
+	import { renderMarkdown } from "../../../../shared/domain/markdown";
 	import {
 		formatFontFeatureSettings,
 		formatTextAutospace,
-		DEFAULT_TYPOGRAPHY_SETTINGS,
 		type EditorTypographySettings,
-	} from "../../shared/domain/typography";
+	} from "../../../../shared/domain/typography";
 
 	interface Props {
 		document: FictionDocument;
-		typography?: EditorTypographySettings;
+		typography: EditorTypographySettings;
 		onSelectWikilink: (targetName: string) => void;
 	}
 
-	let { document, typography = DEFAULT_TYPOGRAPHY_SETTINGS, onSelectWikilink }: Props = $props();
+	let { document, typography, onSelectWikilink }: Props = $props();
 
-	const activeTypography = $derived(typography || DEFAULT_TYPOGRAPHY_SETTINGS);
 	const fontFeatureSettingsCss = $derived(
 		formatFontFeatureSettings(
-			activeTypography.fontFeatures,
-			activeTypography.customFontFeaturesText,
+			typography.fontFeatures,
+			typography.customFontFeaturesText,
 		),
 	);
 	const textAutospaceCss = $derived(
 		formatTextAutospace(
-			activeTypography.textAutospace,
-			activeTypography.customTextAutospace,
+			typography.textAutospace,
+			typography.customTextAutospace,
 		),
 	);
 
 	const renderedHtml = $derived(renderMarkdown(document.content));
-	const wordCount = $derived(calculateWordCount(document.content));
-	const readingTime = $derived(estimateReadingTimeMinutes(wordCount));
 
 	function wikilinkDelegation(node: HTMLElement) {
 		function onClick(e: MouseEvent) {
@@ -59,33 +51,14 @@
 	}
 </script>
 
-<div class="preview-container" use:wikilinkDelegation role="region" aria-label="Markdown preview">
-	<!-- Document reading header -->
-	<div class="preview-header">
-		<div class="preview-meta-row">
-			<span class="preview-type-badge type-{document.type}">{document.type}</span>
-			<span class="preview-status-badge status-{document.status}">{document.status}</span>
-			<span class="dot">•</span>
-			<span class="reading-stats">{wordCount.toLocaleString()} words</span>
-			<span class="dot">•</span>
-			<span class="reading-time">~{readingTime} min read</span>
-		</div>
-
-		{#if document.summary}
-			<div class="preview-summary">
-				<em>{document.summary}</em>
-			</div>
-		{/if}
-	</div>
-
-	<!-- Rendered Content -->
+<div class="preview-body" use:wikilinkDelegation>
 	<article
 		class="prose-content"
 		style="
-			{activeTypography.fontFamily ? `font-family: ${activeTypography.fontFamily};` : ''}
-			--preview-text-indent: {activeTypography.firstLineIndent}%;
-			--preview-text-justify: {activeTypography.textJustify};
-			--preview-text-rendering: {activeTypography.textRendering};
+			{typography.fontFamily ? `font-family: ${typography.fontFamily};` : ''}
+			--preview-text-indent: {typography.firstLineIndent}%;
+			--preview-text-justify: {typography.textJustify};
+			--preview-text-rendering: {typography.textRendering};
 			--preview-font-features: {fontFeatureSettingsCss};
 			--preview-autospace: {textAutospaceCss};
 		"
@@ -96,62 +69,11 @@
 </div>
 
 <style>
-	.preview-container {
-		height: 100%;
-		overflow-y: auto;
-		background-color: var(--bg-primary);
-		padding: 32px 48px;
+	.preview-body {
+		width: 100%;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-	}
-
-	.preview-header {
-		width: 100%;
-		max-width: 720px;
-		padding-bottom: 20px;
-		margin-bottom: 24px;
-		border-bottom: 1px solid var(--border-subtle);
-	}
-
-	.preview-meta-row {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		font-size: 12px;
-		color: var(--text-muted);
-	}
-
-	.preview-type-badge, .preview-status-badge {
-		font-size: 10px;
-		font-weight: 600;
-		text-transform: uppercase;
-		padding: 2px 6px;
-		border-radius: 4px;
-	}
-
-	.type-manuscript { background: rgba(88, 166, 255, 0.15); color: #58a6ff; }
-	.type-character { background: rgba(210, 153, 34, 0.15); color: #d29922; }
-	.type-world { background: rgba(63, 185, 80, 0.15); color: #3fb950; }
-	.type-note { background: rgba(188, 140, 255, 0.15); color: #bc8cff; }
-
-	.status-draft { background: var(--bg-tertiary); color: var(--text-muted); }
-	.status-in-progress { background: rgba(210, 153, 34, 0.2); color: #d29922; }
-	.status-revised { background: rgba(88, 166, 255, 0.2); color: #58a6ff; }
-	.status-completed { background: rgba(63, 185, 80, 0.2); color: #3fb950; }
-
-	.dot {
-		opacity: 0.4;
-	}
-
-	.preview-summary {
-		margin-top: 10px;
-		padding: 8px 12px;
-		background: var(--bg-secondary);
-		border-left: 3px solid var(--accent-primary);
-		border-radius: 0 4px 4px 0;
-		color: var(--text-secondary);
-		font-size: 13px;
 	}
 
 	.prose-content {

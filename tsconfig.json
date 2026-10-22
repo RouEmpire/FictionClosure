@@ -14,7 +14,15 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"noFallthroughCasesInSwitch": true,
-		"moduleResolution": "bundler"
+		"moduleResolution": "bundler",
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["src/*"],
+			"@shared/*": ["src/shared/*"],
+			"@components/*": ["src/mainview/components/*"],
+			"@services/*": ["src/mainview/services/*"],
+			"@utils/*": ["src/mainview/utils/*"]
+		}
 	},
 	"include": ["src"],
 	"exclude": ["node_modules", "dist", "build", "../../package/dist"]
