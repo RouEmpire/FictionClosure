@@ -4,6 +4,7 @@ import {
 	generateDefaultExportFileName,
 	uint8ArrayToBase64,
 } from "./exportDownloader";
+import { areStandardFontsAvailable } from "./fontManager";
 import { renderPdfDocument } from "./pdfDocumentRenderer";
 import type {
 	ExportProgressCallback,
@@ -32,6 +33,26 @@ export function validateExportPrerequisites(
 			valid: false,
 			reason:
 				"Project contains no manuscript documents to export. Add at least one chapter or toggle include all documents.",
+		};
+	}
+
+	// Validate custom font selection
+	if (options.fontFamily === "custom") {
+		if (
+			!options.customFont ||
+			!options.customFont.data ||
+			options.customFont.data.byteLength === 0
+		) {
+			return {
+				valid: false,
+				reason:
+					"A custom font file (.ttf or .otf) must be selected when using the Custom Font option.",
+			};
+		}
+	} else if (!areStandardFontsAvailable()) {
+		return {
+			valid: false,
+			reason: `Standard font "${options.fontFamily}" is not available on this system. Please select a Custom Font.`,
 		};
 	}
 

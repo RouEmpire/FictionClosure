@@ -2,6 +2,10 @@ import PDFDocument from "pdfkit";
 import type { FictionDocument, ProjectInfo } from "@shared/types";
 import { canRenderBrowserPreview } from "@shared/domain/coverSupport";
 import {
+	areStandardFontsAvailable,
+	ensureStandardFontsRegistered,
+} from "./fontManager";
+import {
 	applyPageNumbers,
 	paintPageBackground,
 	resolveFontVariant,
@@ -47,11 +51,22 @@ export async function renderPdfDocument(
 				message: "Initializing PDF layout and metadata...",
 			});
 
+			ensureStandardFontsRegistered();
+			const customFontName = options.customFont?.name;
+			const customFontData = options.customFont?.data;
+
+			const defaultConstructorFont = customFontData
+				? (customFontData as unknown as string)
+				: areStandardFontsAvailable()
+					? undefined
+					: (null as unknown as string);
+
 			const doc = new PDFDocument({
 				size: options.paperSize,
 				margin: options.margin,
 				bufferPages: true,
 				autoFirstPage: false,
+				font: defaultConstructorFont,
 				info: {
 					Title: project.name || "Untitled",
 					Author: project.author || "Author",
@@ -59,6 +74,10 @@ export async function renderPdfDocument(
 					Creator: "FictionClosure",
 				},
 			});
+
+			if (options.customFont) {
+				doc.registerFont(options.customFont.name, options.customFont.data);
+			}
 
 			// Accumulate PDF binary chunks
 			const chunks: Uint8Array[] = [];
@@ -114,7 +133,7 @@ export async function renderPdfDocument(
 
 				// Project Title
 				doc
-					.font(resolveFontVariant(options.fontFamily, "bold"))
+					.font(resolveFontVariant(options.fontFamily, "bold", customFontName))
 					.fontSize(TYPOGRAPHY_METRICS.titleSize)
 					.fillColor(options.textColor)
 					.text(project.name || "Untitled Project", { align: "center" });
@@ -124,7 +143,7 @@ export async function renderPdfDocument(
 				// Author
 				if (project.author) {
 					doc
-						.font(resolveFontVariant(options.fontFamily, "regular"))
+						.font(resolveFontVariant(options.fontFamily, "regular", customFontName))
 						.fontSize(TYPOGRAPHY_METRICS.subtitleSize)
 						.fillColor(options.textColor)
 						.text(`by ${project.author}`, { align: "center" });
@@ -135,7 +154,7 @@ export async function renderPdfDocument(
 				// Genre & Date Meta
 				if (project.genre) {
 					doc
-						.font(resolveFontVariant(options.fontFamily, "italic"))
+						.font(resolveFontVariant(options.fontFamily, "italic", customFontName))
 						.fontSize(TYPOGRAPHY_METRICS.metaSize)
 						.fillColor(options.textColor)
 						.text(project.genre, { align: "center" });
@@ -147,7 +166,7 @@ export async function renderPdfDocument(
 					day: "numeric",
 				});
 				doc
-					.font(resolveFontVariant(options.fontFamily, "regular"))
+					.font(resolveFontVariant(options.fontFamily, "regular", customFontName))
 					.fontSize(TYPOGRAPHY_METRICS.metaSize)
 					.fillColor(options.textColor)
 					.text(exportDate, { align: "center" });
@@ -167,9 +186,9 @@ export async function renderPdfDocument(
 
 			docsToExport.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
-			const regularFont = resolveFontVariant(options.fontFamily, "regular");
-			const boldFont = resolveFontVariant(options.fontFamily, "bold");
-			const italicFont = resolveFontVariant(options.fontFamily, "italic");
+			const regularFont = resolveFontVariant(options.fontFamily, "regular", customFontName);
+			const boldFont = resolveFontVariant(options.fontFamily, "bold", customFontName);
+			const italicFont = resolveFontVariant(options.fontFamily, "italic", customFontName);
 
 			for (let i = 0; i < docsToExport.length; i++) {
 				const docItem = docsToExport[i];
@@ -267,6 +286,7 @@ export async function renderPdfDocument(
 				applyPageNumbers(doc, {
 					textColor: options.textColor,
 					fontFamily: options.fontFamily,
+					customFontName,
 					startFromPage: startPage,
 				});
 			}

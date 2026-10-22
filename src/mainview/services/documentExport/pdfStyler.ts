@@ -2,11 +2,17 @@ import type { FontFamily } from "./types";
 
 /**
  * Maps base font family to its standard PDFKit variant font name.
+ * If a custom font is specified, returns the custom font name.
  */
 export function resolveFontVariant(
 	baseFont: FontFamily,
 	variant: "regular" | "bold" | "italic" | "boldItalic" = "regular",
+	customFontName?: string,
 ): string {
+	if (baseFont === "custom") {
+		return customFontName || "CustomFont";
+	}
+
 	switch (baseFont) {
 		case "Times-Roman":
 			if (variant === "bold") return "Times-Bold";
@@ -27,7 +33,7 @@ export function resolveFontVariant(
 			return "Courier";
 
 		default:
-			return baseFont;
+			return customFontName || baseFont;
 	}
 }
 
@@ -51,6 +57,7 @@ export function applyPageNumbers(
 	options: {
 		textColor: string;
 		fontFamily: FontFamily;
+		customFontName?: string;
 		startFromPage?: number;
 		marginTop?: number;
 	},
@@ -60,7 +67,11 @@ export function applyPageNumbers(
 	const range = doc.bufferedPageRange();
 	const totalPages = range.count;
 	const startIdx = options.startFromPage ?? 0;
-	const fontName = resolveFontVariant(options.fontFamily, "regular");
+	const fontName = resolveFontVariant(
+		options.fontFamily,
+		"regular",
+		options.customFontName,
+	);
 	const yPos = options.marginTop ?? 22;
 
 	for (let i = range.start + startIdx; i < range.start + totalPages; i++) {

@@ -65,7 +65,7 @@ export const PAPER_SIZE_OPTIONS: PaperSizeOption[] = [
 	},
 ];
 
-export const FONT_FAMILY_OPTIONS: FontFamilyOption[] = [
+export const STANDARD_FONT_FAMILY_OPTIONS: FontFamilyOption[] = [
 	{
 		id: "Times-Roman",
 		label: "Times Roman",
@@ -84,6 +84,18 @@ export const FONT_FAMILY_OPTIONS: FontFamilyOption[] = [
 		description: "Monospace Manuscript (Standard Submission)",
 		category: "mono",
 	},
+];
+
+export const CUSTOM_FONT_FAMILY_OPTION: FontFamilyOption = {
+	id: "custom",
+	label: "Custom Font",
+	description: "Upload your own TrueType (.ttf) or OpenType (.otf) font",
+	category: "custom",
+};
+
+export const FONT_FAMILY_OPTIONS: FontFamilyOption[] = [
+	...STANDARD_FONT_FAMILY_OPTIONS,
+	CUSTOM_FONT_FAMILY_OPTION,
 ];
 
 export const TEXT_ALIGN_OPTIONS = [

@@ -8,9 +8,19 @@ export type PaperSize =
 	| "Executive"
 	| "B5";
 
-export type FontFamily = "Times-Roman" | "Helvetica" | "Courier";
+export type StandardFontFamily = "Times-Roman" | "Helvetica" | "Courier";
+
+export type FontFamily = StandardFontFamily | "custom";
 
 export type TextAlign = "left" | "center" | "right" | "justify";
+
+export interface CustomFontConfig {
+	name: string;
+	data: Uint8Array;
+	fileName: string;
+	format: "ttf" | "otf" | "woff";
+	sizeBytes: number;
+}
 
 export interface PaperDimension {
 	width: number;
@@ -29,7 +39,7 @@ export interface FontFamilyOption {
 	id: FontFamily;
 	label: string;
 	description: string;
-	category: "serif" | "sans" | "mono";
+	category: "serif" | "sans" | "mono" | "custom";
 }
 
 export interface ColorPresetOption {
@@ -55,6 +65,7 @@ export interface PdfExportOptions {
 	margin: number;
 	showPageNumber: boolean;
 	fontFamily: FontFamily;
+	customFont?: CustomFontConfig;
 	textAlign: TextAlign;
 	includeCover: boolean;
 	includeTitlePage: boolean;

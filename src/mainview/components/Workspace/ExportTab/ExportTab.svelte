@@ -2,7 +2,6 @@
 	import type { FictionDocument, ProjectInfo } from "@shared/types";
 	import {
 		DEFAULT_PDF_EXPORT_OPTIONS,
-		FONT_FAMILY_OPTIONS,
 		MARGIN_PRESETS,
 		PAGE_COLOR_PRESETS,
 		PAPER_SIZE_OPTIONS,
@@ -14,7 +13,12 @@
 		openPdfBlobInNewTab,
 	} from "@services/documentExport/exportDownloader";
 	import { exportProjectToPdf } from "@services/documentExport/exportService";
+	import {
+		areStandardFontsAvailable,
+		getAvailableFontOptions,
+	} from "@services/documentExport/fontManager";
 	import type {
+		CustomFontConfig,
 		ExportFormat,
 		ExportResult,
 		FontFamily,
@@ -23,6 +27,7 @@
 		TextAlign,
 	} from "@services/documentExport/types";
 	import { savePdfToDisk } from "@services/storage";
+	import CustomFontPicker from "./CustomFontPicker.svelte";
 	import ExportMiniPreview from "./ExportMiniPreview.svelte";
 	import FormatSelector from "./FormatSelector.svelte";
 	import "./exportTab.css";
@@ -41,7 +46,16 @@
 	let pageColor = $state(DEFAULT_PDF_EXPORT_OPTIONS.pageColor);
 	let margin = $state(DEFAULT_PDF_EXPORT_OPTIONS.margin);
 	let showPageNumber = $state(DEFAULT_PDF_EXPORT_OPTIONS.showPageNumber);
-	let fontFamily = $state<FontFamily>(DEFAULT_PDF_EXPORT_OPTIONS.fontFamily);
+	let customFont = $state<CustomFontConfig | null>(null);
+
+	const standardAvailable = areStandardFontsAvailable();
+	const availableFonts = getAvailableFontOptions();
+
+	// Default font: if standard fonts unavailable, fallback to custom
+	let fontFamily = $state<FontFamily>(
+		standardAvailable ? DEFAULT_PDF_EXPORT_OPTIONS.fontFamily : "custom",
+	);
+
 	let textAlign = $state<TextAlign>(DEFAULT_PDF_EXPORT_OPTIONS.textAlign);
 	let includeCover = $state(DEFAULT_PDF_EXPORT_OPTIONS.includeCover);
 	let includeTitlePage = $state(DEFAULT_PDF_EXPORT_OPTIONS.includeTitlePage);
@@ -55,6 +69,15 @@
 
 	async function handleExport(previewOnly: boolean = false) {
 		if (isExporting) return;
+
+		if (fontFamily === "custom" && !customFont) {
+			const msg =
+				"Please select or upload a custom font file (.ttf or .otf) before exporting.";
+			if (onShowToast) onShowToast(msg);
+			else alert(msg);
+			return;
+		}
+
 		isExporting = true;
 		progressText = "Preparing PDF document...";
 		lastResult = null;
@@ -67,6 +90,7 @@
 			margin,
 			showPageNumber,
 			fontFamily,
+			customFont: customFont ?? undefined,
 			textAlign,
 			includeCover,
 			includeTitlePage,
@@ -207,8 +231,14 @@
 			<!-- Font Family -->
 			<div class="option-field">
 				<span class="option-label">Font Family</span>
+				{#if !standardAvailable}
+					<div class="standard-font-warning-banner">
+						<i class="fa-solid fa-triangle-exclamation"></i>
+						<span>Standard fonts are not available on this system. Please upload a custom font (.ttf, .otf).</span>
+					</div>
+				{/if}
 				<div class="button-group-row">
-					{#each FONT_FAMILY_OPTIONS as f}
+					{#each availableFonts as f}
 						<button
 							type="button"
 							class="group-btn"
@@ -216,10 +246,21 @@
 							onclick={() => (fontFamily = f.id)}
 							title={f.description}
 						>
+							{#if f.id === "custom"}
+								<i class="fa-solid fa-font"></i>
+							{/if}
 							{f.label}
 						</button>
 					{/each}
 				</div>
+
+				{#if fontFamily === "custom"}
+					<CustomFontPicker
+						{customFont}
+						onSelectCustomFont={(f) => (customFont = f)}
+						onError={(msg) => onShowToast ? onShowToast(msg) : alert(msg)}
+					/>
+				{/if}
 			</div>
 
 			<!-- Content Align -->
@@ -272,6 +313,7 @@
 				{pageColor}
 				{textColor}
 				{fontFamily}
+				{customFont}
 				{textAlign}
 				{showPageNumber}
 			/>
@@ -326,7 +368,7 @@
 				type="button"
 				class="export-primary-btn"
 				onclick={() => handleExport(false)}
-				disabled={isExporting}
+				disabled={isExporting || (fontFamily === "custom" && !customFont)}
 			>
 				<i class="fa-solid fa-file-pdf"></i>
 				{isExporting ? "Compiling PDF..." : "Export to PDF"}
@@ -335,7 +377,7 @@
 				type="button"
 				class="export-secondary-btn"
 				onclick={() => handleExport(true)}
-				disabled={isExporting}
+				disabled={isExporting || (fontFamily === "custom" && !customFont)}
 				title="Generate and preview PDF in new tab"
 			>
 				<i class="fa-solid fa-arrow-up-right-from-square"></i> Preview in Browser

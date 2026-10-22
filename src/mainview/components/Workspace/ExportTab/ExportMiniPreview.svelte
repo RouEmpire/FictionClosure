@@ -1,5 +1,10 @@
 <script lang="ts">
-	import type { FontFamily, PaperSize, TextAlign } from "@services/documentExport/types";
+	import type {
+		CustomFontConfig,
+		FontFamily,
+		PaperSize,
+		TextAlign,
+	} from "@services/documentExport/types";
 
 	interface Props {
 		projectName: string;
@@ -7,6 +12,7 @@
 		pageColor: string;
 		textColor: string;
 		fontFamily: FontFamily;
+		customFont?: CustomFontConfig | null;
 		textAlign: TextAlign;
 		showPageNumber: boolean;
 	}
@@ -17,16 +23,19 @@
 		pageColor,
 		textColor,
 		fontFamily,
+		customFont = null,
 		textAlign,
 		showPageNumber,
 	}: Props = $props();
 
 	const fontCss = $derived(
-		fontFamily === "Helvetica"
-			? "sans-serif"
-			: fontFamily === "Courier"
-				? "monospace"
-				: "serif",
+		fontFamily === "custom" && customFont
+			? `'${customFont.name}', serif`
+			: fontFamily === "Helvetica"
+				? "sans-serif"
+				: fontFamily === "Courier"
+					? "monospace"
+					: "serif",
 	);
 
 	const aspectRatio = $derived(
@@ -37,7 +46,12 @@
 <div class="mini-preview-container">
 	<div class="mini-preview-header">
 		<span>Layout Live Preview</span>
-		<span class="preview-badge">{paperSize}</span>
+		<div style="display: flex; gap: 4px; align-items: center;">
+			{#if fontFamily === "custom"}
+				<span class="preview-badge" title="Custom Font">{customFont?.name || "Custom Font"}</span>
+			{/if}
+			<span class="preview-badge">{paperSize}</span>
+		</div>
 	</div>
 
 	<div
