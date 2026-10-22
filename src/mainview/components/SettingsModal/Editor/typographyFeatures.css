@@ -1,0 +1,141 @@
+.feature-chips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 6px;
+}
+
+.feature-toggle-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    padding: 6px 8px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.12s ease;
+}
+
+.feature-toggle-chip:hover {
+    border-color: var(--border-bold);
+}
+
+.feature-toggle-chip.active {
+    background: var(--accent-subtle);
+    border-color: var(--accent-primary);
+}
+
+.feat-tag {
+    font-family: var(--font-mono, monospace);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent-primary);
+    background: var(--bg-tertiary);
+    padding: 1px 4px;
+    border-radius: 3px;
+}
+
+.feat-name {
+    font-size: 11px;
+    color: var(--text-primary);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.feat-indicator {
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--text-muted);
+}
+
+.feature-toggle-chip.active .feat-indicator {
+    color: var(--accent-primary);
+}
+
+.add-tag-row {
+    display: flex;
+    gap: 6px;
+    max-width: 280px;
+}
+
+.custom-tag-input {
+    font-family: var(--font-mono, monospace);
+    text-transform: lowercase;
+}
+
+.btn-add-tag {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    padding: 0 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.btn-add-tag:hover:not(:disabled) {
+    background: var(--bg-hover);
+    color: var(--accent-primary);
+}
+
+.btn-add-tag:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.active-features-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.empty-features-note {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.active-tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-family: var(--font-mono, monospace);
+    font-size: 11px;
+    color: var(--text-primary);
+}
+
+.btn-remove-tag {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 10px;
+    cursor: pointer;
+    padding: 0 2px;
+    line-height: 1;
+}
+
+.btn-remove-tag:hover {
+    color: var(--danger-color, #f85149);
+}
+
+.custom-autospace-input-box {
+    margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.field-subnote {
+    font-size: 10px;
+    color: var(--text-muted);
+}
