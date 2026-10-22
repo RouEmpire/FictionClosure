@@ -656,7 +656,7 @@
         border: 1px solid var(--border-subtle);
         border-radius: 4px;
         font-size: 12px;
-        color: var(--accent-primary);
+        color: var(--accent-secondary, #58a6ff);
         flex-shrink: 0;
     }
 

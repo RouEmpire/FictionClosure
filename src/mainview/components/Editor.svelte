@@ -1321,9 +1321,9 @@
     }
 
     .mention-badge.badge-folder {
-        background: rgba(230, 157, 69, 0.15);
-        color: var(--accent-primary);
-        border: 1px solid rgba(230, 157, 69, 0.3);
+        background: var(--accent-secondary-subtle, rgba(88, 166, 255, 0.15));
+        color: var(--accent-secondary, #58a6ff);
+        border: 1px solid rgba(88, 166, 255, 0.3);
     }
 
     .mention-badge.badge-doc {

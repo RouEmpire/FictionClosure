@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { markdownToPlainText, extractWikilinks } from "../src/shared/domain/markdown";
+import { markdownToPlainText, extractWikilinks, countContentLines } from "../src/shared/domain/markdown";
 import {
 	slugifyTitle,
 	getDocumentRelativePath,
@@ -254,5 +254,58 @@ Also check the [[Magic Systems]] documentation.
 
 		expect(getDocumentRelativePath(docInSubfolder)).toBe("plots/subplots/heist-beat-1.md");
 		expect(getDocumentSystemPath(docInSubfolder, "/project")).toBe("/project/plots/subplots/heist-beat-1.md");
+	});
+
+	test("countContentLines ignores YAML frontmatter and accurately counts body lines", () => {
+		// Empty and whitespace cases
+		expect(countContentLines("")).toBe(0);
+		expect(countContentLines("   \n\n\t  ")).toBe(0);
+
+		// Frontmatter only
+		const frontmatterOnly = `---
+title: "Empty Chapter"
+tags: [test]
+---
+`;
+		expect(countContentLines(frontmatterOnly)).toBe(0);
+
+		// Single line content
+		const singleLine = `# Chapter 1: The Gathering`;
+		expect(countContentLines(singleLine)).toBe(1);
+
+		// Content with frontmatter and 5 body lines
+		const fiveLinesWithFm = `---
+id: "doc-123"
+title: "The Silver Gate"
+---
+# Chapter 2
+
+The wind howled through the ruined citadel.
+Elena gripped the hilt of her blade.
+No one answered.
+`;
+		expect(countContentLines(fiveLinesWithFm)).toBe(5);
+
+		// Exactly 9 lines (less than 10)
+		const nineLines = Array.from({ length: 9 }, (_, i) => `Paragraph line ${i + 1}`).join("\n");
+		const count9 = countContentLines(nineLines);
+		expect(count9).toBe(9);
+		expect(count9 < 10).toBe(true);
+
+		// Exactly 10 lines (not less than 10)
+		const tenLines = Array.from({ length: 10 }, (_, i) => `Line ${i + 1}`).join("\n");
+		const count10 = countContentLines(tenLines);
+		expect(count10).toBe(10);
+		expect(count10 < 10).toBe(false);
+
+		// 15 lines with frontmatter
+		const fifteenLinesWithFm = `---
+title: "Long Chapter"
+---
+${Array.from({ length: 15 }, (_, i) => `Prose sentence ${i + 1}`).join("\n")}
+`;
+		const count15 = countContentLines(fifteenLinesWithFm);
+		expect(count15).toBe(15);
+		expect(count15 < 10).toBe(false);
 	});
 });

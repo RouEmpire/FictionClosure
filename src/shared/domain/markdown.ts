@@ -44,6 +44,19 @@ export function estimateReadingTimeMinutes(wordCount: number): number {
 }
 
 /**
+ * Count the number of content lines in a document, excluding YAML frontmatter.
+ */
+export function countContentLines(text: string): number {
+	if (!text) return 0;
+	// Strip YAML frontmatter if present at the start of text
+	const body = text.replace(/^---[\r\n]+[\s\S]*?[\r\n]+---[\r\n]*/, "");
+	if (!body || body.trim() === "") return 0;
+	// Strip single trailing newline so final newline doesn't count as an extra empty line
+	const normalized = body.replace(/\r?\n$/, "");
+	return normalized.split(/\r?\n/).length;
+}
+
+/**
  * Lightweight and safe Markdown to HTML converter.
  */
 export function renderMarkdown(markdown: string): string {

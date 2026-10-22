@@ -16,6 +16,10 @@
 	--accent-hover: #f3ae5c;
 	--accent-subtle: rgba(230, 157, 69, 0.15);
 
+	--accent-secondary: #58a6ff;
+	--accent-secondary-hover: #79b8ff;
+	--accent-secondary-subtle: rgba(88, 166, 255, 0.15);
+
 	--success-color: #3fb950;
 	--warning-color: #d29922;
 	--danger-color: #f85149;

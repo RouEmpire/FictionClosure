@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { DocumentType, FictionDocument, ProjectFolder } from "../../shared/types";
-	import { calculateWordCount, markdownToPlainText } from "../../shared/domain/markdown";
+	import { calculateWordCount, countContentLines, markdownToPlainText } from "../../shared/domain/markdown";
 	import {
 		getDocumentRelativePath,
 		getDocumentSystemPath,
@@ -1048,12 +1048,15 @@
 	{@const isActive = doc.id === activeDocId}
 	{@const isEditing = editingDocId === doc.id}
 	{@const words = calculateWordCount(doc.content)}
+	{@const contentLines = countContentLines(doc.content)}
+	{@const isShort = contentLines < 10}
 
 	<div
 		class="doc-item"
 		class:active={isActive}
 		class:nav-selected={isFocused && visibleNavItems[selectedIndex]?.kind === "doc" && visibleNavItems[selectedIndex]?.id === doc.id}
 		class:context-active={contextMenu.isOpen && contextMenu.doc?.id === doc.id}
+		class:is-short={isShort}
 		style="padding-left: calc({depth} * 12px + 14px);"
 		role="treeitem"
 		tabindex={isActive ? 0 : -1}
@@ -1078,16 +1081,17 @@
 			<button
 				type="button"
 				class="doc-link-btn"
+				class:is-short={isShort}
 				onclick={() => onSelectDoc(doc.id)}
-				title={doc.title}
+				title="{doc.title}{isShort ? ` (${contentLines} ${contentLines === 1 ? 'line' : 'lines'})` : ''}"
 			>
 				<div class="doc-item-title-row">
 					<span class="status-indicator status-{doc.status}"></span>
-					<span class="doc-item-title">{doc.title}</span>
+					<span class="doc-item-title" class:is-short={isShort}>{doc.title}</span>
 				</div>
 				<div class="doc-item-meta">
 					{#if doc.type === "manuscript"}
-						<span class="word-counter">{words.toLocaleString()} words</span>
+						<span class="word-counter" class:is-short={isShort}>{words.toLocaleString()} words</span>
 					{:else if doc.tags.length > 0}
 						<span class="tag-label">#{doc.tags[0]}</span>
 					{/if}
@@ -1255,6 +1259,11 @@
 	.section-icon {
 		font-size: 12px;
 		color: var(--accent-primary);
+		flex-shrink: 0;
+	}
+
+	.section-icon i {
+		color: var(--accent-primary);
 	}
 
 	.section-title {
@@ -1324,21 +1333,24 @@
 		min-height: 28px;
 		margin: 1px 4px;
 		border-radius: 4px;
-		transition: background-color 0.1s ease;
+		color: var(--accent-secondary);
+		transition: background-color 0.15s ease, color 0.15s ease;
 	}
 
 	.folder-row:hover {
 		background-color: var(--bg-hover);
+		color: var(--accent-secondary-hover);
 	}
 
 	.folder-row.is-active {
-		background-color: var(--accent-subtle);
-		border-left: 2px solid var(--accent-primary);
+		background-color: var(--accent-secondary-subtle);
+		border-left: 2px solid var(--accent-secondary);
+		color: var(--accent-secondary-hover);
 	}
 
 	.folder-row.nav-selected {
 		background-color: var(--bg-hover);
-		outline: 1px solid var(--accent-primary);
+		outline: 1px solid var(--accent-secondary);
 	}
 
 	.folder-toggle-btn {
@@ -1347,19 +1359,26 @@
 		gap: 6px;
 		background: transparent;
 		border: none;
-		color: var(--text-secondary);
+		color: var(--accent-secondary);
 		font-size: 12px;
 		cursor: pointer;
 		flex: 1;
 		min-width: 0;
 		text-align: left;
 		padding: 2px 0;
+		transition: color 0.15s ease;
+	}
+
+	.folder-row:hover .folder-toggle-btn,
+	.folder-toggle-btn:hover {
+		color: var(--accent-secondary-hover);
 	}
 
 	.folder-arrow {
 		font-size: 9px;
-		color: var(--text-muted);
-		transition: transform 0.15s ease;
+		color: var(--accent-secondary);
+		opacity: 0.8;
+		transition: transform 0.15s ease, color 0.15s ease;
 		display: inline-block;
 		width: 10px;
 		flex-shrink: 0;
@@ -1369,10 +1388,21 @@
 		transform: rotate(-90deg);
 	}
 
+	.folder-row:hover .folder-arrow {
+		color: var(--accent-secondary-hover);
+		opacity: 1;
+	}
+
 	.folder-icon {
 		font-size: 12px;
-		color: var(--accent-primary);
+		color: var(--accent-secondary);
 		flex-shrink: 0;
+		transition: color 0.15s ease;
+	}
+
+	.folder-row:hover .folder-icon,
+	.folder-row.is-active .folder-icon {
+		color: var(--accent-secondary-hover);
 	}
 
 	.folder-title {
@@ -1380,18 +1410,29 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		color: var(--text-primary);
+		color: var(--accent-secondary);
 		flex: 1;
+		transition: color 0.15s ease;
+	}
+
+	.folder-row:hover .folder-title,
+	.folder-row.is-active .folder-title {
+		color: var(--accent-secondary-hover);
 	}
 
 	.folder-tag-badge {
 		font-size: 10px;
-		color: var(--text-muted);
-		background: var(--bg-tertiary);
+		color: var(--accent-secondary);
+		background: var(--accent-secondary-subtle);
 		padding: 1px 4px;
 		border-radius: 3px;
 		font-family: var(--font-editor, monospace);
 		flex-shrink: 0;
+		transition: color 0.15s ease, background-color 0.15s ease;
+	}
+
+	.folder-row:hover .folder-tag-badge {
+		color: var(--accent-secondary-hover);
 	}
 
 	.folder-actions {
@@ -1409,16 +1450,19 @@
 	.folder-action-btn {
 		background: transparent;
 		border: none;
-		color: var(--text-muted);
+		color: var(--accent-secondary);
+		opacity: 0.7;
 		font-size: 10px;
 		cursor: pointer;
 		padding: 2px 4px;
 		border-radius: 3px;
+		transition: color 0.15s ease, opacity 0.15s ease, background-color 0.15s ease;
 	}
 
 	.folder-action-btn:hover {
-		color: var(--text-primary);
-		background: var(--bg-tertiary);
+		color: var(--accent-secondary-hover);
+		opacity: 1;
+		background: var(--accent-secondary-subtle);
 	}
 
 	.folder-children-container {
@@ -1430,8 +1474,13 @@
 	.doc-item {
 		margin: 1px 4px;
 		border-radius: 4px;
-		transition: background-color 0.15s ease;
+		transition: background-color 0.15s ease, color 0.15s ease;
 		padding-right: 8px;
+		color: var(--text-primary);
+	}
+
+	.doc-item.is-short {
+		color: var(--text-muted);
 	}
 
 	.doc-item:hover {
@@ -1480,6 +1529,21 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		transition: color 0.15s ease;
+	}
+
+	.doc-item.is-short .doc-item-title,
+	.doc-item-title.is-short,
+	.doc-link-btn.is-short .doc-item-title {
+		color: var(--text-muted);
+	}
+
+	.doc-item.is-short:hover .doc-item-title {
+		color: var(--text-secondary);
+	}
+
+	.doc-item.active .doc-item-title {
+		color: var(--text-primary);
 	}
 
 	.doc-item-meta {
