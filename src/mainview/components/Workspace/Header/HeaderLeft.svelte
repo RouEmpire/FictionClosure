@@ -5,6 +5,7 @@
         onCloseProject?: () => void;
         onToggleSidebar: () => void;
         onOpenCommandPalette: () => void;
+        onOpenProjectSettings?: () => void;
     }
 
     let {
@@ -13,6 +14,7 @@
         onCloseProject,
         onToggleSidebar,
         onOpenCommandPalette,
+        onOpenProjectSettings,
     }: Props = $props();
 
     const isMac =
@@ -49,9 +51,21 @@
     </button>
 
     <div class="divider-vertical"></div>
-    <span class="project-title" title="Project: {projectName}">
-        {projectName}
-    </span>
+    {#if onOpenProjectSettings}
+        <button
+            type="button"
+            class="project-title-btn"
+            onclick={onOpenProjectSettings}
+            title="Edit Project Settings & Cover ({projectName})"
+        >
+            <span class="project-title">{projectName}</span>
+            <i class="fa-solid fa-sliders project-settings-icon"></i>
+        </button>
+    {:else}
+        <span class="project-title" title="Project: {projectName}">
+            {projectName}
+        </span>
+    {/if}
 
     <button
         type="button"
@@ -116,6 +130,38 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    .project-title-btn {
+        background: transparent;
+        border: 1px solid transparent;
+        padding: 3px 6px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        color: inherit;
+        transition: all 0.15s ease;
+    }
+
+    .project-title-btn:hover {
+        background-color: var(--bg-hover);
+        border-color: var(--border-subtle);
+    }
+
+    .project-title-btn:hover .project-title {
+        color: var(--text-primary);
+    }
+
+    .project-title-btn:hover .project-settings-icon {
+        color: var(--accent-primary);
+    }
+
+    .project-settings-icon {
+        font-size: 11px;
+        color: var(--text-muted);
+        transition: color 0.15s ease;
     }
 
     .search-trigger-btn {

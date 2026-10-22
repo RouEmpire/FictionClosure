@@ -3,6 +3,7 @@ import * as path from "node:path";
 import * as os from "node:os";
 import * as child_process from "node:child_process";
 import { calculateWordCount } from "../shared/domain/markdown";
+import { extractCoverExtension, isSupportedCoverFile } from "../shared/domain/coverSupport";
 import type {
 	CrashRecoveryData,
 	DirectoryMeta,
@@ -105,10 +106,47 @@ export function resolveFolderPath(folderPath: string): string {
 }
 
 /**
+ * Helper to determine MIME type for supported cover extensions.
+ */
+function getMimeTypeForCover(ext: string): string {
+	const clean = ext.replace(/^\./, "").toLowerCase();
+	switch (clean) {
+		case "jpg":
+		case "jpeg":
+			return "image/jpeg";
+		case "png":
+			return "image/png";
+		case "webp":
+			return "image/webp";
+		case "avif":
+			return "image/avif";
+		case "gif":
+			return "image/gif";
+		case "jxl":
+			return "image/jxl";
+		case "tif":
+		case "tiff":
+			return "image/tiff";
+		case "heic":
+		case "heif":
+			return "image/heic";
+		case "psd":
+		case "psb":
+			return "image/vnd.adobe.photoshop";
+		case "pdf":
+			return "application/pdf";
+		case "apng":
+			return "image/apng";
+		default:
+			return "image/png";
+	}
+}
+
+/**
  * Atomic file writer: writes to a unique temporary file and renames it over the target.
  * Guarantees that target files are never left corrupted or partially written.
  */
-export function atomicWriteFile(targetPath: string, content: string): void {
+export function atomicWriteFile(targetPath: string, content: string | Buffer): void {
 	const targetDir = path.dirname(targetPath);
 	if (!fs.existsSync(targetDir)) {
 		fs.mkdirSync(targetDir, { recursive: true });
@@ -120,7 +158,11 @@ export function atomicWriteFile(targetPath: string, content: string): void {
 	);
 
 	try {
-		fs.writeFileSync(tempPath, content, "utf8");
+		if (Buffer.isBuffer(content)) {
+			fs.writeFileSync(tempPath, content);
+		} else {
+			fs.writeFileSync(tempPath, content, "utf8");
+		}
 		fs.renameSync(tempPath, targetPath);
 	} catch (err) {
 		if (fs.existsSync(tempPath)) {
@@ -972,7 +1014,63 @@ export async function saveProjectToFolder(
 			});
 		}
 
-		// 6. Write project.json manifest
+		// 6. Handle Cover Image & media/covers/
+		const coversDir = path.join(absFolder, "media", "covers");
+		if (!fs.existsSync(coversDir)) {
+			fs.mkdirSync(coversDir, { recursive: true });
+		}
+
+		let activeCoverPath = project.coverImage;
+
+		if (activeCoverPath && activeCoverPath.startsWith("data:")) {
+			// Base64 data URL: decode and save to media/covers/cover.<ext>
+			try {
+				const ext = extractCoverExtension(activeCoverPath);
+				const commaIdx = activeCoverPath.indexOf(",");
+				if (commaIdx !== -1) {
+					const buf = Buffer.from(activeCoverPath.slice(commaIdx + 1), "base64");
+					const coverFilename = `cover.${ext}`;
+					const coverDest = path.join(coversDir, coverFilename);
+					atomicWriteFile(coverDest, buf);
+					activeCoverPath = path.join("media", "covers", coverFilename).replace(/\\/g, "/");
+				}
+			} catch (err) {
+				console.warn("Could not save cover image from data URL:", err);
+			}
+		} else if (activeCoverPath && fs.existsSync(activeCoverPath)) {
+			// External file path: copy into media/covers/
+			try {
+				const relToCovers = path.relative(coversDir, activeCoverPath);
+				if (relToCovers.startsWith("..") || path.isAbsolute(relToCovers)) {
+					const basename = path.basename(activeCoverPath);
+					const dest = path.join(coversDir, basename);
+					fs.copyFileSync(activeCoverPath, dest);
+					activeCoverPath = path.join("media", "covers", basename).replace(/\\/g, "/");
+				}
+			} catch (err) {
+				console.warn("Could not copy external cover image:", err);
+			}
+		}
+
+		// Scan media/covers/ for all valid covers
+		let availableCovers: string[] = [];
+		try {
+			const entries = fs.readdirSync(coversDir, { withFileTypes: true });
+			availableCovers = entries
+				.filter((e) => e.isFile() && isSupportedCoverFile(e.name))
+				.map((e) => path.join("media", "covers", e.name).replace(/\\/g, "/"));
+		} catch {
+			// ignore
+		}
+
+		if (!activeCoverPath && availableCovers.length > 0) {
+			activeCoverPath = availableCovers[0];
+		}
+
+		project.coverImage = activeCoverPath;
+		project.covers = availableCovers;
+
+		// 7. Write project.json manifest
 		const manifest: ProjectManifest = {
 			schemaVersion: 3,
 			name: project.name,
@@ -982,15 +1080,20 @@ export async function saveProjectToFolder(
 			updatedAt: now,
 			documents: manifestDocs,
 			folders: effectiveFolders,
+			coverImage: activeCoverPath,
+			covers: availableCovers,
+			description: project.description,
 		};
 
 		const manifestPath = path.join(absFolder, "project.json");
 		assertWithinRoot(absFolder, manifestPath);
 		atomicWriteFile(manifestPath, JSON.stringify(manifest, null, 2));
 
-		// 7. Write README.md if not present
+		// 8. Write README.md
 		const readmePath = path.join(absFolder, "README.md");
-		if (!fs.existsSync(readmePath)) {
+		if (typeof project.readme === "string" && project.readme.trim() !== "") {
+			atomicWriteFile(readmePath, project.readme);
+		} else if (!fs.existsSync(readmePath)) {
 			const readmeContent = [
 				`# ${project.name}`,
 				"",
@@ -1259,7 +1362,49 @@ export async function loadProjectFromFolder(folderPath: string): Promise<LoadPro
 			}
 		}
 
-		// 4. Check for unsaved crash recovery cache
+		// 4. Read README.md
+		const readmePath = path.join(absFolder, "README.md");
+		let readmeContent = "";
+		if (fs.existsSync(readmePath)) {
+			try {
+				readmeContent = fs.readFileSync(readmePath, "utf8");
+			} catch {
+				// ignore
+			}
+		}
+
+		// 5. Scan media/covers/ and load active cover
+		const coversDir = path.join(absFolder, "media", "covers");
+		let loadedCovers: string[] = [];
+		if (fs.existsSync(coversDir)) {
+			try {
+				const entries = fs.readdirSync(coversDir, { withFileTypes: true });
+				loadedCovers = entries
+					.filter((e) => e.isFile() && isSupportedCoverFile(e.name))
+					.map((e) => path.join("media", "covers", e.name).replace(/\\/g, "/"));
+			} catch {
+				// ignore
+			}
+		}
+
+		let activeCoverImage = manifest.coverImage || (loadedCovers.length > 0 ? loadedCovers[0] : undefined);
+		if (activeCoverImage) {
+			const coverAbs = path.isAbsolute(activeCoverImage)
+				? activeCoverImage
+				: path.join(absFolder, activeCoverImage);
+			if (fs.existsSync(coverAbs)) {
+				try {
+					const ext = path.extname(coverAbs).toLowerCase();
+					const mime = getMimeTypeForCover(ext);
+					const buf = fs.readFileSync(coverAbs);
+					activeCoverImage = `data:${mime};base64,${buf.toString("base64")}`;
+				} catch {
+					// fallback to path
+				}
+			}
+		}
+
+		// 6. Check for unsaved crash recovery cache
 		const recoveryData = getCrashRecovery(absFolder);
 
 		const project: ProjectInfo = {
@@ -1270,6 +1415,10 @@ export async function loadProjectFromFolder(folderPath: string): Promise<LoadPro
 			folderPath: absFolder,
 			lastSaved: manifest.updatedAt,
 			folders: loadedFolders,
+			coverImage: activeCoverImage,
+			covers: loadedCovers,
+			readme: readmeContent,
+			description: manifest.description,
 		};
 
 		setLastProjectFolder(absFolder);

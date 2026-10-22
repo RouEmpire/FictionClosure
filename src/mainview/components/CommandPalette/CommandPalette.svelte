@@ -15,6 +15,7 @@
 		onSave,
 		onChangeFolder,
 		onOpenSettings,
+		onOpenProjectSettings,
 	}: CommandPaletteProps = $props();
 
 	let searchQuery = $state("");
@@ -39,6 +40,7 @@
 			onSetViewMode,
 			onChangeFolder,
 			onOpenSettings,
+			onOpenProjectSettings,
 		}),
 	);
 

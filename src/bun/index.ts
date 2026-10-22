@@ -1,3 +1,9 @@
+import type {
+	FictionDocument,
+	ProjectFolder,
+	ProjectHistoryStacks,
+	ProjectInfo,
+} from "@shared/types";
 import { BrowserWindow, Updater, BrowserView, Utils } from "electrobun/main";
 import * as os from "node:os";
 import type { FictionClosureRPCSchema } from "../shared/rpc-schema";
@@ -35,7 +41,7 @@ const rpc = BrowserView.defineRPC<FictionClosureRPCSchema>({
 	maxRequestTime: 180000, // allow sufficient time for user interaction in file dialog
 	handlers: {
 		requests: {
-			selectProjectFolder: async (params) => {
+			selectProjectFolder: async (params?: { startingFolder?: string }) => {
 				try {
 					const starting = params?.startingFolder || getLastProjectFolder() || os.homedir();
 					const selectedPaths = await Utils.openFileDialog({
@@ -64,7 +70,13 @@ const rpc = BrowserView.defineRPC<FictionClosureRPCSchema>({
 				}
 			},
 
-			saveProjectToFolder: async (params) => {
+			saveProjectToFolder: async (params: {
+				folderPath: string;
+				project: ProjectInfo;
+				documents: FictionDocument[];
+				folders?: ProjectFolder[];
+				stacks?: ProjectHistoryStacks;
+			}) => {
 				return await saveProjectToFolder(
 					params.folderPath,
 					params.project,
@@ -75,7 +87,7 @@ const rpc = BrowserView.defineRPC<FictionClosureRPCSchema>({
 				);
 			},
 
-			loadProjectFromFolder: async (params) => {
+			loadProjectFromFolder: async (params: { folderPath: string }) => {
 				return await loadProjectFromFolder(params.folderPath);
 			},
 
@@ -83,16 +95,20 @@ const rpc = BrowserView.defineRPC<FictionClosureRPCSchema>({
 				return { folderPath: getLastProjectFolder() };
 			},
 
-			setLastProjectFolder: async (params) => {
+			setLastProjectFolder: async (params: { folderPath: string }) => {
 				setLastProjectFolder(params.folderPath);
 				return { success: true };
 			},
 
-			saveCrashCache: async (params) => {
+			saveCrashCache: async (params: {
+				folderPath: string;
+				project: ProjectInfo;
+				documents: FictionDocument[];
+			}) => {
 				return saveCrashCache(params.folderPath, params.project, params.documents);
 			},
 
-			clearCrashCache: async (params) => {
+			clearCrashCache: async (params: { folderPath: string }) => {
 				return clearCrashCache(params.folderPath);
 			},
 		},

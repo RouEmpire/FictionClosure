@@ -59,6 +59,14 @@ export function buildStaticActions(
 			execute: () => handlers.onOpenSettings?.(),
 		},
 		{
+			id: "act-project-settings",
+			type: "action",
+			title: "Project Settings...",
+			subtitle: "Edit project name, author, genre, target word count, cover, and README",
+			icon: "fa-solid fa-sliders",
+			execute: () => handlers.onOpenProjectSettings?.(),
+		},
+		{
 			id: "act-split",
 			type: "action",
 			title: "View: Split Mode",

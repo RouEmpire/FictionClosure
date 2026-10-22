@@ -28,6 +28,7 @@
         onOpenCommandPalette: () => void;
         onOpenShortcuts: () => void;
         onCloseProject?: () => void;
+        onOpenProjectSettings?: () => void;
     }
 
     let {
@@ -49,6 +50,7 @@
         onOpenCommandPalette,
         onOpenShortcuts,
         onCloseProject,
+        onOpenProjectSettings,
     }: Props = $props();
 </script>
 
@@ -59,6 +61,7 @@
         {onCloseProject}
         {onToggleSidebar}
         {onOpenCommandPalette}
+        {onOpenProjectSettings}
     />
 
     <HeaderCenter {activeDoc} />

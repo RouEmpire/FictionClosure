@@ -14,6 +14,7 @@ describe("CommandPalette Helpers & Search Filtering", () => {
 		onSetViewMode: mock(() => {}),
 		onChangeFolder: mock(() => {}),
 		onOpenSettings: mock(() => {}),
+		onOpenProjectSettings: mock(() => {}),
 	};
 
 	const sampleDocs: FictionDocument[] = [
@@ -47,9 +48,9 @@ describe("CommandPalette Helpers & Search Filtering", () => {
 		},
 	];
 
-	test("buildStaticActions provides 9 workspace actions and executes callbacks", () => {
+	test("buildStaticActions provides 10 workspace actions and executes callbacks", () => {
 		const actions = buildStaticActions(mockHandlers);
-		expect(actions.length).toBe(9);
+		expect(actions.length).toBe(10);
 
 		const saveAction = actions.find((a) => a.id === "act-save");
 		expect(saveAction).toBeDefined();
@@ -60,6 +61,13 @@ describe("CommandPalette Helpers & Search Filtering", () => {
 		expect(charAction).toBeDefined();
 		charAction?.execute();
 		expect(mockHandlers.onNewDoc).toHaveBeenCalledWith("character");
+
+		const projSettingsAction = actions.find(
+			(a) => a.id === "act-project-settings",
+		);
+		expect(projSettingsAction).toBeDefined();
+		projSettingsAction?.execute();
+		expect(mockHandlers.onOpenProjectSettings).toHaveBeenCalled();
 	});
 
 	test("filterPaletteItems returns all documents followed by actions when query is empty", () => {

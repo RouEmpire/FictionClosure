@@ -3,13 +3,18 @@
         DocumentType,
         FictionDocument,
         ProjectFolder,
+        ProjectInfo,
+        ViewMode,
     } from "@shared/types";
     import CommandPalette from "@components/CommandPalette/CommandPalette.svelte";
     import NewDocModal from "@components/NewDocModal/NewDocModal.svelte";
+    import ProjectSettingsModal from "./ProjectSettingsModal.svelte";
 
     interface Props {
         isCommandPaletteOpen: boolean;
         isNewDocModalOpen: boolean;
+        isProjectSettingsOpen: boolean;
+        project: ProjectInfo;
         documents: FictionDocument[];
         folders: ProjectFolder[];
         newDocInitialType: DocumentType;
@@ -17,6 +22,8 @@
         newDocParentFolderId: string | null;
         onCloseCommandPalette: () => void;
         onCloseNewDocModal: () => void;
+        onCloseProjectSettings: () => void;
+        onOpenProjectSettings: () => void;
         onSelectDoc: (id: string) => void;
         onOpenNewDocModal: (type?: DocumentType) => void;
         onSave: () => void;
@@ -24,11 +31,23 @@
         onOpenShortcuts: () => void;
         onCreateDoc: (doc: FictionDocument) => void;
         onCreateFolder: (folder: ProjectFolder) => void;
+        onSaveProjectSettings: (updated: {
+            name: string;
+            author: string;
+            genre: string;
+            targetWordCount: number;
+            coverImage?: string;
+            readme?: string;
+        }) => void;
+        onSetViewMode?: (mode: ViewMode) => void;
+        onChangeFolder?: () => void;
     }
 
     let {
         isCommandPaletteOpen,
         isNewDocModalOpen,
+        isProjectSettingsOpen,
+        project,
         documents,
         folders,
         newDocInitialType,
@@ -36,6 +55,8 @@
         newDocParentFolderId,
         onCloseCommandPalette,
         onCloseNewDocModal,
+        onCloseProjectSettings,
+        onOpenProjectSettings,
         onSelectDoc,
         onOpenNewDocModal,
         onSave,
@@ -43,6 +64,9 @@
         onOpenShortcuts,
         onCreateDoc,
         onCreateFolder,
+        onSaveProjectSettings,
+        onSetViewMode = () => {},
+        onChangeFolder,
     }: Props = $props();
 </script>
 
@@ -53,8 +77,10 @@
     {onSelectDoc}
     onNewDoc={onOpenNewDocModal}
     {onSave}
+    {onSetViewMode}
+    {onChangeFolder}
     {onOpenSettings}
-    {onOpenShortcuts}
+    {onOpenProjectSettings}
 />
 
 <NewDocModal
@@ -67,4 +93,11 @@
     onCreate={onCreateDoc}
     onCreateFolder={onCreateFolder}
     existingCount={documents.length}
+/>
+
+<ProjectSettingsModal
+    isOpen={isProjectSettingsOpen}
+    {project}
+    onClose={onCloseProjectSettings}
+    onSaveSettings={onSaveProjectSettings}
 />

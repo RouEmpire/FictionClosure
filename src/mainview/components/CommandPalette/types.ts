@@ -23,6 +23,7 @@ export interface PaletteActionHandlers {
 	onSetViewMode: (mode: ViewMode) => void;
 	onChangeFolder?: () => void;
 	onOpenSettings?: () => void;
+	onOpenProjectSettings?: () => void;
 }
 
 export interface CommandPaletteProps {
@@ -35,4 +36,5 @@ export interface CommandPaletteProps {
 	onSave: () => void;
 	onChangeFolder?: () => void;
 	onOpenSettings?: () => void;
+	onOpenProjectSettings?: () => void;
 }

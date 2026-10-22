@@ -23,6 +23,9 @@
     } from "./services/recentProjects";
     import { globalHistoryManager } from "./services/historyManager";
     import Home from "@components/Home/Home.svelte";
+    import CreateProjectModal, {
+        type CreateProjectData,
+    } from "@components/Home/CreateProjectModal.svelte";
     import Workspace from "./components/Workspace/Workspace.svelte";
     import SettingsModal from "@components/SettingsModal/SettingsModal.svelte";
     import ShortcutsModal from "@components/ShortcutsModal/ShortcutsModal.svelte";
@@ -63,6 +66,7 @@
     let editorFont = $state<string>("");
 
     // Modals
+    let isCreateProjectModalOpen = $state(false);
     let isSettingsOpen = $state(false);
     let isShortcutsModalOpen = $state(false);
     let isAboutModalOpen = $state(false);
@@ -437,23 +441,19 @@
         pendingImportData = null;
     }
 
-    async function handleNewProject() {
+    async function handleConfirmCreateProject(data: CreateProjectData) {
         try {
-            const selectRes = await promptSelectFolder();
-            if (selectRes.canceled || !selectRes.folderPath) return;
-
-            const folderPath = selectRes.folderPath;
-            const folderName =
-                folderPath.split("/").filter(Boolean).pop() || "New Novel";
             const newProj: ProjectInfo = {
                 id: `proj-${Date.now()}`,
-                name: folderName.replace(/[-_]/g, " "),
-                folderPath,
-                targetWordCount: 50000,
+                name: data.name,
+                folderPath: data.folderPath,
+                targetWordCount: data.targetWordCount,
                 lastSaved: new Date().toISOString(),
                 created: new Date().toISOString(),
-                author: "Author",
-                genre: "Fiction",
+                author: data.author,
+                genre: data.genre,
+                coverImage: data.coverImage,
+                readme: data.readme,
             };
             const newDocs: FictionDocument[] = [
                 {
@@ -490,22 +490,29 @@
 
             project = newProj;
             documents = newDocs;
-            const rec = buildRecentProjectRecord(newProj, newDocs, folderPath);
+            globalHistoryManager.restoreAll({}, newProj.targetWordCount);
+
+            const rec = buildRecentProjectRecord(
+                newProj,
+                newDocs,
+                data.folderPath,
+            );
             recentProjects = saveRecentProject(rec);
+
             try {
-                await setRememberedFolder(folderPath);
-                await saveProject(folderPath, newProj, newDocs);
+                await setRememberedFolder(data.folderPath);
+                await saveProject(data.folderPath, newProj, newDocs);
             } catch (err) {
-                console.error("Handle new project error:", err);
+                console.error("Save new project error:", err);
                 showToast(
-                    `Failed to handle new project: ${err instanceof Error ? err.message : String(err)}`,
+                    `Warning: Could not save to disk immediately: ${err instanceof Error ? err.message : String(err)}`,
                 );
             }
 
             currentScreen = "workspace";
             showToast(`Created new project "${newProj.name}"`);
         } catch (err) {
-            console.error("New project error:", err);
+            console.error("Create project error:", err);
             showToast(
                 `Failed to create project: ${err instanceof Error ? err.message : String(err)}`,
             );
@@ -552,7 +559,10 @@
 
         // Escape closes open modals
         if (e.key === "Escape") {
-            if (isSettingsOpen) {
+            if (isCreateProjectModalOpen) {
+                isCreateProjectModalOpen = false;
+                e.preventDefault();
+            } else if (isSettingsOpen) {
                 isSettingsOpen = false;
                 e.preventDefault();
             } else if (isShortcutsModalOpen) {
@@ -578,7 +588,7 @@
             onOpenProject={handleOpenProject}
             onDeleteRecentProject={handleDeleteRecentProject}
             onImportProject={handleImportProject}
-            onNewProject={handleNewProject}
+            onNewProject={() => (isCreateProjectModalOpen = true)}
             onOpenSettings={() => (isSettingsOpen = true)}
             onOpenShortcuts={() => (isShortcutsModalOpen = true)}
             onOpenAbout={() => (isAboutModalOpen = true)}
@@ -608,6 +618,13 @@
             />
         </svelte:boundary>
     {/if}
+
+    <!-- Create New Project Modal -->
+    <CreateProjectModal
+        isOpen={isCreateProjectModalOpen}
+        onClose={() => (isCreateProjectModalOpen = false)}
+        onCreate={handleConfirmCreateProject}
+    />
 
     <!-- Settings Preferences Modal (Ctrl+P) -->
     <SettingsModal

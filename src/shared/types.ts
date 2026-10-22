@@ -51,7 +51,12 @@ export interface ProjectInfo {
 	targetWordCount: number;
 	folderPath?: string;
 	lastSaved?: string;
+	created?: string;
 	folders?: ProjectFolder[];
+	coverImage?: string;
+	covers?: string[];
+	readme?: string;
+	description?: string;
 }
 
 export interface ProjectManifestDoc extends DocumentMeta {
@@ -67,6 +72,9 @@ export interface ProjectManifest {
 	updatedAt: string;
 	documents: ProjectManifestDoc[];
 	folders?: ProjectFolder[];
+	coverImage?: string;
+	covers?: string[];
+	description?: string;
 }
 
 export interface HistorySnapshot {
@@ -165,6 +173,7 @@ export interface RecentProject {
 	plotCount?: number;
 	author?: string;
 	genre?: string;
+	coverImage?: string;
 }
 
 export interface ProjectAnalysisResult {

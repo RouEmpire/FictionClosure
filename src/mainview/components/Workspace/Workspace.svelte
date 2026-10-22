@@ -51,6 +51,7 @@
     let zenMode = $state<ZenModeType>("none");
     let isCommandPaletteOpen = $state(false);
     let isNewDocModalOpen = $state(false);
+    let isProjectSettingsOpen = $state(false);
     let wordWrap = $state<boolean>(true);
     let sidebarRef = $state<ReturnType<typeof Sidebar> | null>(null);
     let newDocInitialType = $state<DocumentType>("manuscript");
@@ -268,7 +269,36 @@
         onCloseProject();
     }
 
+    function handleUpdateProjectSettings(updated: {
+        name: string;
+        author: string;
+        genre: string;
+        targetWordCount: number;
+        coverImage?: string;
+        readme?: string;
+    }) {
+        project = {
+            ...project,
+            name: updated.name,
+            author: updated.author,
+            genre: updated.genre,
+            targetWordCount: updated.targetWordCount,
+            coverImage: updated.coverImage,
+            readme: updated.readme,
+        };
+        globalHistoryManager.setTargetWordCount(project.targetWordCount);
+        saveState = "unsaved";
+        onShowToast(`Updated project settings for "${project.name}"`);
+        void handleSave();
+    }
+
     function handleKeyDown(e: KeyboardEvent) {
+        if (e.key === "Escape" && isProjectSettingsOpen) {
+            isProjectSettingsOpen = false;
+            e.preventDefault();
+            return;
+        }
+
         handleWorkspaceGlobalKeyDown(e, {
             isCommandPaletteOpen,
             isNewDocModalOpen,
@@ -322,6 +352,7 @@
             onSave={handleSave}
             onChangeFolder={handleChangeFolder}
             onOpenCommandPalette={() => (isCommandPaletteOpen = true)}
+            onOpenProjectSettings={() => (isProjectSettingsOpen = true)}
             {onOpenShortcuts}
             onCloseProject={handleCloseAndReturn}
         />
@@ -368,6 +399,8 @@
     <WorkspaceModals
         {isCommandPaletteOpen}
         {isNewDocModalOpen}
+        {isProjectSettingsOpen}
+        {project}
         {documents}
         {folders}
         {newDocInitialType}
@@ -375,13 +408,18 @@
         {newDocParentFolderId}
         onCloseCommandPalette={() => (isCommandPaletteOpen = false)}
         onCloseNewDocModal={() => (isNewDocModalOpen = false)}
+        onCloseProjectSettings={() => (isProjectSettingsOpen = false)}
+        onOpenProjectSettings={() => (isProjectSettingsOpen = true)}
         onSelectDoc={handleSelectDoc}
         onOpenNewDocModal={handleOpenNewDocModal}
         onSave={handleSave}
+        onSetViewMode={(mode) => (viewMode = mode)}
+        onChangeFolder={handleChangeFolder}
         {onOpenSettings}
         {onOpenShortcuts}
         onCreateDoc={handleCreateDoc}
         onCreateFolder={handleCreateFolder}
+        onSaveProjectSettings={handleUpdateProjectSettings}
     />
 </div>
 

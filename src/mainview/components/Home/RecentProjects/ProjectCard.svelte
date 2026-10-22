@@ -1,5 +1,9 @@
 <script lang="ts">
     import type { RecentProject } from "@shared/types";
+    import {
+        canRenderBrowserPreview,
+        getCoverFormatLabel,
+    } from "@shared/domain/coverSupport";
     import "./projectCard.css";
 
     interface Props {
@@ -15,6 +19,13 @@
         target > 0
             ? Math.min(100, Math.round((project.wordCount / target) * 100))
             : 0,
+    );
+
+    const isCoverRenderable = $derived(
+        project.coverImage ? canRenderBrowserPreview(project.coverImage) : false,
+    );
+    const coverBadgeLabel = $derived(
+        project.coverImage ? getCoverFormatLabel(project.coverImage) : "",
     );
 
     function formatLastOpened(isoDate: string): string {
@@ -40,55 +51,74 @@
         onclick={() => onOpenProject(project.folderPath, project.name)}
         title="Open {project.name}"
     >
-        <div class="card-header-row">
-            <div class="project-title-group">
-                <span class="project-name">{project.name}</span>
-                {#if project.genre}
-                    <span class="genre-tag">{project.genre}</span>
+        {#if project.coverImage}
+            <div class="card-cover-wrapper">
+                {#if isCoverRenderable}
+                    <img
+                        src={project.coverImage}
+                        alt="Cover for {project.name}"
+                        class="card-cover-img"
+                    />
+                {:else}
+                    <div class="card-cover-fallback">
+                        <i class="fa-solid fa-file-image fallback-icon"></i>
+                        <span class="fallback-format">{coverBadgeLabel}</span>
+                    </div>
                 {/if}
             </div>
-            <span class="last-opened">
-                Opened {formatLastOpened(project.lastOpened)}
-            </span>
-        </div>
+        {/if}
 
-        <span class="project-path" title={project.folderPath}>
-            <i class="fa-solid fa-folder"></i>
-            {project.folderPath}
-        </span>
-
-        <!-- Word Count Goal Progress -->
-        <div class="word-progress-block">
-            <div class="word-progress-labels">
-                <span class="progress-pct">{progressPct}% of goal</span>
-                <span class="word-nums">
-                    {project.wordCount.toLocaleString()} / {target.toLocaleString()} words
+        <div class="card-info-col">
+            <div class="card-header-row">
+                <div class="project-title-group">
+                    <span class="project-name">{project.name}</span>
+                    {#if project.genre}
+                        <span class="genre-tag">{project.genre}</span>
+                    {/if}
+                </div>
+                <span class="last-opened">
+                    Opened {formatLastOpened(project.lastOpened)}
                 </span>
             </div>
-            <div class="progress-bar-track">
-                <div
-                    class="progress-bar-fill"
-                    style="width: {progressPct}%;"
-                ></div>
-            </div>
-        </div>
 
-        <!-- Document Breakdown Badges -->
-        <div class="breakdown-badges">
-            <span class="badge badge-ch">
-                {project.manuscriptCount || 0} chapters
+            <span class="project-path" title={project.folderPath}>
+                <i class="fa-solid fa-folder"></i>
+                {project.folderPath}
             </span>
-            <span class="badge badge-char">
-                {project.characterCount || 0} characters
-            </span>
-            <span class="badge badge-world">
-                {project.worldCount || 0} world items
-            </span>
-            {#if project.notesCount}
-                <span class="badge badge-notes">
-                    {project.notesCount} notes
+
+            <!-- Word Count Goal Progress -->
+            <div class="word-progress-block">
+                <div class="word-progress-labels">
+                    <span class="progress-pct">{progressPct}% of goal</span>
+                    <span class="word-nums">
+                        {project.wordCount.toLocaleString()} / {target.toLocaleString()} words
+                    </span>
+                </div>
+                <div class="progress-bar-track">
+                    <div
+                        class="progress-bar-fill"
+                        style="width: {progressPct}%;"
+                    ></div>
+                </div>
+            </div>
+
+            <!-- Document Breakdown Badges -->
+            <div class="breakdown-badges">
+                <span class="badge badge-ch">
+                    {project.manuscriptCount || 0} chapters
                 </span>
-            {/if}
+                <span class="badge badge-char">
+                    {project.characterCount || 0} characters
+                </span>
+                <span class="badge badge-world">
+                    {project.worldCount || 0} world items
+                </span>
+                {#if project.notesCount}
+                    <span class="badge badge-notes">
+                        {project.notesCount} notes
+                    </span>
+                {/if}
+            </div>
         </div>
     </button>
 

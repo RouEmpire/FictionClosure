@@ -53,6 +53,7 @@ export function buildRecentProjectRecord(
 		notesCount,
 		author: project.author,
 		genre: project.genre,
+		coverImage: project.coverImage,
 	};
 }
 

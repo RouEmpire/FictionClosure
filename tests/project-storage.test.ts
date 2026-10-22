@@ -420,4 +420,101 @@ describe("project-storage", () => {
 		expect(loadedDoc?.title).toBe("Chapter in Part A");
 		expect(loadedDoc?.folderId).toBe("folder-act-1-part-a");
 	});
+
+	it("saves and loads project settings, custom README.md, and cover images across supported formats", async () => {
+		const { isSupportedCoverFile, getCoverFormatLabel, SUPPORTED_COVER_EXTENSIONS } = await import(
+			"../src/shared/domain/coverSupport"
+		);
+
+		// Verify supported extensions
+		const requiredFormats = [
+			".jpg",
+			".jpeg",
+			".jxl",
+			".png",
+			".avif",
+			".webp",
+			".gif",
+			".tif",
+			".tiff",
+			".heic",
+			".heif",
+			".psd",
+			".psb",
+			".pdf",
+			".apng",
+		];
+		for (const fmt of requiredFormats) {
+			expect(SUPPORTED_COVER_EXTENSIONS).toContain(fmt as any);
+			expect(isSupportedCoverFile(`my-book-cover${fmt}`)).toBe(true);
+		}
+
+		// Verify labels
+		expect(getCoverFormatLabel("cover.psd")).toBe("PSD");
+		expect(getCoverFormatLabel("cover.pdf")).toBe("PDF");
+		expect(getCoverFormatLabel("cover.jxl")).toBe("JXL");
+		expect(getCoverFormatLabel("cover.heic")).toBe("HEIC");
+
+		// Test project with custom settings, custom README and base64 cover
+		const customReadme = `# The Obsidian Spire\n\nA custom dark fantasy chronicle.\n\n## World Lore\nDetails about the realm.\n`;
+		// 1x1 transparent PNG in base64
+		const sampleCoverDataUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+
+		const project: ProjectInfo = {
+			name: "The Obsidian Spire",
+			author: "Morgan Blackwood",
+			genre: "Dark Fantasy",
+			targetWordCount: 120000,
+			readme: customReadme,
+			coverImage: sampleCoverDataUrl,
+		};
+
+		const documents: FictionDocument[] = [
+			{
+				id: "ch-1",
+				title: "Chapter 1: Shadows Fall",
+				type: "manuscript",
+				status: "draft",
+				tags: ["opening"],
+				order: 1,
+				createdAt: "2026-10-22T00:00:00Z",
+				updatedAt: "2026-10-22T00:00:00Z",
+				content: "# Shadows Fall\n\nThe gates slammed shut.\n",
+			},
+		];
+
+		const saveRes = await saveProjectToFolder(testDir, project, documents);
+		expect(saveRes.success).toBe(true);
+
+		// 1. Verify README.md was saved with custom content
+		const readmeOnDisk = fs.readFileSync(path.join(testDir, "README.md"), "utf8");
+		expect(readmeOnDisk).toBe(customReadme);
+
+		// 2. Verify cover image was decoded and written to media/covers/cover.png
+		const coverOnDisk = path.join(testDir, "media", "covers", "cover.png");
+		expect(fs.existsSync(coverOnDisk)).toBe(true);
+		const coverBytes = fs.readFileSync(coverOnDisk);
+		expect(coverBytes.length).toBeGreaterThan(0);
+
+		// Add an alternate cover format (e.g. PSD cover) directly to media/covers/
+		const psdCoverPath = path.join(testDir, "media", "covers", "alternate-jacket.psd");
+		fs.writeFileSync(psdCoverPath, "8BPS mock photoshop buffer");
+
+		// 3. Load back project
+		const loadRes = await loadProjectFromFolder(testDir);
+		expect(loadRes.success).toBe(true);
+		expect(loadRes.project).toBeDefined();
+
+		const loaded = loadRes.project!;
+		expect(loaded.name).toBe("The Obsidian Spire");
+		expect(loaded.author).toBe("Morgan Blackwood");
+		expect(loaded.genre).toBe("Dark Fantasy");
+		expect(loaded.targetWordCount).toBe(120000);
+		expect(loaded.readme).toBe(customReadme);
+		expect(loaded.coverImage).toBeDefined();
+		expect(loaded.coverImage).toContain("data:image/png;base64");
+		expect(loaded.covers).toBeDefined();
+		expect(loaded.covers?.length).toBe(2);
+		expect(loaded.covers?.some((c) => c.endsWith("alternate-jacket.psd"))).toBe(true);
+	});
 });
