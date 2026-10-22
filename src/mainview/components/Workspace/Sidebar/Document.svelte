@@ -30,7 +30,7 @@
 		onCancelRename,
 	}: Props = $props();
 
-	let currentTitle = $state(editingTitle);
+	let currentTitle = $state("");
 	let inputEl: HTMLInputElement | null = $state(null);
 
 	$effect(() => {

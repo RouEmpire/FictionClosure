@@ -1,0 +1,143 @@
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.dashboard-header {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.dashboard-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary, #e6edf3);
+    margin: 0;
+}
+
+.dashboard-subtitle {
+    font-size: 11px;
+    color: var(--text-muted, #8b949e);
+}
+
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 10px;
+}
+
+.kpi-card {
+    background: var(--bg-secondary, #161b22);
+    border: 1px solid var(--border-subtle, #30363d);
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.15s ease;
+}
+
+.kpi-card:hover {
+    border-color: var(--accent-primary, #e69d45);
+    background: var(--bg-hover, rgba(255, 255, 255, 0.05));
+}
+
+.kpi-icon-wrap {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.icon-projects {
+    background: rgba(88, 166, 255, 0.12);
+}
+
+.icon-words {
+    background: rgba(230, 157, 69, 0.15);
+}
+
+.icon-characters {
+    background: rgba(188, 140, 255, 0.15);
+}
+
+.icon-world {
+    background: rgba(63, 185, 80, 0.15);
+}
+
+.icon-manuscripts {
+    background: rgba(56, 189, 248, 0.15);
+}
+
+.icon-docs {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.kpi-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+}
+
+.kpi-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted, #8b949e);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.kpi-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary, #e6edf3);
+    font-family: var(--font-editor, monospace);
+    line-height: 1.1;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(1fr, 170px));
+    gap: 10px;
+}
+
+.chart-card {
+    background: var(--bg-secondary, #161b22);
+    border: 1px solid var(--border-subtle, #30363d);
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 250px;
+}
+
+.chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.chart-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary, #c9d1d9);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+}
+
+.chart-canvas-wrap {
+    width: 100%;
+    height: 210px;
+    min-height: 210px;
+}

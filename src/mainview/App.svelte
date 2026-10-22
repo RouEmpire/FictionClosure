@@ -22,7 +22,7 @@
         saveRecentProject,
     } from "./services/recentProjects";
     import { globalHistoryManager } from "./services/historyManager";
-    import Home from "./components/Home.svelte";
+    import Home from "@components/Home/Home.svelte";
     import Workspace from "./components/Workspace/Workspace.svelte";
     import SettingsModal from "./components/SettingsModal.svelte";
     import ShortcutsModal from "./components/ShortcutsModal.svelte";
