@@ -28,7 +28,7 @@
     import ShortcutsModal from "./components/ShortcutsModal.svelte";
     import AboutModal from "./components/AboutModal.svelte";
     import ProjectAnalysisModal from "./components/ProjectAnalysisModal.svelte";
-    import ProjectLoadingScreen from "./components/ProjectLoadingScreen.svelte";
+    import ProjectLoadingScreen from "@components/ProjectLoadingScreen/ProjectLoadingScreen.svelte";
     import CrashRecoveryModal from "./components/CrashRecoveryModal.svelte";
     import { analyzeProject } from "../shared/domain/projectAnalysis";
     import { formatLoadDuration } from "../shared/domain/timeFormatting";

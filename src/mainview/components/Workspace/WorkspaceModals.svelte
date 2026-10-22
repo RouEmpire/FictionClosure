@@ -5,7 +5,7 @@
         ProjectFolder,
     } from "@shared/types";
     import CommandPalette from "../CommandPalette.svelte";
-    import NewDocModal from "../NewDocModal.svelte";
+    import NewDocModal from "@components/NewDocModal/NewDocModal.svelte";
 
     interface Props {
         isCommandPaletteOpen: boolean;
