@@ -21,6 +21,9 @@ export interface EditorKeyContext {
   onUndo: () => void;
   onRedo: () => void;
   onToggleWordWrap: () => void;
+  onOpenFind?: (withReplace?: boolean) => void;
+  isFindOpen?: boolean;
+  onCloseFind?: () => void;
   applyTransform: (
     fn: (t: string, s: number, e: number) => TextTransformResult,
   ) => void;
@@ -68,6 +71,13 @@ export function handleEditorKeyDown(
     /Mac|iPhone|iPad|iPod/.test(navigator.platform);
   const modPressed = isMac ? e.metaKey : e.ctrlKey;
 
+  // Escape: Close Find & Replace if open
+  if (e.key === "Escape" && ctx.isFindOpen) {
+    e.preventDefault();
+    ctx.onCloseFind?.();
+    return true;
+  }
+
   // Escape: Exit Zen mode
   if (e.key === "Escape" && ctx.zenMode !== "none") {
     e.preventDefault();
@@ -114,6 +124,13 @@ export function handleEditorKeyDown(
   if (modPressed && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "z") {
     e.preventDefault();
     ctx.onUndo();
+    return true;
+  }
+
+  // Find: Ctrl+F, Find & Replace: Ctrl+Shift+F
+  if (modPressed && !e.altKey && e.key.toLowerCase() === "f") {
+    e.preventDefault();
+    ctx.onOpenFind?.(e.shiftKey);
     return true;
   }
 

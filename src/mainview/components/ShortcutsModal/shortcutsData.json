@@ -73,6 +73,8 @@
       "shortcuts": [
         { "keys": ["$mod", "Z"], "desc": "Undo edit" },
         { "keys": ["$mod", "Alt", "Z"], "desc": "Redo edit" },
+        { "keys": ["$mod", "F"], "desc": "Find in document" },
+        { "keys": ["$mod", "Shift", "F"], "desc": "Find & Replace in document" },
         { "keys": ["Click"], "desc": "Click gutter row to jump cursor to start of line" },
         { "keys": ["Alt", "Click"], "desc": "Alt+Click gutter row to jump cursor to end of line" },
         { "keys": ["Tab"], "desc": "Indent by 2 spaces (keeps focus in editor)" },

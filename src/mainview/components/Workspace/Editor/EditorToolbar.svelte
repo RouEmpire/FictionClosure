@@ -1,6 +1,7 @@
 <script lang="ts">
     interface Props {
         wordWrap: boolean;
+        isFindOpen?: boolean;
         onUndo: () => void;
         onRedo: () => void;
         onInsertSnippet: (prefix: string, suffix?: string) => void;
@@ -11,10 +12,12 @@
         onBulletList: () => void;
         onTaskItem: () => void;
         onToggleWordWrap: () => void;
+        onToggleFind?: () => void;
     }
 
     let {
         wordWrap,
+        isFindOpen = false,
         onUndo,
         onRedo,
         onInsertSnippet,
@@ -25,6 +28,7 @@
         onBulletList,
         onTaskItem,
         onToggleWordWrap,
+        onToggleFind,
     }: Props = $props();
 </script>
 
@@ -135,6 +139,20 @@
     </div>
 
     <div class="toolbar-right">
+        {#if onToggleFind}
+            <button
+                type="button"
+                class="tool-btn"
+                class:active={isFindOpen}
+                onclick={onToggleFind}
+                title="Find & Replace (Ctrl+F, Ctrl+Shift+F)"
+                aria-label="Find & Replace"
+                aria-pressed={isFindOpen}
+            >
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+        {/if}
+
         <button
             type="button"
             class="tool-btn"

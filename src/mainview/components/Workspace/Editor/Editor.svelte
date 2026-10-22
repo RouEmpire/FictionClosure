@@ -28,7 +28,9 @@
     import EditorGutter from "./EditorGutter.svelte";
     import EditorStatusbar from "./EditorStatusbar.svelte";
     import EditorMentionPopover from "./EditorMentionPopover.svelte";
+    import EditorFindReplace from "./EditorFindReplace.svelte";
     import FocusDimmer from "./FocusDimmer.svelte";
+    import type { SearchMatch } from "./findReplaceLogic";
     import {
         buildMentionCandidates,
         detectMentionQuery,
@@ -259,6 +261,78 @@
         updateRenderedLines();
     }
 
+    let isFindOpen = $state(false);
+    let isReplaceOpen = $state(false);
+    let findInitialQuery = $state("");
+
+    function handleOpenFind(withReplace: boolean = false) {
+        if (textareaEl) {
+            const selStart = textareaEl.selectionStart;
+            const selEnd = textareaEl.selectionEnd;
+            if (selEnd > selStart && selEnd - selStart < 200) {
+                findInitialQuery = textareaEl.value.slice(selStart, selEnd);
+            } else {
+                findInitialQuery = "";
+            }
+        }
+        isFindOpen = true;
+        if (withReplace) {
+            isReplaceOpen = true;
+        }
+    }
+
+    function handleCloseFind() {
+        isFindOpen = false;
+        if (textareaEl) {
+            textareaEl.focus();
+        }
+    }
+
+    function handleSelectMatch(match: SearchMatch) {
+        if (!textareaEl) return;
+        textareaEl.focus();
+        textareaEl.setSelectionRange(match.start, match.end);
+
+        const textUpToMatch = textareaEl.value.slice(0, match.start);
+        const lineIndex = textUpToMatch.split("\n").length - 1;
+        const targetScrollTop = lineIndex * computedLineHeight - textareaEl.clientHeight / 2;
+        textareaEl.scrollTop = Math.max(0, targetScrollTop);
+        updateCursorPosition();
+    }
+
+    function handleFindReplace(newContent: string, newCursor: number) {
+        const oldVal = document.content;
+        globalHistoryManager.recordEdit(
+            document.id,
+            oldVal,
+            newContent,
+            newCursor,
+        );
+        onContentChange(newContent);
+        if (textareaEl) {
+            textareaEl.value = newContent;
+            textareaEl.setSelectionRange(newCursor, newCursor);
+        }
+        onAfterTextChange();
+    }
+
+    function handleFindReplaceAll(newContent: string, count: number) {
+        if (count === 0) return;
+        const oldVal = document.content;
+        const cursor = textareaEl?.selectionStart ?? 0;
+        globalHistoryManager.recordEdit(
+            document.id,
+            oldVal,
+            newContent,
+            cursor,
+        );
+        onContentChange(newContent);
+        if (textareaEl) {
+            textareaEl.value = newContent;
+        }
+        onAfterTextChange();
+    }
+
     function handleInput(e: Event) {
         const target = e.target as HTMLTextAreaElement;
         const oldVal = document.content;
@@ -302,6 +376,9 @@
                     onAfterTextChange,
                 ),
             onToggleWordWrap: toggleWordWrap,
+            onOpenFind: handleOpenFind,
+            isFindOpen,
+            onCloseFind: handleCloseFind,
             applyTransform: (fn) =>
                 performTransform(
                     textareaEl,
@@ -425,10 +502,25 @@
                     onAfterTextChange,
                 )}
             onToggleWordWrap={toggleWordWrap}
+            {isFindOpen}
+            onToggleFind={() => (isFindOpen ? handleCloseFind() : handleOpenFind(false))}
         />
     {/if}
 
     <div class="writing-canvas">
+        <EditorFindReplace
+            isOpen={isFindOpen}
+            {isReplaceOpen}
+            content={document.content}
+            cursorPosition={textareaEl?.selectionStart ?? 0}
+            initialQuery={findInitialQuery}
+            onClose={handleCloseFind}
+            onToggleReplace={(open) => (isReplaceOpen = typeof open === "boolean" ? open : !isReplaceOpen)}
+            onSelectMatch={handleSelectMatch}
+            onReplace={handleFindReplace}
+            onReplaceAll={handleFindReplaceAll}
+        />
+
         <div
             bind:this={mirrorEl}
             class="editor-mirror"
