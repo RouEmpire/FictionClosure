@@ -1,0 +1,109 @@
+/**
+ * FictionClosure — Design Tokens & Theme Variables.
+ *
+ * Provides a single source of truth for:
+ * - Surface, border, and typography colors (dark default + light support)
+ * - Semantic spacing scale, corner radii, elevation shadows, and transitions
+ * - Core application layout dimensions
+ */
+
+:root {
+	/* Surface Palette (Dark Mode Default) */
+	--bg-primary: #0d1117;
+	--bg-secondary: #161b22;
+	--bg-tertiary: #1f242c;
+	--bg-hover: #262c36;
+	--bg-active: #303744;
+
+	/* Border Tokens */
+	--border-subtle: #2b323c;
+	--border-bold: #3f4756;
+
+	/* Text Tokens */
+	--text-primary: #f0f3f6;
+	--text-secondary: #9da7b3;
+	--text-muted: #6b7582;
+
+	/* Primary Brand Accent (Amber Warm) */
+	--accent-primary: #e69d45;
+	--accent-hover: #f3ae5c;
+	--accent-subtle: rgba(230, 157, 69, 0.15);
+
+	/* Secondary Accent (Cyan / Sky Blue) */
+	--accent-secondary: #58a6ff;
+	--accent-secondary-hover: #79b8ff;
+	--accent-secondary-subtle: rgba(88, 166, 255, 0.15);
+
+	/* Status Colors */
+	--success-color: #3fb950;
+	--warning-color: #d29922;
+	--danger-color: #f85149;
+	--danger-hover: #fa6b65;
+	--danger-subtle: rgba(248, 81, 73, 0.15);
+
+	/* Typography Stacks */
+	--font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+	--font-editor: "JetBrains Mono", "Fira Code", "Cascadia Code", "Courier New", monospace;
+	--font-prose: "Merriweather", "Georgia", "Cambria", "Times New Roman", serif;
+
+	/* Spacing Scale */
+	--space-1: 4px;
+	--space-2: 8px;
+	--space-3: 12px;
+	--space-4: 16px;
+	--space-5: 20px;
+	--space-6: 24px;
+	--space-8: 32px;
+
+	/* Border Radius */
+	--radius-sm: 4px;
+	--radius-md: 6px;
+	--radius-lg: 8px;
+	--radius-xl: 12px;
+	--radius-full: 9999px;
+
+	/* Elevation & Shadows */
+	--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+	--shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+	--shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.45);
+	--shadow-modal: 0 16px 40px rgba(0, 0, 0, 0.6);
+
+	/* Transitions */
+	--transition-fast: 0.15s ease;
+	--transition-normal: 0.2s ease;
+
+	/* Layout Dimensions */
+	--sidebar-width: 280px;
+	--inspector-width: 300px;
+	--header-height: 48px;
+	--status-height: 32px;
+}
+
+/* Light Theme Variables (Opt-in via data-theme="light") */
+[data-theme="light"] {
+	--bg-primary: #f6f8fa;
+	--bg-secondary: #ffffff;
+	--bg-tertiary: #eaeef2;
+	--bg-hover: #e1e4e8;
+	--bg-active: #d1d5da;
+
+	--border-subtle: #d0d7de;
+	--border-bold: #afb8c1;
+
+	--text-primary: #1f2328;
+	--text-secondary: #57606a;
+	--text-muted: #6e7781;
+
+	--accent-primary: #d97706;
+	--accent-hover: #b45309;
+	--accent-subtle: rgba(217, 119, 6, 0.12);
+
+	--accent-secondary: #0969da;
+	--accent-secondary-hover: #0550ae;
+	--accent-secondary-subtle: rgba(9, 105, 218, 0.12);
+
+	--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+	--shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+	--shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+	--shadow-modal: 0 16px 40px rgba(0, 0, 0, 0.18);
+}

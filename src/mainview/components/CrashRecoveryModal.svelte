@@ -126,25 +126,7 @@
 
 <style>
 	.modal-backdrop {
-		position: fixed;
-		inset: 0;
-		background: rgba(0, 0, 0, 0.75);
-		backdrop-filter: blur(4px);
 		z-index: 9998;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 20px;
-		animation: fadeIn 0.2s ease-out;
-	}
-
-	@keyframes fadeIn {
-		from {
-			opacity: 0;
-		}
-		to {
-			opacity: 1;
-		}
 	}
 
 	.modal-card {
@@ -382,43 +364,6 @@
 		justify-content: flex-end;
 		gap: 12px;
 		padding-top: 4px;
-	}
-
-	.btn {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		padding: 8px 16px;
-		border-radius: 6px;
-		font-size: 13px;
-		font-weight: 600;
-		cursor: pointer;
-		transition: all 0.15s ease;
-	}
-
-	.btn-secondary {
-		background: transparent;
-		border: 1px solid #475569;
-		color: #cbd5e1;
-	}
-
-	.btn-secondary:hover {
-		background: #1e293b;
-		color: #f1f5f9;
-		border-color: #64748b;
-	}
-
-	.btn-primary {
-		background: #f59e0b;
-		border: 1px solid #d97706;
-		color: #0f172a;
-		font-weight: 700;
-		box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
-	}
-
-	.btn-primary:hover {
-		background: #d97706;
-		box-shadow: 0 0 16px rgba(245, 158, 11, 0.5);
 	}
 
 	.btn-icon {

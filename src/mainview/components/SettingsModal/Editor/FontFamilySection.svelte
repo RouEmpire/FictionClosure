@@ -71,9 +71,9 @@
     <!-- Bundled Fonts (Shipped with FictionClosure) -->
     {#if bundledFonts.length > 0}
         <div class="setting-item">
-            <div class="setting-label" style="display: flex; align-items: center; justify-content: space-between;">
+            <div class="setting-label flex-row items-center justify-between">
                 <span>Bundled Fonts</span>
-                <span class="setting-hint" style="margin: 0; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-primary);">
+                <span class="setting-hint font-tag">
                     Shipped with FictionClosure
                 </span>
             </div>
@@ -88,7 +88,7 @@
                         title="Set editor font to {bf.name}"
                     >
                         <span class="preset-name">
-                            <i class="fa-solid fa-box-archive" style="font-size: 0.75rem; margin-right: 0.35rem; color: var(--accent-primary);"></i>
+                            <i class="fa-solid fa-box-archive font-icon-accent"></i>
                             {bf.name}
                         </span>
                         <span

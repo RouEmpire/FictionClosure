@@ -647,11 +647,31 @@
 .cover-mini-thumb {
 	width: 48px;
 	height: 68px;
-	border-radius: 4px;
-	border: 1px solid var(--border-subtle, #38424f);
+	border-radius: var(--radius-sm);
+	border: 1px solid var(--border-subtle);
 	object-fit: cover;
 	background: #000;
 	flex-shrink: 0;
+}
+
+.cover-empty-thumb {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-muted);
+}
+
+.browse-font-btn-sm {
+	margin-top: 0 !important;
+	padding: 4px 10px !important;
+}
+
+.grid-dot-icon {
+	font-size: 5px;
+}
+
+.font-icon-sm {
+	font-size: 0.75rem;
 }
 
 .cover-thumb-info {

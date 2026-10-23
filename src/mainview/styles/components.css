@@ -1,0 +1,371 @@
+/**
+ * FictionClosure — Semantic Component Design System.
+ *
+ * Centralizes UI building blocks across all views and modals:
+ * - Buttons (.btn, .btn-primary, .btn-secondary, .btn-ghost, .btn-danger, .btn-close)
+ * - Forms (.form-input, .form-textarea, .form-select, .form-label, .form-group)
+ * - Modals (.modal-backdrop, .modal-dialog, .modal-header, .modal-body, .modal-footer)
+ * - Cards & Surfaces (.card, .card-header, .card-body)
+ * - Badges & Status Chips (.badge, .badge-accent, .badge-secondary)
+ */
+
+/* ============================================================================
+   1. Buttons
+   ============================================================================ */
+
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	padding: 8px 14px;
+	font-family: var(--font-ui);
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 1.2;
+	border-radius: var(--radius-md);
+	border: 1px solid transparent;
+	background: transparent;
+	color: var(--text-primary);
+	cursor: pointer;
+	text-decoration: none;
+	user-select: none;
+	transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+
+.btn:focus-visible {
+	outline: 2px solid var(--accent-primary);
+	outline-offset: 1px;
+}
+
+.btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+
+/* Primary Accent Button */
+.btn-primary,
+.btn.primary {
+	background-color: var(--accent-primary);
+	color: #0d1117;
+	border-color: transparent;
+	font-weight: 600;
+}
+
+.btn-primary:hover:not(:disabled),
+.btn.primary:hover:not(:disabled) {
+	background-color: var(--accent-hover);
+}
+
+/* Secondary Neutral Button */
+.btn-secondary,
+.btn.secondary {
+	background-color: var(--bg-tertiary);
+	border-color: var(--border-subtle);
+	color: var(--text-primary);
+}
+
+.btn-secondary:hover:not(:disabled),
+.btn.secondary:hover:not(:disabled) {
+	background-color: var(--bg-hover);
+	border-color: var(--border-bold);
+}
+
+/* Ghost / Transparent Button */
+.btn-ghost {
+	background-color: transparent;
+	border-color: transparent;
+	color: var(--text-secondary);
+}
+
+.btn-ghost:hover:not(:disabled) {
+	background-color: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+/* Destructive / Danger Button */
+.btn-danger {
+	background-color: var(--danger-color);
+	border-color: transparent;
+	color: #ffffff;
+}
+
+.btn-danger:hover:not(:disabled) {
+	background-color: var(--danger-hover);
+}
+
+/* Button Sizes */
+.btn-sm {
+	padding: 4px 8px;
+	font-size: 11px;
+	border-radius: var(--radius-sm);
+}
+
+.btn-lg {
+	padding: 10px 20px;
+	font-size: 14px;
+	border-radius: var(--radius-lg);
+}
+
+/* Modal Close Icon Button */
+.btn-close,
+.close-btn {
+	background: transparent;
+	border: none;
+	color: var(--text-muted);
+	cursor: pointer;
+	padding: 6px;
+	border-radius: var(--radius-sm);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 14px;
+	transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.btn-close:hover,
+.close-btn:hover {
+	color: var(--text-primary);
+	background: var(--bg-hover);
+}
+
+/* Segmented Button Groups */
+.btn-group {
+	display: inline-flex;
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-subtle);
+	border-radius: var(--radius-md);
+	padding: 2px;
+	gap: 2px;
+}
+
+.btn-group-item {
+	padding: 6px 12px;
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--text-secondary);
+	background: transparent;
+	border: none;
+	border-radius: var(--radius-sm);
+	cursor: pointer;
+	transition: all var(--transition-fast);
+}
+
+.btn-group-item:hover {
+	color: var(--text-primary);
+	background: var(--bg-hover);
+}
+
+.btn-group-item.active,
+.btn-group-item.selected {
+	background: var(--accent-subtle);
+	color: var(--accent-primary);
+	font-weight: 600;
+}
+
+/* ============================================================================
+   2. Form Inputs & Controls
+   ============================================================================ */
+
+.form-group {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin-bottom: 16px;
+}
+
+.form-label {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--text-primary);
+}
+
+.form-hint {
+	font-size: 12px;
+	color: var(--text-muted);
+	margin-top: 2px;
+}
+
+.form-input,
+.text-input {
+	width: 100%;
+	padding: 8px 12px;
+	font-family: var(--font-ui);
+	font-size: 13px;
+	color: var(--text-primary);
+	background-color: var(--bg-primary);
+	border: 1px solid var(--border-subtle);
+	border-radius: var(--radius-md);
+	outline: none;
+	transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.form-input:focus,
+.text-input:focus {
+	border-color: var(--accent-primary);
+	box-shadow: 0 0 0 1px var(--accent-primary);
+}
+
+.form-input:disabled,
+.text-input:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+	background-color: var(--bg-tertiary);
+}
+
+.form-textarea {
+	width: 100%;
+	padding: 10px 12px;
+	font-family: var(--font-ui);
+	font-size: 13px;
+	line-height: 1.5;
+	color: var(--text-primary);
+	background-color: var(--bg-primary);
+	border: 1px solid var(--border-subtle);
+	border-radius: var(--radius-md);
+	outline: none;
+	resize: vertical;
+	min-height: 80px;
+	transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.form-textarea:focus {
+	border-color: var(--accent-primary);
+	box-shadow: 0 0 0 1px var(--accent-primary);
+}
+
+.form-select {
+	width: 100%;
+	padding: 8px 12px;
+	font-family: var(--font-ui);
+	font-size: 13px;
+	color: var(--text-primary);
+	background-color: var(--bg-primary);
+	border: 1px solid var(--border-subtle);
+	border-radius: var(--radius-md);
+	outline: none;
+	cursor: pointer;
+	background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%239da7b3%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E");
+	background-repeat: no-repeat;
+	background-position: right 10px center;
+	padding-right: 32px;
+}
+
+.form-select:focus {
+	border-color: var(--accent-primary);
+	box-shadow: 0 0 0 1px var(--accent-primary);
+}
+
+/* ============================================================================
+   3. Modals & Dialog Windows
+   ============================================================================ */
+
+.modal-backdrop,
+.modal-overlay {
+	position: fixed;
+	inset: 0;
+	background-color: rgba(0, 0, 0, 0.65);
+	backdrop-filter: blur(4px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+	padding: 20px;
+	animation: modalFadeIn 0.15s ease-out;
+}
+
+.modal-dialog,
+.modal-container,
+.modal-box {
+	background-color: var(--bg-secondary);
+	border: 1px solid var(--border-subtle);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-modal);
+	display: flex;
+	flex-direction: column;
+	max-height: 90vh;
+	max-width: 650px;
+	width: 100%;
+	overflow: hidden;
+	animation: modalSlideUp 0.18s ease-out;
+}
+
+.modal-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 16px 20px;
+	border-bottom: 1px solid var(--border-subtle);
+}
+
+.modal-title,
+.modal-header h2 {
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--text-primary);
+	margin: 0;
+}
+
+.modal-body {
+	padding: 20px;
+	overflow-y: auto;
+	flex: 1;
+}
+
+.modal-footer {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 10px;
+	padding: 14px 20px;
+	border-top: 1px solid var(--border-subtle);
+	background: var(--bg-secondary);
+}
+
+@keyframes modalFadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+@keyframes modalSlideUp {
+	from { transform: translateY(12px) scale(0.985); opacity: 0; }
+	to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* ============================================================================
+   4. Cards & Badges
+   ============================================================================ */
+
+.card {
+	background-color: var(--bg-secondary);
+	border: 1px solid var(--border-subtle);
+	border-radius: var(--radius-md);
+	padding: 16px;
+	box-shadow: var(--shadow-sm);
+}
+
+.badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 2px 8px;
+	font-size: 11px;
+	font-weight: 500;
+	border-radius: var(--radius-full);
+	background: var(--bg-tertiary);
+	color: var(--text-secondary);
+	border: 1px solid var(--border-subtle);
+}
+
+.badge-accent {
+	background: var(--accent-subtle);
+	color: var(--accent-primary);
+	border-color: rgba(230, 157, 69, 0.3);
+}
+
+.badge-secondary {
+	background: var(--accent-secondary-subtle);
+	color: var(--accent-secondary);
+	border-color: rgba(88, 166, 255, 0.3);
+}

@@ -56,41 +56,6 @@
 {/if}
 
 <style>
-	.modal-backdrop {
-		position: fixed;
-		inset: 0;
-		background: rgba(0, 0, 0, 0.65);
-		backdrop-filter: blur(2px);
-		z-index: 1000;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.modal-box {
-		width: 100%;
-		max-width: 540px;
-		background: var(--bg-secondary);
-		border: 1px solid var(--border-bold);
-		border-radius: 10px;
-		box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
-		display: flex;
-		flex-direction: column;
-		overflow: hidden;
-		animation: scaleIn 0.15s ease-out;
-	}
-
-	@keyframes scaleIn {
-		from {
-			transform: scale(0.96);
-			opacity: 0;
-		}
-		to {
-			transform: scale(1);
-			opacity: 1;
-		}
-	}
-
 	.modal-body {
 		padding: 16px 18px;
 		display: flex;

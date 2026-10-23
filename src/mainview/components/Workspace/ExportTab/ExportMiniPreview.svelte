@@ -71,7 +71,7 @@
 <div class="mini-preview-container">
 	<div class="mini-preview-header">
 		<span>Layout Live Preview</span>
-		<div style="display: flex; gap: 4px; align-items: center;">
+		<div class="flex-row items-center gap-1">
 			{#if fontFamily === "custom"}
 				<span class="preview-badge" title="Custom Font">{customFont?.name || "Custom Font"}</span>
 			{:else if bundledFont}
@@ -105,13 +105,14 @@
 	{#if previewMode === "cover" && hasCover}
 		<!-- Pure Cover Page Mini Preview (Zero text, pure image layout) -->
 		<div
-			class="mini-paper"
-			style="background-color: {pageColor}; aspect-ratio: {aspectRatio}; padding: 0; overflow: hidden; position: relative;"
+			class="mini-paper mini-paper-cover"
+			style="background-color: {pageColor}; aspect-ratio: {aspectRatio};"
 		>
 			<img
+				class="mini-cover-img"
 				src={activeCoverUrl}
 				alt="Cover preview"
-				style="width: 100%; height: 100%; object-fit: {coverConfig?.fit === 'none' ? 'none' : coverConfig?.fit}; object-position: {coverObjPosition}; display: block;"
+				style="object-fit: {coverConfig?.fit === 'none' ? 'none' : coverConfig?.fit}; object-position: {coverObjPosition};"
 			/>
 		</div>
 	{:else}
@@ -122,29 +123,29 @@
 		>
 			<!-- Top Page Number -->
 			{#if showPageNumber}
-				<div class="mini-page-number" style="color: {textColor}; opacity: 0.65;">
+				<div class="mini-page-number">
 					1/1
 				</div>
 			{/if}
 
 			<!-- Mini Chapter Title -->
-			<div class="mini-chapter-title" style="color: {textColor}; text-align: center;">
+			<div class="mini-chapter-title">
 				{projectName || "Chapter 1"}
 			</div>
 
 			<!-- Mini Simulated Prose Lines -->
 			<div class="mini-prose-block" style="text-align: {textAlign};">
-				<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 94%;"></div>
-				<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 100%;"></div>
-				<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 98%;"></div>
-				<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 62%;"></div>
+				<div class="mini-line mini-line-long"></div>
+				<div class="mini-line mini-line-wide"></div>
+				<div class="mini-line mini-line-long"></div>
+				<div class="mini-line mini-line-medium"></div>
 
 				<div class="mini-paragraph-gap"></div>
 
-				<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 96%;"></div>
-				<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 100%;"></div>
-				<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 88%;"></div>
-				<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 45%;"></div>
+				<div class="mini-line mini-line-long"></div>
+				<div class="mini-line mini-line-wide"></div>
+				<div class="mini-line mini-line-long"></div>
+				<div class="mini-line mini-line-short"></div>
 			</div>
 		</div>
 	{/if}
@@ -156,9 +157,9 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 8px;
-		background: var(--bg-tertiary, #1f242c);
-		border: 1px solid var(--border-subtle, #30363d);
-		border-radius: 8px;
+		background: var(--bg-tertiary);
+		border: 1px solid var(--border-subtle);
+		border-radius: var(--radius-lg);
 		padding: 14px;
 	}
 
@@ -169,26 +170,26 @@
 		align-items: center;
 		font-size: 11px;
 		font-weight: 600;
-		color: var(--text-secondary, #9da7b3);
+		color: var(--text-secondary);
 	}
 
 	.preview-badge {
 		font-size: 9px;
 		font-family: var(--font-editor, monospace);
-		background: var(--bg-secondary, #161b22);
+		background: var(--bg-secondary);
 		padding: 1px 6px;
-		border-radius: 4px;
-		border: 1px solid var(--border-subtle, #30363d);
-		color: var(--accent-primary, #e69d45);
+		border-radius: var(--radius-sm);
+		border: 1px solid var(--border-subtle);
+		color: var(--accent-primary);
 	}
 
 	.preview-pills-row {
 		display: flex;
 		gap: 4px;
-		background: var(--bg-secondary, #161b22);
+		background: var(--bg-secondary);
 		padding: 2px;
-		border-radius: 6px;
-		border: 1px solid var(--border-subtle, #30363d);
+		border-radius: var(--radius-md);
+		border: 1px solid var(--border-subtle);
 		width: 100%;
 	}
 
@@ -196,49 +197,63 @@
 		flex: 1;
 		background: transparent;
 		border: none;
-		border-radius: 4px;
+		border-radius: var(--radius-sm);
 		font-size: 10px;
 		font-weight: 500;
-		color: var(--text-muted, #7d8590);
+		color: var(--text-muted);
 		padding: 2px 6px;
 		cursor: pointer;
-		transition: all 0.15s ease;
+		transition: all var(--transition-fast);
 	}
 
 	.preview-pill-btn:hover {
-		color: var(--text-primary, #e6edf3);
+		color: var(--text-primary);
 	}
 
 	.preview-pill-btn.active {
-		background: var(--accent-subtle, rgba(230, 157, 69, 0.15));
-		color: var(--accent-primary, #e69d45);
+		background: var(--accent-subtle);
+		color: var(--accent-primary);
 		font-weight: 600;
 	}
 
 	.mini-paper {
 		width: 150px;
 		max-width: 100%;
-		border-radius: 4px;
+		border-radius: var(--radius-sm);
 		border: 1px solid rgba(0, 0, 0, 0.15);
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+		box-shadow: var(--shadow-md);
 		padding: 12px 14px;
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
-		transition: all 0.2s ease;
+		transition: all var(--transition-normal);
 		box-sizing: border-box;
+	}
+
+	.mini-paper-cover {
+		padding: 0;
+		overflow: hidden;
+		position: relative;
+	}
+
+	.mini-cover-img {
+		width: 100%;
+		height: 100%;
+		display: block;
 	}
 
 	.mini-page-number {
 		font-size: 7px;
 		text-align: center;
 		font-weight: 500;
+		opacity: 0.65;
 	}
 
 	.mini-chapter-title {
 		font-size: 8px;
 		font-weight: 700;
 		margin-top: 4px;
+		text-align: center;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -254,7 +269,14 @@
 	.mini-line {
 		height: 2.5px;
 		border-radius: 1px;
+		background-color: currentColor;
+		opacity: 0.85;
 	}
+
+	.mini-line-wide { width: 100%; }
+	.mini-line-long { width: 95%; }
+	.mini-line-medium { width: 70%; }
+	.mini-line-short { width: 45%; }
 
 	.mini-paragraph-gap {
 		height: 4px;

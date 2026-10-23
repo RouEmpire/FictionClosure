@@ -100,7 +100,7 @@
 		position: fixed;
 		inset: 0;
 		background: rgba(0, 0, 0, 0.7);
-		backdrop-filter: blur(3px);
+		backdrop-filter: blur(4px);
 		z-index: 2000;
 		display: flex;
 		align-items: center;
@@ -109,15 +109,15 @@
 	}
 
 	.modal-box {
-		background: var(--bg-secondary, #161b22);
-		border: 1px solid var(--border-subtle, #30363d);
-		border-radius: 10px;
+		background: var(--bg-secondary);
+		border: 1px solid var(--border-subtle);
+		border-radius: var(--radius-lg);
 		width: 100%;
 		max-width: 580px;
 		max-height: 85vh;
 		display: flex;
 		flex-direction: column;
-		box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+		box-shadow: var(--shadow-modal);
 		overflow: hidden;
 	}
 
@@ -126,7 +126,7 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: 18px 22px;
-		border-bottom: 1px solid var(--border-subtle, #30363d);
+		border-bottom: 1px solid var(--border-subtle);
 	}
 
 	.header-brand {
@@ -142,13 +142,13 @@
 	.app-title {
 		font-size: 18px;
 		font-weight: 700;
-		color: var(--text-primary, #e6edf3);
+		color: var(--text-primary);
 		margin: 0;
 	}
 
 	.version-tag {
 		font-size: 11px;
-		color: var(--accent-primary, #e69d45);
+		color: var(--accent-primary);
 		font-family: var(--font-editor, monospace);
 	}
 
@@ -237,39 +237,16 @@
 
 	.modal-footer {
 		padding: 14px 22px;
-		border-top: 1px solid var(--border-subtle, #30363d);
+		border-top: 1px solid var(--border-subtle);
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		background: var(--bg-tertiary, #21262d);
+		background: var(--bg-tertiary);
 	}
 
 	.footer-note {
 		font-size: 11px;
-		color: var(--text-muted, #8b949e);
+		color: var(--text-muted);
 		font-style: italic;
-	}
-
-	.btn {
-		padding: 6px 16px;
-		border-radius: 6px;
-		font-size: 12px;
-		font-weight: 500;
-		cursor: pointer;
-		border: 1px solid var(--border-subtle, #30363d);
-		background: var(--bg-hover, rgba(255, 255, 255, 0.08));
-		color: var(--text-primary, #e6edf3);
-		transition: all 0.15s ease;
-	}
-
-	.btn.primary {
-		background: var(--accent-primary, #e69d45);
-		border-color: var(--accent-primary, #e69d45);
-		color: #12151a;
-		font-weight: 600;
-	}
-
-	.btn.primary:hover {
-		background: var(--accent-hover, #f0b060);
 	}
 </style>

@@ -232,7 +232,7 @@
 						<span>Standard fonts are not available on this system. You can export using Bundled Fonts or upload a custom font (.ttf, .otf).</span>
 					</div>
 				{/if}
-				<div class="button-group-row" style="flex-wrap: wrap;">
+				<div class="button-group-row flex-wrap">
 					{#each availableFonts as f}
 						<button
 							type="button"
@@ -244,7 +244,7 @@
 							{#if f.id === "custom"}
 								<i class="fa-solid fa-font"></i>
 							{:else if f.category === "bundled"}
-								<i class="fa-solid fa-box-archive" style="font-size: 0.75rem;"></i>
+								<i class="fa-solid fa-box-archive font-icon-sm"></i>
 							{/if}
 							{f.label}
 						</button>
@@ -297,7 +297,7 @@
 			<div class="option-field">
 				<label class="checkbox-field">
 					<input type="checkbox" bind:checked={showPageNumber} />
-					<span>Show top page numbers (<code style="color: var(--accent-primary);">&lt;page&gt;/&lt;total&gt;</code>)</span>
+					<span>Show top page numbers (<code class="text-accent">&lt;page&gt;/&lt;total&gt;</code>)</span>
 				</label>
 				<label class="checkbox-field">
 					<input type="checkbox" bind:checked={includeTitlePage} />

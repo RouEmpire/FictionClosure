@@ -165,7 +165,7 @@
 						class="cover-mini-thumb"
 					/>
 				{:else}
-					<div class="cover-mini-thumb" style="display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
+					<div class="cover-mini-thumb cover-empty-thumb">
 						<i class="fa-solid fa-image"></i>
 					</div>
 				{/if}
@@ -182,8 +182,7 @@
 				{#if coverConfig.source === "custom"}
 					<button
 						type="button"
-						class="browse-font-btn"
-						style="margin-top: 0; padding: 4px 10px;"
+						class="browse-font-btn browse-font-btn-sm"
 						onclick={() => fileInputRef?.click()}
 					>
 						<i class="fa-solid fa-folder-open"></i> {coverConfig.customImageDataUrl ? "Change" : "Browse"}
@@ -233,7 +232,7 @@
 									title="{x} {y}"
 									aria-label="{x} {y} position"
 								>
-									<i class="fa-solid fa-circle" style="font-size: 5px;"></i>
+									<i class="fa-solid fa-circle grid-dot-icon"></i>
 								</button>
 							{/each}
 						{/each}
@@ -243,7 +242,7 @@
 					<div class="position-selectors-col">
 						<div class="position-subgroup">
 							<span class="position-subgroup-label">Horizontal</span>
-							<div class="button-group-row" style="flex: 1;">
+							<div class="button-group-row flex-1">
 								{#each COVER_POSITION_X_OPTIONS as posX}
 									<button
 										type="button"
@@ -260,7 +259,7 @@
 
 						<div class="position-subgroup">
 							<span class="position-subgroup-label">Vertical</span>
-							<div class="button-group-row" style="flex: 1;">
+							<div class="button-group-row flex-1">
 								{#each COVER_POSITION_Y_OPTIONS as posY}
 									<button
 										type="button"
