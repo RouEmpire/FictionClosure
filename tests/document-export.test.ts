@@ -58,18 +58,7 @@ describe("Document Export Service & PDFKit Generator", () => {
 			title: "Chapter 1: The Gathering Storm",
 			type: "manuscript",
 			order: 1,
-			content: `# Chapter 1\n\n---
-author: secret
----
-The rain hammered relentlessly against the iron parapets.
-
-> "A city that sleeps in blood shall wake in chains."
-
-She glanced at [[Marcus Vance|Commander Vance]] and drew her blade.
-
-***
-
-In the lower courtyard, shadows shifted silently.`,
+			content: `# Chapter 1\n\n---\nauthor: secret\n---\nThe rain hammered relentlessly against the iron parapets.\n\n> "A city that sleeps in blood shall wake in chains."\n\nShe glanced at [[Marcus Vance|Commander Vance]] and drew her blade.\n\n***\n\nIn the lower courtyard, shadows shifted silently.`,
 			createdAt: 1000,
 			updatedAt: 1000,
 		},
@@ -381,18 +370,12 @@ tags: [dark, war]
 			);
 
 			const customOptions: PdfExportOptions = {
-				format: "pdf",
+				...DEFAULT_PDF_EXPORT_OPTIONS,
 				paperSize: "A5",
 				pageColor: "#F5F2EB",
-				textColor: "#111827",
-				margin: 40,
-				showPageNumber: true,
 				fontFamily: "custom",
 				customFont: customFontConfig,
 				textAlign: "left",
-				includeCover: false,
-				includeTitlePage: true,
-				includeManuscriptOnly: true,
 			};
 
 			const pdfBytes = await renderPdfDocument(

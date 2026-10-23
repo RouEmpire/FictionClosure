@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { getCssObjectPosition } from "@services/documentExport/coverLayout";
 	import type {
+		CoverOptionConfig,
 		CustomFontConfig,
 		FontFamily,
 		PaperSize,
@@ -15,6 +17,8 @@
 		customFont?: CustomFontConfig | null;
 		textAlign: TextAlign;
 		showPageNumber: boolean;
+		coverConfig?: CoverOptionConfig;
+		activeCoverUrl?: string;
 	}
 
 	let {
@@ -26,7 +30,17 @@
 		customFont = null,
 		textAlign,
 		showPageNumber,
+		coverConfig,
+		activeCoverUrl,
 	}: Props = $props();
+
+	let previewMode = $state<"content" | "cover">("content");
+
+	const hasCover = $derived(
+		coverConfig?.enabled &&
+		coverConfig.source !== "none" &&
+		!!activeCoverUrl,
+	);
 
 	const fontCss = $derived(
 		fontFamily === "custom" && customFont
@@ -41,6 +55,12 @@
 	const aspectRatio = $derived(
 		paperSize === "A5" ? "148 / 210" : paperSize === "Letter" ? "8.5 / 11" : "210 / 297",
 	);
+
+	const coverObjPosition = $derived(
+		coverConfig
+			? getCssObjectPosition(coverConfig.positionX, coverConfig.positionY)
+			: "center center",
+	);
 </script>
 
 <div class="mini-preview-container">
@@ -54,37 +74,73 @@
 		</div>
 	</div>
 
-	<div
-		class="mini-paper"
-		style="background-color: {pageColor}; color: {textColor}; font-family: {fontCss}; aspect-ratio: {aspectRatio};"
-	>
-		<!-- Top Page Number -->
-		{#if showPageNumber}
-			<div class="mini-page-number" style="color: {textColor}; opacity: 0.65;">
-				1/1
+	{#if hasCover}
+		<div class="preview-pills-row">
+			<button
+				type="button"
+				class="preview-pill-btn"
+				class:active={previewMode === "cover"}
+				onclick={() => (previewMode = "cover")}
+			>
+				Page 1: Cover
+			</button>
+			<button
+				type="button"
+				class="preview-pill-btn"
+				class:active={previewMode === "content"}
+				onclick={() => (previewMode = "content")}
+			>
+				Manuscript
+			</button>
+		</div>
+	{/if}
+
+	{#if previewMode === "cover" && hasCover}
+		<!-- Pure Cover Page Mini Preview (Zero text, pure image layout) -->
+		<div
+			class="mini-paper"
+			style="background-color: {pageColor}; aspect-ratio: {aspectRatio}; padding: 0; overflow: hidden; position: relative;"
+		>
+			<img
+				src={activeCoverUrl}
+				alt="Cover preview"
+				style="width: 100%; height: 100%; object-fit: {coverConfig?.fit === 'none' ? 'none' : coverConfig?.fit}; object-position: {coverObjPosition}; display: block;"
+			/>
+		</div>
+	{:else}
+		<!-- Manuscript Prose Page Preview -->
+		<div
+			class="mini-paper"
+			style="background-color: {pageColor}; color: {textColor}; font-family: {fontCss}; aspect-ratio: {aspectRatio};"
+		>
+			<!-- Top Page Number -->
+			{#if showPageNumber}
+				<div class="mini-page-number" style="color: {textColor}; opacity: 0.65;">
+					1/1
+				</div>
+			{/if}
+
+			<!-- Mini Chapter Title -->
+			<div class="mini-chapter-title" style="color: {textColor}; text-align: center;">
+				{projectName || "Chapter 1"}
 			</div>
-		{/if}
 
-		<!-- Mini Chapter Title -->
-		<div class="mini-chapter-title" style="color: {textColor}; text-align: center;">
-			{projectName || "Chapter 1"}
+			<!-- Mini Simulated Prose Lines -->
+			<div class="mini-prose-block" style="text-align: {textAlign};">
+				<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 94%;"></div>
+				<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 100%;"></div>
+				<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 98%;"></div>
+				<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 62%;"></div>
+
+				<div class="mini-paragraph-gap"></div>
+
+				<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 96%;"></div>
+				<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 100%;"></div>
+				<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 88%;"></div>
+				<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 45%;"></div>
+			</div>
 		</div>
-
-		<!-- Mini Simulated Prose Lines -->
-		<div class="mini-prose-block" style="text-align: {textAlign};">
-			<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 94%;"></div>
-			<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 100%;"></div>
-			<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 98%;"></div>
-			<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 62%;"></div>
-
-			<div class="mini-paragraph-gap"></div>
-
-			<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 96%;"></div>
-			<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 100%;"></div>
-			<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 88%;"></div>
-			<div class="mini-line" style="background-color: {textColor}; opacity: 0.85; width: 45%;"></div>
-		</div>
-	</div>
+	{/if}
 </div>
 
 <style>
@@ -117,6 +173,39 @@
 		border-radius: 4px;
 		border: 1px solid var(--border-subtle, #30363d);
 		color: var(--accent-primary, #e69d45);
+	}
+
+	.preview-pills-row {
+		display: flex;
+		gap: 4px;
+		background: var(--bg-secondary, #161b22);
+		padding: 2px;
+		border-radius: 6px;
+		border: 1px solid var(--border-subtle, #30363d);
+		width: 100%;
+	}
+
+	.preview-pill-btn {
+		flex: 1;
+		background: transparent;
+		border: none;
+		border-radius: 4px;
+		font-size: 10px;
+		font-weight: 500;
+		color: var(--text-muted, #7d8590);
+		padding: 2px 6px;
+		cursor: pointer;
+		transition: all 0.15s ease;
+	}
+
+	.preview-pill-btn:hover {
+		color: var(--text-primary, #e6edf3);
+	}
+
+	.preview-pill-btn.active {
+		background: var(--accent-subtle, rgba(230, 157, 69, 0.15));
+		color: var(--accent-primary, #e69d45);
+		font-weight: 600;
 	}
 
 	.mini-paper {

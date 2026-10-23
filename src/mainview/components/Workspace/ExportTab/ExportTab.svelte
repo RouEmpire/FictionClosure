@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { FictionDocument, ProjectInfo } from "@shared/types";
 	import {
+		DEFAULT_COVER_OPTIONS,
 		DEFAULT_PDF_EXPORT_OPTIONS,
 		MARGIN_PRESETS,
 		PAGE_COLOR_PRESETS,
@@ -18,6 +19,7 @@
 		getAvailableFontOptions,
 	} from "@services/documentExport/fontManager";
 	import type {
+		CoverOptionConfig,
 		CustomFontConfig,
 		ExportFormat,
 		ExportResult,
@@ -27,6 +29,8 @@
 		TextAlign,
 	} from "@services/documentExport/types";
 	import { savePdfToDisk } from "@services/storage";
+	import ColorPresetPicker from "./ColorPresetPicker.svelte";
+	import CoverOptionsPicker from "./CoverOptionsPicker.svelte";
 	import CustomFontPicker from "./CustomFontPicker.svelte";
 	import ExportMiniPreview from "./ExportMiniPreview.svelte";
 	import FormatSelector from "./FormatSelector.svelte";
@@ -57,7 +61,20 @@
 	);
 
 	let textAlign = $state<TextAlign>(DEFAULT_PDF_EXPORT_OPTIONS.textAlign);
-	let includeCover = $state(DEFAULT_PDF_EXPORT_OPTIONS.includeCover);
+	let coverConfig = $state<CoverOptionConfig>({
+		...DEFAULT_COVER_OPTIONS,
+		source: project.coverImage ? "project" : "none",
+		enabled: !!project.coverImage,
+	});
+
+	const activeCoverUrl = $derived(
+		coverConfig.source === "custom"
+			? coverConfig.customImageDataUrl
+			: coverConfig.source === "project"
+				? project.coverImage
+				: undefined,
+	);
+
 	let includeTitlePage = $state(DEFAULT_PDF_EXPORT_OPTIONS.includeTitlePage);
 	let includeManuscriptOnly = $state(
 		DEFAULT_PDF_EXPORT_OPTIONS.includeManuscriptOnly,
@@ -92,7 +109,8 @@
 			fontFamily,
 			customFont: customFont ?? undefined,
 			textAlign,
-			includeCover,
+			includeCover: coverConfig.enabled && coverConfig.source !== "none",
+			coverOptions: coverConfig,
 			includeTitlePage,
 			includeManuscriptOnly,
 			saveToDisk: savePdfToDisk,
@@ -159,54 +177,24 @@
 			</div>
 
 			<!-- Page Color -->
-			<div class="option-field">
-				<label class="option-label" for="export-page-color">
-					<span>Page Background Color</span>
-					<span class="option-hint">Canvas fill color</span>
-				</label>
-				<div class="color-picker-row">
-					<input type="color" id="export-page-color" class="color-input-native" bind:value={pageColor} />
-					<input type="text" class="option-input color-hex-input" bind:value={pageColor} />
-					<div class="color-chips-row">
-						{#each PAGE_COLOR_PRESETS as c}
-							<button
-								type="button"
-								class="color-chip"
-								class:selected={pageColor.toUpperCase() === c.hex.toUpperCase()}
-								style="background-color: {c.hex};"
-								onclick={() => (pageColor = c.hex)}
-								title={c.label}
-								aria-label={c.label}
-							></button>
-						{/each}
-					</div>
-				</div>
-			</div>
+			<ColorPresetPicker
+				id="export-page-color"
+				label="Page Background Color"
+				hint="Canvas fill color"
+				bind:value={pageColor}
+				presets={PAGE_COLOR_PRESETS}
+				onChange={(val) => (pageColor = val)}
+			/>
 
 			<!-- Text Color -->
-			<div class="option-field">
-				<label class="option-label" for="export-text-color">
-					<span>Text Color</span>
-					<span class="option-hint">Typography ink tone</span>
-				</label>
-				<div class="color-picker-row">
-					<input type="color" id="export-text-color" class="color-input-native" bind:value={textColor} />
-					<input type="text" class="option-input color-hex-input" bind:value={textColor} />
-					<div class="color-chips-row">
-						{#each TEXT_COLOR_PRESETS as c}
-							<button
-								type="button"
-								class="color-chip"
-								class:selected={textColor.toUpperCase() === c.hex.toUpperCase()}
-								style="background-color: {c.hex};"
-								onclick={() => (textColor = c.hex)}
-								title={c.label}
-								aria-label={c.label}
-							></button>
-						{/each}
-					</div>
-				</div>
-			</div>
+			<ColorPresetPicker
+				id="export-text-color"
+				label="Text Color"
+				hint="Typography ink tone"
+				bind:value={textColor}
+				presets={TEXT_COLOR_PRESETS}
+				onChange={(val) => (textColor = val)}
+			/>
 
 			<!-- Page Margin -->
 			<div class="option-field">
@@ -282,6 +270,20 @@
 				</div>
 			</div>
 
+			<!-- Cover Options -->
+			<div class="option-field">
+				<label class="option-label" for="export-cover-section">
+					<span>Book Cover Page</span>
+					<span class="option-hint">Exclusive first page (no text or numbers)</span>
+				</label>
+				<CoverOptionsPicker
+					{coverConfig}
+					projectCoverImage={project.coverImage}
+					onUpdateConfig={(cfg) => (coverConfig = cfg)}
+					onError={(msg) => onShowToast ? onShowToast(msg) : alert(msg)}
+				/>
+			</div>
+
 			<!-- Checkboxes -->
 			<div class="option-field">
 				<label class="checkbox-field">
@@ -292,12 +294,6 @@
 					<input type="checkbox" bind:checked={includeTitlePage} />
 					<span>Include introductory title page</span>
 				</label>
-				{#if project.coverImage}
-					<label class="checkbox-field">
-						<input type="checkbox" bind:checked={includeCover} />
-						<span>Include book cover page</span>
-					</label>
-				{/if}
 				<label class="checkbox-field">
 					<input type="checkbox" bind:checked={includeManuscriptOnly} />
 					<span>Manuscript documents only (exclude character sheets & world notes)</span>
@@ -316,6 +312,8 @@
 				{customFont}
 				{textAlign}
 				{showPageNumber}
+				{coverConfig}
+				{activeCoverUrl}
 			/>
 		</div>
 	</div>

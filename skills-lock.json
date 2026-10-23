@@ -7,11 +7,29 @@
       "skillPath": "plugins/icons/skills/add-icon/SKILL.md",
       "computedHash": "303d28d273fbe0093905b9838bb000bde0ab11a783088f31530ac671ae1ea26c"
     },
+    "clean-code-refactoring": {
+      "source": "blunotech-dev/agents",
+      "sourceType": "github",
+      "skillPath": "refactor/clean-code-refactoring/SKILL.md",
+      "computedHash": "3ac908ddb72b57a8460ec05ec2eee4c5aa5dcea5ea63b0f0a285c3f67e0216f2"
+    },
     "fa-help": {
       "source": "FortAwesome/fontawesome-agent-tools",
       "sourceType": "github",
       "skillPath": "plugins/icons/skills/fa-help/SKILL.md",
       "computedHash": "d836a3da615a946e922cf9aaea0b615b1e8cebc4cbbbe79b996f0252e410acaa"
+    },
+    "micro-interaction-adder": {
+      "source": "blunotech-dev/agents",
+      "sourceType": "github",
+      "skillPath": "design/micro-interaction-adder/SKILL.md",
+      "computedHash": "b01e4d12d8a1699fd81830d087b8067856e928d758b3f7ec96abda2740d66517"
+    },
+    "naming-conventions": {
+      "source": "blunotech-dev/agents",
+      "sourceType": "github",
+      "skillPath": "refactor/naming-conventions/SKILL.md",
+      "computedHash": "40fde9cfcfea9f232714d84a3e17477caf1c3db8640d838c22d70bd2407446e3"
     },
     "setup-fa": {
       "source": "FortAwesome/fontawesome-agent-tools",

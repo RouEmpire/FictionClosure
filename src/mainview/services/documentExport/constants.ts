@@ -1,10 +1,22 @@
 import type {
 	ColorPresetOption,
+	CoverImageFit,
+	CoverOptionConfig,
+	CoverPositionX,
+	CoverPositionY,
 	FontFamilyOption,
 	FormatStatusOption,
 	PaperSizeOption,
 	PdfExportOptions,
 } from "./types";
+
+export const DEFAULT_COVER_OPTIONS: CoverOptionConfig = {
+	enabled: true,
+	source: "project",
+	fit: "cover",
+	positionX: "center",
+	positionY: "middle",
+};
 
 export const DEFAULT_PDF_EXPORT_OPTIONS: PdfExportOptions = {
 	format: "pdf",
@@ -16,6 +28,7 @@ export const DEFAULT_PDF_EXPORT_OPTIONS: PdfExportOptions = {
 	fontFamily: "Times-Roman",
 	textAlign: "justify",
 	includeCover: true,
+	coverOptions: DEFAULT_COVER_OPTIONS,
 	includeTitlePage: true,
 	includeManuscriptOnly: true,
 };
@@ -125,6 +138,58 @@ export const MARGIN_PRESETS = [
 	{ id: "wide", label: "Wide (72 pt / 1.0 in)", pt: 72 },
 	{ id: "book", label: "Book Trade (64 pt)", pt: 64 },
 ] as const;
+
+export const COVER_FIT_OPTIONS: {
+	id: CoverImageFit;
+	label: string;
+	icon: string;
+	description: string;
+}[] = [
+	{
+		id: "fill",
+		label: "Fill",
+		icon: "fa-up-right-and-down-left-from-center",
+		description: "Stretch image to completely fill page dimensions",
+	},
+	{
+		id: "cover",
+		label: "Cover",
+		icon: "fa-expand",
+		description: "Scale proportionally to cover entire page (crops overflow)",
+	},
+	{
+		id: "contain",
+		label: "Contain",
+		icon: "fa-compress",
+		description: "Scale proportionally to fit entirely inside page (no cropping)",
+	},
+	{
+		id: "none",
+		label: "None",
+		icon: "fa-border-none",
+		description: "Original unscaled 1:1 image size",
+	},
+];
+
+export const COVER_POSITION_X_OPTIONS: {
+	id: CoverPositionX;
+	label: string;
+	icon: string;
+}[] = [
+	{ id: "left", label: "Left", icon: "fa-align-left" },
+	{ id: "center", label: "Center", icon: "fa-align-center" },
+	{ id: "right", label: "Right", icon: "fa-align-right" },
+];
+
+export const COVER_POSITION_Y_OPTIONS: {
+	id: CoverPositionY;
+	label: string;
+	icon: string;
+}[] = [
+	{ id: "top", label: "Top", icon: "fa-arrow-up" },
+	{ id: "middle", label: "Middle", icon: "fa-arrows-up-down" },
+	{ id: "bottom", label: "Bottom", icon: "fa-arrow-down" },
+];
 
 export const EXPORT_FORMAT_OPTIONS: FormatStatusOption[] = [
 	{

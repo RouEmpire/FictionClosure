@@ -1,6 +1,7 @@
 import PDFDocument from "pdfkit";
 import type { FictionDocument, ProjectInfo } from "@shared/types";
-import { canRenderBrowserPreview } from "@shared/domain/coverSupport";
+import { computeCoverImageLayout } from "./coverLayout";
+import { prepareCoverImageBytes } from "./coverImageProcessor";
 import {
 	areStandardFontsAvailable,
 	ensureStandardFontsRegistered,
@@ -15,25 +16,6 @@ import { parseMarkdownBlocks } from "./markdownFormatter";
 import type { ExportProgressCallback, PdfExportOptions } from "./types";
 
 /**
- * Decodes a base64 data URL into a Uint8Array for PDFKit image embedding.
- */
-function decodeDataUrlToUint8Array(dataUrl: string): Uint8Array | null {
-	try {
-		const base64Index = dataUrl.indexOf(";base64,");
-		if (base64Index === -1) return null;
-		const base64 = dataUrl.slice(base64Index + 8);
-		const binary = atob(base64);
-		const bytes = new Uint8Array(binary.length);
-		for (let i = 0; i < binary.length; i++) {
-			bytes[i] = binary.charCodeAt(i);
-		}
-		return bytes;
-	} catch {
-		return null;
-	}
-}
-
-/**
  * Renders a full fiction manuscript project into PDF format using PDFKit.
  */
 export async function renderPdfDocument(
@@ -42,6 +24,32 @@ export async function renderPdfDocument(
 	options: PdfExportOptions,
 	onProgress?: ExportProgressCallback,
 ): Promise<Uint8Array> {
+	// Pre-process cover image asynchronously before starting PDF stream
+	let preparedCover: {
+		bytes: Uint8Array;
+		width?: number;
+		height?: number;
+	} | null = null;
+
+	const coverCfg = options.coverOptions;
+	const isCoverEnabled =
+		options.includeCover &&
+		coverCfg?.source !== "none" &&
+		(coverCfg?.enabled ?? true);
+
+	const coverDataUrl =
+		coverCfg?.source === "custom"
+			? coverCfg.customImageDataUrl
+			: project.coverImage || coverCfg?.customImageDataUrl;
+
+	if (isCoverEnabled && coverDataUrl) {
+		try {
+			preparedCover = await prepareCoverImageBytes(coverDataUrl);
+		} catch (err) {
+			console.warn("Could not prepare cover image for PDF export:", err);
+		}
+	}
+
 	return new Promise((resolve, reject) => {
 		try {
 			onProgress?.({
@@ -105,24 +113,58 @@ export async function renderPdfDocument(
 				paintPageBackground(doc, options.pageColor);
 			});
 
-			// 1. Cover Page (if enabled and project has a renderable cover)
-			if (options.includeCover && project.coverImage) {
-				const isRenderable = canRenderBrowserPreview(project.coverImage);
-				if (isRenderable && project.coverImage.startsWith("data:")) {
-					const coverBytes = decodeDataUrlToUint8Array(project.coverImage);
-					if (coverBytes) {
-						try {
-							doc.addPage({ margin: 0 });
-							const imgBuffer = Buffer.from(coverBytes.buffer) as unknown as Buffer;
-							doc.image(imgBuffer, 0, 0, {
-								fit: [doc.page.width, doc.page.height],
-								align: "center",
-								valign: "center",
-							});
-						} catch (err) {
-							console.warn("Could not embed cover image in PDF:", err);
+			// 1. Cover Page (if enabled and image was successfully prepared)
+			let coverRendered = false;
+
+			if (isCoverEnabled && preparedCover) {
+				try {
+					// Verify image decodes and extract dimensions using pure Uint8Array
+					const pdfImg = (
+						doc as unknown as {
+							openImage: (src: Uint8Array) => {
+								width: number;
+								height: number;
+							};
 						}
+					).openImage(preparedCover.bytes);
+
+					// OpenImage must succeed before adding the page!
+					doc.addPage({ margin: 0 });
+
+					const imgWidth = pdfImg.width || preparedCover.width || 1;
+					const imgHeight = pdfImg.height || preparedCover.height || 1;
+
+					const layout = computeCoverImageLayout({
+						pageWidth: doc.page.width,
+						pageHeight: doc.page.height,
+						imageWidth: imgWidth,
+						imageHeight: imgHeight,
+						fit: coverCfg?.fit || "cover",
+						positionX: coverCfg?.positionX || "center",
+						positionY: coverCfg?.positionY || "middle",
+					});
+
+					doc.save();
+					if (layout.clipToPage) {
+						doc.rect(0, 0, doc.page.width, doc.page.height).clip();
 					}
+					(
+						doc as unknown as {
+							image: (
+								src: unknown,
+								x: number,
+								y: number,
+								options?: { width: number; height: number },
+							) => void;
+						}
+					).image(pdfImg, layout.x, layout.y, {
+						width: layout.width,
+						height: layout.height,
+					});
+					doc.restore();
+					coverRendered = true;
+				} catch (err) {
+					console.warn("Could not embed cover image in PDF:", err);
 				}
 			}
 
@@ -280,8 +322,7 @@ export async function renderPdfDocument(
 				});
 
 				const startPage =
-					(options.includeCover && project.coverImage ? 1 : 0) +
-					(options.includeTitlePage ? 1 : 0);
+					(coverRendered ? 1 : 0) + (options.includeTitlePage ? 1 : 0);
 
 				applyPageNumbers(doc, {
 					textColor: options.textColor,

@@ -48,6 +48,19 @@ export interface ColorPresetOption {
 	hex: string;
 }
 
+export type CoverImageFit = "fill" | "cover" | "contain" | "none";
+export type CoverPositionX = "left" | "center" | "right";
+export type CoverPositionY = "top" | "middle" | "bottom";
+
+export interface CoverOptionConfig {
+	enabled: boolean;
+	source: "project" | "custom" | "none";
+	customImageDataUrl?: string;
+	fit: CoverImageFit;
+	positionX: CoverPositionX;
+	positionY: CoverPositionY;
+}
+
 export interface FormatStatusOption {
 	id: ExportFormat;
 	label: string;
@@ -68,6 +81,7 @@ export interface PdfExportOptions {
 	customFont?: CustomFontConfig;
 	textAlign: TextAlign;
 	includeCover: boolean;
+	coverOptions?: CoverOptionConfig;
 	includeTitlePage: boolean;
 	includeManuscriptOnly: boolean;
 	customFileName?: string;

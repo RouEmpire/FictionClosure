@@ -1,5 +1,7 @@
 export * from "./types";
 export * from "./constants";
+export * from "./coverLayout";
+export * from "./coverImageProcessor";
 export * from "./fontManager";
 export * from "./markdownFormatter";
 export * from "./pdfStyler";
