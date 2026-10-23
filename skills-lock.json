@@ -31,6 +31,12 @@
       "skillPath": "refactor/naming-conventions/SKILL.md",
       "computedHash": "40fde9cfcfea9f232714d84a3e17477caf1c3db8640d838c22d70bd2407446e3"
     },
+    "readme-generator": {
+      "source": "blunotech-dev/agents",
+      "sourceType": "github",
+      "skillPath": "documentation/readme-generator/SKILL.md",
+      "computedHash": "4b47b82c06d9d9f92e554e3dbfecb0bba992e90d554c6488d1a51fd7e6815b7f"
+    },
     "setup-fa": {
       "source": "FortAwesome/fontawesome-agent-tools",
       "sourceType": "github",

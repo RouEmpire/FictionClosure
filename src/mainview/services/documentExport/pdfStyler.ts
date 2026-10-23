@@ -1,5 +1,71 @@
+/**
+ * FictionClosure — PDF Styling, Typography & Pagination (Pure Functional & SOLID).
+ *
+ * Responsibilities:
+ * - Structural PdfStylingCanvas interface (eliminates 'any' types)
+ * - Page background painting & header page numbering calculations
+ * - Font variant resolution and typography constants
+ */
+
 import { findBundledFont } from "@shared/domain/bundledFonts";
 import type { FontFamily } from "./types";
+
+// ============================================================================
+// 1. Structural Canvas Interface (Zero 'any' / ISP)
+// ============================================================================
+
+export interface PdfStylingCanvas {
+	page: { width: number; height: number };
+	save(): void;
+	restore(): void;
+	rect(
+		x: number,
+		y: number,
+		w: number,
+		h: number,
+	): { fill(color: string): unknown };
+	font(name: string): PdfStylingCanvas;
+	fontSize(size: number): PdfStylingCanvas;
+	fillColor(color: string): PdfStylingCanvas;
+	text(
+		text: string,
+		x: number,
+		y: number,
+		options?: { align?: string; width?: number },
+	): unknown;
+	switchToPage(index: number): void;
+	bufferedPageRange(): { start: number; count: number };
+}
+
+export type FontVariant = "regular" | "bold" | "italic" | "boldItalic";
+
+const STANDARD_FONT_VARIANTS: Record<
+	string,
+	Record<FontVariant, string>
+> = {
+	"Times-Roman": {
+		regular: "Times-Roman",
+		bold: "Times-Bold",
+		italic: "Times-Italic",
+		boldItalic: "Times-BoldItalic",
+	},
+	Helvetica: {
+		regular: "Helvetica",
+		bold: "Helvetica-Bold",
+		italic: "Helvetica-Oblique",
+		boldItalic: "Helvetica-BoldOblique",
+	},
+	Courier: {
+		regular: "Courier",
+		bold: "Courier-Bold",
+		italic: "Courier-Oblique",
+		boldItalic: "Courier-BoldOblique",
+	},
+};
+
+// ============================================================================
+// 2. Pure Styling & Resolution Functions
+// ============================================================================
 
 /**
  * Maps base font family to its standard PDFKit variant font name.
@@ -7,7 +73,7 @@ import type { FontFamily } from "./types";
  */
 export function resolveFontVariant(
 	baseFont: FontFamily,
-	variant: "regular" | "bold" | "italic" | "boldItalic" = "regular",
+	variant: FontVariant = "regular",
 	customFontName?: string,
 ): string {
 	if (baseFont === "custom") {
@@ -19,35 +85,21 @@ export function resolveFontVariant(
 		return bundled.name;
 	}
 
-	switch (baseFont) {
-		case "Times-Roman":
-			if (variant === "bold") return "Times-Bold";
-			if (variant === "italic") return "Times-Italic";
-			if (variant === "boldItalic") return "Times-BoldItalic";
-			return "Times-Roman";
-
-		case "Helvetica":
-			if (variant === "bold") return "Helvetica-Bold";
-			if (variant === "italic") return "Helvetica-Oblique";
-			if (variant === "boldItalic") return "Helvetica-BoldOblique";
-			return "Helvetica";
-
-		case "Courier":
-			if (variant === "bold") return "Courier-Bold";
-			if (variant === "italic") return "Courier-Oblique";
-			if (variant === "boldItalic") return "Courier-BoldOblique";
-			return "Courier";
-
-		default:
-			return customFontName || baseFont;
+	const familyMap = STANDARD_FONT_VARIANTS[baseFont];
+	if (familyMap) {
+		return familyMap[variant] || familyMap.regular;
 	}
+
+	return customFontName || baseFont;
 }
 
 /**
  * Fills the background of the entire current page with the specified color.
- * Implementation: doc.rect(0, 0, doc.page.width, doc.page.height).fill(pageColor)
  */
-export function paintPageBackground(doc: any, pageColor: string): void {
+export function paintPageBackground(
+	doc: PdfStylingCanvas,
+	pageColor: string,
+): void {
 	if (!doc || !doc.page) return;
 	doc.save();
 	doc.rect(0, 0, doc.page.width, doc.page.height).fill(pageColor);
@@ -59,7 +111,7 @@ export function paintPageBackground(doc: any, pageColor: string): void {
  * at the top of every buffered page in the document.
  */
 export function applyPageNumbers(
-	doc: any,
+	doc: PdfStylingCanvas,
 	options: {
 		textColor: string;
 		fontFamily: FontFamily;
@@ -113,4 +165,4 @@ export const TYPOGRAPHY_METRICS = {
 	bodyLineGap: 4,
 	blockquoteIndent: 20,
 	paragraphBottomSpacing: 6,
-};
+} as const;

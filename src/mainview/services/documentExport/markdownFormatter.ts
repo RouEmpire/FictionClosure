@@ -1,8 +1,39 @@
+/**
+ * FictionClosure — Markdown Content Parser for PDFKit Export (Optimized & SOLID).
+ *
+ * Responsibilities:
+ * - Parsing manuscript markdown into structured document blocks
+ * - Pre-compiled regex caches & fast-path short circuits for maximum performance
+ * - Pure, deterministic formatting pipeline (zero side effects)
+ */
+
 export interface MarkdownBlock {
 	type: "heading" | "paragraph" | "blockquote" | "divider" | "listItem";
 	level?: number;
 	text?: string;
 }
+
+// ============================================================================
+// Pre-Compiled Static Regular Expressions (Performance Cache)
+// ============================================================================
+
+const BOLD_ITALIC_REGEX = /(\*\*\*|___)(.*?)\1/g;
+const BOLD_REGEX = /(\*\*|__)(.*?)\1/g;
+const ITALIC_REGEX = /(\*|_)(.*?)\1/g;
+const STRIKETHROUGH_REGEX = /~~(.*?)~~/g;
+const INLINE_CODE_REGEX = /`([^`]+)`/g;
+const MARKDOWN_LINK_REGEX = /\[([^\]]+)\]\([^)]+\)/g;
+const WIKILINK_REGEX = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
+const HORIZONTAL_RULE_REGEX = /^(?:\*\s*){3,}$|^(?:-\s*){3,}$|^(?:_\s*){3,}$/;
+const HEADING_REGEX = /^(#{1,6})\s+(.+)$/;
+const BULLET_LIST_REGEX = /^[-*+]\s+/;
+
+// Quick character existence tester to bypass regexes on clean prose
+const INLINE_MARKDOWN_TEST = /[*_~`[]/;
+
+// ============================================================================
+// Pure Text Pipeline Functions
+// ============================================================================
 
 /**
  * Strips YAML frontmatter from document text if present.
@@ -21,33 +52,36 @@ export function stripFrontmatter(text: string): string {
 
 /**
  * Resolves wikilinks [[Target|Display]] or [[Target]] to plain display text.
+ * Uses fast-path check to avoid regex invocation on link-free strings.
  */
 export function stripWikilinks(text: string): string {
-	if (!text) return "";
-	return text.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, target, alias) => {
+	if (!text || !text.includes("[[")) return text;
+	return text.replace(WIKILINK_REGEX, (_, target: string, alias?: string) => {
 		return alias ? alias.trim() : target.trim();
 	});
 }
 
 /**
  * Removes markdown formatting characters for clean plain text rendering in PDF.
+ * Applies a fast-path bypass when no markdown tokens are detected.
  */
 export function cleanInlineMarkdown(text: string): string {
-	if (!text) return "";
+	if (!text || !INLINE_MARKDOWN_TEST.test(text)) {
+		return text;
+	}
+
 	return text
-		// Bold and italic: ***text*** or ___text___
-		.replace(/(\*\*\*|___)(.*?)\1/g, "$2")
-		// Bold: **text** or __text__
-		.replace(/(\*\*|__)(.*?)\1/g, "$2")
-		// Italic: *text* or _text_
-		.replace(/(\*|_)(.*?)\1/g, "$2")
-		// Strikethrough: ~~text~~
-		.replace(/~~(.*?)~~/g, "$1")
-		// Inline code: `code`
-		.replace(/`([^`]+)`/g, "$1")
-		// Markdown links: [text](url) -> text
-		.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+		.replace(BOLD_ITALIC_REGEX, "$2")
+		.replace(BOLD_REGEX, "$2")
+		.replace(ITALIC_REGEX, "$2")
+		.replace(STRIKETHROUGH_REGEX, "$1")
+		.replace(INLINE_CODE_REGEX, "$1")
+		.replace(MARKDOWN_LINK_REGEX, "$1");
 }
+
+// ============================================================================
+// Block Parsing Engine
+// ============================================================================
 
 /**
  * Parses markdown manuscript content into a sequential list of structured blocks.
@@ -60,7 +94,7 @@ export function parseMarkdownBlocks(rawContent: string): MarkdownBlock[] {
 
 	let currentParagraphLines: string[] = [];
 
-	function flushParagraph() {
+	function flushParagraph(): void {
 		if (currentParagraphLines.length > 0) {
 			const fullText = cleanInlineMarkdown(
 				currentParagraphLines.join(" ").trim(),
@@ -75,24 +109,28 @@ export function parseMarkdownBlocks(rawContent: string): MarkdownBlock[] {
 		}
 	}
 
-	for (const line of lines) {
-		const trimmed = line.trim();
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i];
+		if (!line) {
+			flushParagraph();
+			continue;
+		}
 
-		// Empty line flushes current paragraph
+		const trimmed = line.trim();
 		if (!trimmed) {
 			flushParagraph();
 			continue;
 		}
 
 		// Horizontal rule / scene break: ***, ---, ___
-		if (/^(?:\*\s*){3,}$|^(?:-\s*){3,}$|^(?:_\s*){3,}$/.test(trimmed)) {
+		if (HORIZONTAL_RULE_REGEX.test(trimmed)) {
 			flushParagraph();
 			blocks.push({ type: "divider" });
 			continue;
 		}
 
 		// Headings: # H1, ## H2, ### H3
-		const headingMatch = trimmed.match(/^(#{1,6})\s+(.+)$/);
+		const headingMatch = trimmed.match(HEADING_REGEX);
 		if (headingMatch && headingMatch[1] && headingMatch[2]) {
 			flushParagraph();
 			const level = Math.min(3, headingMatch[1].length);
@@ -119,11 +157,11 @@ export function parseMarkdownBlocks(rawContent: string): MarkdownBlock[] {
 			continue;
 		}
 
-		// Bullet list items: - item, * item
-		if (/^[-*+]\s+/.test(trimmed)) {
+		// Bullet list items: - item, * item, + item
+		if (BULLET_LIST_REGEX.test(trimmed)) {
 			flushParagraph();
 			const itemText = cleanInlineMarkdown(
-				trimmed.replace(/^[-*+]\s+/, "").trim(),
+				trimmed.replace(BULLET_LIST_REGEX, "").trim(),
 			);
 			if (itemText) {
 				blocks.push({
