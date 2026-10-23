@@ -18,6 +18,7 @@ import {
 	CUSTOM_FONT_FAMILY_OPTION,
 	STANDARD_FONT_FAMILY_OPTIONS,
 } from "./constants";
+import { getBundledFonts } from "@shared/domain/bundledFonts";
 import type { CustomFontConfig, FontFamilyOption } from "./types";
 
 /**
@@ -98,16 +99,29 @@ export function setStandardFontsAvailableForTesting(
 }
 
 /**
+ * Returns font family options for all bundled typefaces shipped with the application.
+ */
+export function getBundledFontFamilyOptions(): FontFamilyOption[] {
+	return getBundledFonts().map((f) => ({
+		id: f.id,
+		label: f.name,
+		description: `Bundled font (${f.fileName})`,
+		category: "bundled" as const,
+	}));
+}
+
+/**
  * Returns the list of font family options available to the user.
  * If standard fonts are not installed/available, standard fonts are omitted.
- * Custom font is always offered.
+ * Bundled fonts and custom font are always offered.
  */
 export function getAvailableFontOptions(): FontFamilyOption[] {
+	const bundled = getBundledFontFamilyOptions();
 	if (areStandardFontsAvailable()) {
-		return [...STANDARD_FONT_FAMILY_OPTIONS, CUSTOM_FONT_FAMILY_OPTION];
+		return [...STANDARD_FONT_FAMILY_OPTIONS, ...bundled, CUSTOM_FONT_FAMILY_OPTION];
 	}
-	// If standard fonts are not available, only offer Custom Font
-	return [CUSTOM_FONT_FAMILY_OPTION];
+	// If standard fonts are not available, offer Bundled Fonts and Custom Font
+	return [...bundled, CUSTOM_FONT_FAMILY_OPTION];
 }
 
 /**

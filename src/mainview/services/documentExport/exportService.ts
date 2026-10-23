@@ -5,6 +5,7 @@ import {
 	uint8ArrayToBase64,
 } from "./exportDownloader";
 import { areStandardFontsAvailable } from "./fontManager";
+import { findBundledFont } from "@shared/domain/bundledFonts";
 import { renderPdfDocument } from "./pdfDocumentRenderer";
 import type {
 	ExportProgressCallback,
@@ -36,7 +37,7 @@ export function validateExportPrerequisites(
 		};
 	}
 
-	// Validate custom font selection
+	// Validate custom or bundled font selection
 	if (options.fontFamily === "custom") {
 		if (
 			!options.customFont ||
@@ -49,10 +50,12 @@ export function validateExportPrerequisites(
 					"A custom font file (.ttf or .otf) must be selected when using the Custom Font option.",
 			};
 		}
+	} else if (findBundledFont(options.fontFamily)) {
+		// Bundled fonts are verified and available in the distribution
 	} else if (!areStandardFontsAvailable()) {
 		return {
 			valid: false,
-			reason: `Standard font "${options.fontFamily}" is not available on this system. Please select a Custom Font.`,
+			reason: `Standard font "${options.fontFamily}" is not available on this system. Please select a Bundled Font or Custom Font.`,
 		};
 	}
 

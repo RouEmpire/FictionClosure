@@ -2,6 +2,7 @@ import PDFDocument from "pdfkit";
 import type { FictionDocument, ProjectInfo } from "@shared/types";
 import { computeCoverImageLayout } from "./coverLayout";
 import { prepareCoverImageBytes } from "./coverImageProcessor";
+import { findBundledFont, loadBundledFontBytes } from "@shared/domain/bundledFonts";
 import {
 	areStandardFontsAvailable,
 	ensureStandardFontsRegistered,
@@ -50,6 +51,22 @@ export async function renderPdfDocument(
 		}
 	}
 
+	// Pre-load bundled font bytes if a bundled font was chosen
+	const bundledFont = findBundledFont(options.fontFamily);
+	let bundledFontBytes: Uint8Array | null = null;
+	if (bundledFont) {
+		try {
+			bundledFontBytes = await loadBundledFontBytes(bundledFont);
+		} catch (err) {
+			console.warn(`Could not load bundled font "${bundledFont.name}":`, err);
+		}
+		if (!bundledFontBytes || bundledFontBytes.byteLength === 0) {
+			throw new Error(
+				`Bundled font "${bundledFont.name}" could not be loaded from application assets.`,
+			);
+		}
+	}
+
 	return new Promise((resolve, reject) => {
 		try {
 			onProgress?.({
@@ -65,9 +82,11 @@ export async function renderPdfDocument(
 
 			const defaultConstructorFont = customFontData
 				? (customFontData as unknown as string)
-				: areStandardFontsAvailable()
-					? undefined
-					: (null as unknown as string);
+				: bundledFontBytes
+					? (bundledFontBytes as unknown as string)
+					: areStandardFontsAvailable()
+						? undefined
+						: (null as unknown as string);
 
 			const doc = new PDFDocument({
 				size: options.paperSize,
@@ -85,6 +104,15 @@ export async function renderPdfDocument(
 
 			if (options.customFont) {
 				doc.registerFont(options.customFont.name, options.customFont.data);
+			}
+			if (bundledFont && bundledFontBytes) {
+				doc.registerFont(bundledFont.name, bundledFontBytes);
+				if (options.fontFamily !== bundledFont.name) {
+					doc.registerFont(options.fontFamily, bundledFontBytes);
+				}
+				if (bundledFont.id !== bundledFont.name && options.fontFamily !== bundledFont.id) {
+					doc.registerFont(bundledFont.id, bundledFontBytes);
+				}
 			}
 
 			// Accumulate PDF binary chunks

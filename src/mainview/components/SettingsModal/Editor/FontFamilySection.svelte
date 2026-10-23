@@ -1,5 +1,9 @@
 <script lang="ts">
     import { clampFontSize } from "@shared/domain/typography";
+    import {
+        ensureBundledFontsRegisteredInCss,
+        getBundledFonts,
+    } from "@shared/domain/bundledFonts";
     import { FONT_PRESETS, FONT_WEIGHTS } from "../settingsConstants";
 
     interface Props {
@@ -15,6 +19,9 @@
         fontWeight = $bindable(400),
         onChange,
     }: Props = $props();
+
+    const bundledFonts = getBundledFonts();
+    ensureBundledFontsRegisteredInCss();
 
     function applyFontPreset(fontValue: string) {
         fontFamily = fontValue;
@@ -60,6 +67,44 @@
             Enter any font installed on your system or select from presets below.
         </span>
     </div>
+
+    <!-- Bundled Fonts (Shipped with FictionClosure) -->
+    {#if bundledFonts.length > 0}
+        <div class="setting-item">
+            <div class="setting-label" style="display: flex; align-items: center; justify-content: space-between;">
+                <span>Bundled Fonts</span>
+                <span class="setting-hint" style="margin: 0; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-primary);">
+                    Shipped with FictionClosure
+                </span>
+            </div>
+            <div class="presets-grid">
+                {#each bundledFonts as bf}
+                    {@const isActive = fontFamily === bf.fontFamilyCss || fontFamily.includes(bf.name)}
+                    <button
+                        type="button"
+                        class="preset-btn"
+                        class:active={isActive}
+                        onclick={() => applyFontPreset(bf.fontFamilyCss)}
+                        title="Set editor font to {bf.name}"
+                    >
+                        <span class="preset-name">
+                            <i class="fa-solid fa-box-archive" style="font-size: 0.75rem; margin-right: 0.35rem; color: var(--accent-primary);"></i>
+                            {bf.name}
+                        </span>
+                        <span
+                            class="preset-sample"
+                            style="font-family: '{bf.name}', sans-serif"
+                        >
+                            The quick brown fox • สวัสดีชาวโลก
+                        </span>
+                    </button>
+                {/each}
+            </div>
+            <span class="setting-hint">
+                High-grade typefaces in <code>src/media/Font</code> configured via <code>config.json</code>.
+            </span>
+        </div>
+    {/if}
 
     <!-- Font Presets -->
     <div class="setting-item">

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getCssObjectPosition } from "@services/documentExport/coverLayout";
+	import { findBundledFont } from "@shared/domain/bundledFonts";
 	import type {
 		CoverOptionConfig,
 		CustomFontConfig,
@@ -42,14 +43,18 @@
 		!!activeCoverUrl,
 	);
 
+	const bundledFont = $derived(findBundledFont(fontFamily));
+
 	const fontCss = $derived(
 		fontFamily === "custom" && customFont
 			? `'${customFont.name}', serif`
-			: fontFamily === "Helvetica"
-				? "sans-serif"
-				: fontFamily === "Courier"
-					? "monospace"
-					: "serif",
+			: bundledFont
+				? `'${bundledFont.name}', sans-serif`
+				: fontFamily === "Helvetica"
+					? "sans-serif"
+					: fontFamily === "Courier"
+						? "monospace"
+						: "serif",
 	);
 
 	const aspectRatio = $derived(
@@ -69,6 +74,8 @@
 		<div style="display: flex; gap: 4px; align-items: center;">
 			{#if fontFamily === "custom"}
 				<span class="preview-badge" title="Custom Font">{customFont?.name || "Custom Font"}</span>
+			{:else if bundledFont}
+				<span class="preview-badge" title="Bundled Font">{bundledFont.name}</span>
 			{/if}
 			<span class="preview-badge">{paperSize}</span>
 		</div>

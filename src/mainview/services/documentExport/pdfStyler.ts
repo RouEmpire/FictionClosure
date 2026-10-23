@@ -1,8 +1,9 @@
+import { findBundledFont } from "@shared/domain/bundledFonts";
 import type { FontFamily } from "./types";
 
 /**
  * Maps base font family to its standard PDFKit variant font name.
- * If a custom font is specified, returns the custom font name.
+ * If a custom font or bundled font is specified, returns the registered font name.
  */
 export function resolveFontVariant(
 	baseFont: FontFamily,
@@ -11,6 +12,11 @@ export function resolveFontVariant(
 ): string {
 	if (baseFont === "custom") {
 		return customFontName || "CustomFont";
+	}
+
+	const bundled = findBundledFont(baseFont);
+	if (bundled) {
+		return bundled.name;
 	}
 
 	switch (baseFont) {

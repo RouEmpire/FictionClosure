@@ -248,9 +248,9 @@ tags: [dark, war]
 			expect(options.some((o) => o.id === "Times-Roman")).toBe(false);
 			expect(options.some((o) => o.id === "Helvetica")).toBe(false);
 			expect(options.some((o) => o.id === "Courier")).toBe(false);
-			// Only custom font must be offered
-			expect(options.length).toBe(1);
-			expect(options[0].id).toBe("custom");
+			// Bundled fonts and custom font remain offered
+			expect(options.some((o) => o.id === "custom")).toBe(true);
+			expect(options.some((o) => o.category === "bundled")).toBe(true);
 
 			// Attempting to export with standard font when unavailable fails validation
 			const validation = validateExportPrerequisites(

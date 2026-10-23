@@ -1,0 +1,28 @@
+{
+  "fonts": [
+    {
+      "name": "Anuphan",
+      "path": "./Anuphan.ttf"
+    },
+    {
+      "name": "iannnnnAMD (2005 Edition)",
+      "path": "./iannnnnAMD (2005 Edition).ttf"
+    },
+    {
+      "name": "IBM Plex Sans",
+      "path": "./IBMPlexSans.ttf"
+    },
+    {
+      "name": "Prompt",
+      "path": "./Prompt.ttf"
+    },
+    {
+      "name": "TH Sarabun New",
+      "path": "./THSarabunNew.ttf"
+    },
+    {
+      "name": "TH Sarabun PSK-Eco",
+      "path": "./THSarabun PSK-Eco.ttf"
+    }
+  ]
+}

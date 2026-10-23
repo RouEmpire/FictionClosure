@@ -18,6 +18,7 @@
 		areStandardFontsAvailable,
 		getAvailableFontOptions,
 	} from "@services/documentExport/fontManager";
+	import { ensureBundledFontsRegisteredInCss } from "@shared/domain/bundledFonts";
 	import type {
 		CoverOptionConfig,
 		CustomFontConfig,
@@ -52,12 +53,18 @@
 	let showPageNumber = $state(DEFAULT_PDF_EXPORT_OPTIONS.showPageNumber);
 	let customFont = $state<CustomFontConfig | null>(null);
 
+	ensureBundledFontsRegisteredInCss();
+
 	const standardAvailable = areStandardFontsAvailable();
 	const availableFonts = getAvailableFontOptions();
 
-	// Default font: if standard fonts unavailable, fallback to custom
+	// Default font: standard fonts if available, or first bundled font, or custom
 	let fontFamily = $state<FontFamily>(
-		standardAvailable ? DEFAULT_PDF_EXPORT_OPTIONS.fontFamily : "custom",
+		standardAvailable
+			? DEFAULT_PDF_EXPORT_OPTIONS.fontFamily
+			: availableFonts.length > 0 && availableFonts[0].id !== "custom"
+				? availableFonts[0].id
+				: "custom",
 	);
 
 	let textAlign = $state<TextAlign>(DEFAULT_PDF_EXPORT_OPTIONS.textAlign);
@@ -222,10 +229,10 @@
 				{#if !standardAvailable}
 					<div class="standard-font-warning-banner">
 						<i class="fa-solid fa-triangle-exclamation"></i>
-						<span>Standard fonts are not available on this system. Please upload a custom font (.ttf, .otf).</span>
+						<span>Standard fonts are not available on this system. You can export using Bundled Fonts or upload a custom font (.ttf, .otf).</span>
 					</div>
 				{/if}
-				<div class="button-group-row">
+				<div class="button-group-row" style="flex-wrap: wrap;">
 					{#each availableFonts as f}
 						<button
 							type="button"
@@ -236,6 +243,8 @@
 						>
 							{#if f.id === "custom"}
 								<i class="fa-solid fa-font"></i>
+							{:else if f.category === "bundled"}
+								<i class="fa-solid fa-box-archive" style="font-size: 0.75rem;"></i>
 							{/if}
 							{f.label}
 						</button>

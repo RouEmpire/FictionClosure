@@ -10,7 +10,7 @@ export type PaperSize =
 
 export type StandardFontFamily = "Times-Roman" | "Helvetica" | "Courier";
 
-export type FontFamily = StandardFontFamily | "custom";
+export type FontFamily = StandardFontFamily | "custom" | string;
 
 export type TextAlign = "left" | "center" | "right" | "justify";
 
@@ -39,7 +39,7 @@ export interface FontFamilyOption {
 	id: FontFamily;
 	label: string;
 	description: string;
-	category: "serif" | "sans" | "mono" | "custom";
+	category: "serif" | "sans" | "mono" | "bundled" | "custom";
 }
 
 export interface ColorPresetOption {

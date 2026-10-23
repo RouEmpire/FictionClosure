@@ -41,6 +41,7 @@
         DEFAULT_TYPOGRAPHY_SETTINGS,
         type EditorTypographySettings,
     } from "../shared/domain/typography";
+    import { ensureBundledFontsRegisteredInCss } from "../shared/domain/bundledFonts";
 
     // Screen navigation: starts on "home" welcome screen
     let currentScreen = $state<"home" | "workspace">("home");
@@ -99,6 +100,7 @@
     }
 
     onMount(() => {
+        ensureBundledFontsRegisteredInCss();
         recentProjects = getRecentProjects();
         typographySettings = loadTypographySettings();
         editorFont = typographySettings.fontFamily;
