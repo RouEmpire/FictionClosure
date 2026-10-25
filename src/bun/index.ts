@@ -16,6 +16,14 @@ import {
 	saveProjectToFolder,
 	setLastProjectFolder,
 } from "./project-storage";
+import {
+	createGitCommit,
+	getGitLog,
+	getGitStatus,
+	initGitRepo,
+	isGitRepo,
+	revertGitCommit,
+} from "./git-service";
 
 const DEV_SERVER_PORT = 5173;
 const DEV_SERVER_URL = `http://localhost:${DEV_SERVER_PORT}`;
@@ -119,6 +127,39 @@ const rpc = BrowserView.defineRPC<FictionClosureRPCSchema>({
 				pdfBase64: string;
 			}) => {
 				return exportPdfToFile(params.folderPath, params.fileName, params.pdfBase64);
+			},
+
+			gitIsRepo: async (params: { folderPath: string }) => {
+				const isRepo = await isGitRepo(params.folderPath);
+				return { isRepo };
+			},
+
+			gitInit: async (params: { folderPath: string }) => {
+				return await initGitRepo(params.folderPath);
+			},
+
+			gitGetStatus: async (params: { folderPath: string }) => {
+				return await getGitStatus(params.folderPath);
+			},
+
+			gitGetLog: async (params: { folderPath: string; limit?: number }) => {
+				try {
+					const commits = await getGitLog(params.folderPath, params.limit ?? 50);
+					return { commits };
+				} catch (err) {
+					return {
+						commits: [],
+						error: err instanceof Error ? err.message : String(err),
+					};
+				}
+			},
+
+			gitCommit: async (params: { folderPath: string; options: import("../shared/domain/git").GitCommitOptions }) => {
+				return await createGitCommit(params.folderPath, params.options);
+			},
+
+			gitRevert: async (params: { folderPath: string; commitHash: string }) => {
+				return await revertGitCommit(params.folderPath, params.commitHash);
 			},
 		},
 		messages: {},

@@ -158,7 +158,7 @@
 					class="folder-action-btn"
 					onclick={(e) => {
 						e.stopPropagation();
-						onNewDoc(folder.type, folder.id);
+						onNewDoc(folder.type ?? "manuscript", folder.id);
 					}}
 					title="New document in {folder.name}"
 				>

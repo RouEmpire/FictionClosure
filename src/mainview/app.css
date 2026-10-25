@@ -13,6 +13,10 @@
 @import "./styles/projectModals.css";
 @import "./styles/coverDropzone.css";
 @import "./styles/utilities.css";
+@import "./components/Workspace/workspace.css";
+@import "./components/Workspace/Inspector/inspector.css";
+@import "./components/Workspace/Sidebar/contextMenu.css";
+@import "./components/Workspace/Editor/editorStyles.css";
 
 /* ============================================================================
    Global Reset & Accessibility

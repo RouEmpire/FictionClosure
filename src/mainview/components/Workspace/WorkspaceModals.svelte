@@ -28,7 +28,6 @@
         onOpenNewDocModal: (type?: DocumentType) => void;
         onSave: () => void;
         onOpenSettings: () => void;
-        onOpenShortcuts: () => void;
         onCreateDoc: (doc: FictionDocument) => void;
         onCreateFolder: (folder: ProjectFolder) => void;
         onSaveProjectSettings: (updated: {
@@ -62,7 +61,6 @@
         onOpenNewDocModal,
         onSave,
         onOpenSettings,
-        onOpenShortcuts,
         onCreateDoc,
         onCreateFolder,
         onSaveProjectSettings,

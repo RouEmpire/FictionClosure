@@ -36,13 +36,12 @@
 		onReplaceAll,
 	}: Props = $props();
 
-	let query = $state(initialQuery);
+	let query = $state("");
 	let replaceText = $state("");
 	let caseSensitive = $state(false);
 	let activeMatchIndex = $state(0);
 
 	let findInputRef: HTMLInputElement | null = $state(null);
-	let replaceInputRef: HTMLInputElement | null = $state(null);
 
 	// Recompute matches whenever content, query, or case sensitivity changes
 	const matches = $derived(findMatches(content, query, caseSensitive));
@@ -251,7 +250,6 @@
 						type="text"
 						class="find-input replace-input"
 						placeholder="Replace with..."
-						bind:this={replaceInputRef}
 						bind:value={replaceText}
 						onkeydown={handleReplaceKeyDown}
 						aria-label="Replace text"

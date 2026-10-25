@@ -13,7 +13,7 @@
 
 	$effect(() => {
 		// Track logs length so it reacts to additions
-		const _ = logs.length;
+		void logs.length;
 		tick().then(() => {
 			if (terminalScrollElem) {
 				terminalScrollElem.scrollTop = terminalScrollElem.scrollHeight;

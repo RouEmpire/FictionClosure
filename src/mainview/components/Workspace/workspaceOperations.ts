@@ -7,10 +7,17 @@ import type {
 import {
     promptSelectFolder,
     saveProject,
+    loadProject,
     setRememberedFolder,
     clearCrashCache,
 } from "@services/storage";
 import { globalHistoryManager } from "@services/historyManager";
+
+export async function reloadProjectFromDisk(
+    folderPath: string,
+) {
+    return await loadProject(folderPath);
+}
 
 export async function executeSave(
     project: ProjectInfo,

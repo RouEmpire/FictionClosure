@@ -1,4 +1,4 @@
-import type { FictionDocument, ProjectFolder } from "../../../shared/types";
+import type { FictionDocument, ProjectFolder, ProjectInfo } from "../../../shared/types";
 
 export function cascadeDeleteFolder(
     folders: ProjectFolder[],
@@ -106,4 +106,26 @@ export function renameDocInList(
     doc.title = newTitle.trim();
     doc.updatedAt = new Date().toISOString();
     return doc;
+}
+
+export function applyProjectSettingsUpdate(
+    project: ProjectInfo,
+    updated: {
+        name: string;
+        author: string;
+        genre: string;
+        targetWordCount: number;
+        coverImage?: string;
+        readme?: string;
+    },
+): ProjectInfo {
+    return {
+        ...project,
+        name: updated.name,
+        author: updated.author,
+        genre: updated.genre,
+        targetWordCount: updated.targetWordCount,
+        coverImage: updated.coverImage,
+        readme: updated.readme,
+    };
 }

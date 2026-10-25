@@ -9,6 +9,7 @@ export default {
 		build: "hutch electrobun prepare && hutch pm exec -- vite build && hutch electrobun build --env=stable",
 		"build:canary": "hutch electrobun prepare && hutch pm exec -- vite build && hutch electrobun build --env=canary",
 		test: ["bun", "test"],
+		check: ["bunx", "--bun", "svelte-check", "--tsconfig", "./tsconfig.json"]
 	},
 	electrobun: {
 		version: "2.0.2",

@@ -85,7 +85,3 @@
         <WorkspaceEmptyState onCreateDoc={onCreateNewDoc} />
     {/if}
 </main>
-
-<style>
-    @import "./workspace.css";
-</style>

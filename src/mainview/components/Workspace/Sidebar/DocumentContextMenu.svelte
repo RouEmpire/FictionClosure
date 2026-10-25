@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { FictionDocument, ProjectFolder } from "@shared/types";
+	import type { FictionDocument } from "@shared/types";
 	import { markdownToPlainText } from "@shared/domain/markdown";
 	import {
 		getDocumentRelativePath,
@@ -12,7 +12,6 @@
 		x: number;
 		y: number;
 		doc: FictionDocument | null;
-		folders: ProjectFolder[];
 		folderPath?: string;
 		onClose: () => void;
 		onSelectDoc: (id: string) => void;
@@ -28,7 +27,6 @@
 		x,
 		y,
 		doc,
-		folders,
 		folderPath,
 		onClose,
 		onSelectDoc,
@@ -60,8 +58,8 @@
 		if (!doc) return;
 		const pathStr =
 			type === "relative"
-				? getDocumentRelativePath(doc, folders)
-				: getDocumentSystemPath(doc, folders, folderPath);
+				? getDocumentRelativePath(doc)
+				: getDocumentSystemPath(doc, folderPath);
 		const success = await copyToClipboard(pathStr);
 		if (success) {
 			onShowToast?.(`Copied ${type === "relative" ? "relative" : "system"} path to clipboard`);
@@ -254,7 +252,3 @@
 		</button>
 	</div>
 {/if}
-
-<style>
-	@import "./contextMenu.css";
-</style>

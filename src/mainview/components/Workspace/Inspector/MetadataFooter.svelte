@@ -26,8 +26,6 @@
 </div>
 
 <style>
-    @import "./inspector.css";
-
     .metadata-footer {
         margin-top: auto;
         border-top: 1px solid var(--border-subtle);

@@ -224,13 +224,8 @@
 
 <aside
 	class="sidebar"
-	bind:this={sidebarEl}
-	tabindex="0"
 	role="navigation"
 	aria-label="Document Tree"
-	onfocus={() => (isFocused = true)}
-	onblur={() => (isFocused = false)}
-	onkeydown={handleKeyDown}
 >
 	<Toolbar
 		bind:searchQuery
@@ -238,7 +233,15 @@
 		onNewDoc={() => onNewDoc("manuscript")}
 	/>
 
-	<div class="tree-content" role="tree">
+	<div
+		class="tree-content"
+		bind:this={sidebarEl}
+		role="tree"
+		tabindex="0"
+		onfocus={() => (isFocused = true)}
+		onblur={() => (isFocused = false)}
+		onkeydown={handleKeyDown}
+	>
 		{#each sections as sec}
 			{@const secDocs = filteredDocs.filter((d) => d.type === sec.type)}
 			{@const secRootFolders = folders.filter((f) => !f.parentId && f.type === sec.type)}
@@ -325,7 +328,6 @@
 		x={contextMenu.x}
 		y={contextMenu.y}
 		doc={contextMenu.doc}
-		{folders}
 		{folderPath}
 		onClose={() => {
 			contextMenu.isOpen = false;

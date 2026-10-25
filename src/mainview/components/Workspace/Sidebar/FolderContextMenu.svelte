@@ -60,7 +60,7 @@
 			type="button"
 			class="context-menu-item"
 			onclick={() => {
-				onNewDoc(folder.type, folder.id);
+				onNewDoc(folder.type ?? "manuscript", folder.id);
 				onClose();
 			}}
 			role="menuitem"
@@ -122,7 +122,3 @@
 		</button>
 	</div>
 {/if}
-
-<style>
-	@import "./contextMenu.css";
-</style>

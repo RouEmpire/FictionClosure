@@ -34,6 +34,7 @@
     import ProjectLoadingScreen from "@components/ProjectLoadingScreen/ProjectLoadingScreen.svelte";
     import CrashRecoveryModal from "./components/CrashRecoveryModal.svelte";
     import { analyzeProject } from "../shared/domain/projectAnalysis";
+    import { calculateWordCount } from "../shared/domain/markdown";
     import { formatLoadDuration } from "../shared/domain/timeFormatting";
     import {
         loadTypographySettings,
@@ -160,7 +161,7 @@
                 recentProjects = saveRecentProject(rec);
 
                 const totalWords = loadedDocs.reduce(
-                    (sum, d) => sum + (d.wordCount || 0),
+                    (sum, d) => sum + calculateWordCount(d.content || ""),
                     0,
                 );
                 loadingStats = {
@@ -202,7 +203,7 @@
                     );
                     recentProjects = saveRecentProject(rec);
                     const totalWords = sampleDocuments.reduce(
-                        (sum, d) => sum + (d.wordCount || 0),
+                        (sum, d) => sum + calculateWordCount(d.content || ""),
                         0,
                     );
                     loadingStats = {
@@ -262,7 +263,7 @@
                 return {
                     ...doc,
                     content: cached.content,
-                    updatedAt: cached.updatedAt,
+                    updatedAt: cached.lastModified,
                     title: cached.title,
                 };
             }
@@ -279,8 +280,8 @@
                     status: "draft",
                     tags: [],
                     order: updated.length + 1,
-                    createdAt: cached.updatedAt,
-                    updatedAt: cached.updatedAt,
+                    createdAt: cached.lastModified,
+                    updatedAt: cached.lastModified,
                     content: cached.content,
                 });
             }
@@ -341,7 +342,6 @@
                     folderPath.split("/").filter(Boolean).pop() ||
                     "Imported Project";
                 projectToAnalyze = {
-                    id: `proj-${Date.now()}`,
                     name: folderName.replace(/[-_]/g, " "),
                     folderPath,
                     targetWordCount: 50000,
@@ -374,15 +374,11 @@
                                   title: "Chapter 1",
                                   type: "manuscript",
                                   order: 1,
-                                  wordCount: 0,
-                                  targetWordCount: 3000,
                                   status: "draft",
                                   content: `# ${projectToAnalyze.name}\n\nChapter 1 content goes here...\n`,
-                                  characters: [],
-                                  locations: [],
                                   tags: ["draft"],
-                                  created: new Date().toISOString(),
-                                  lastModified: new Date().toISOString(),
+                                  createdAt: new Date().toISOString(),
+                                  updatedAt: new Date().toISOString(),
                               },
                           ],
                 stacks: loadRes.stacks,
@@ -446,7 +442,6 @@
     async function handleConfirmCreateProject(data: CreateProjectData) {
         try {
             const newProj: ProjectInfo = {
-                id: `proj-${Date.now()}`,
                 name: data.name,
                 folderPath: data.folderPath,
                 targetWordCount: data.targetWordCount,
@@ -463,36 +458,29 @@
                     title: "Chapter 1",
                     type: "manuscript",
                     order: 1,
-                    wordCount: 0,
-                    targetWordCount: 3000,
                     status: "draft",
                     content: `# ${newProj.name}\n\nBegin your story here...\n`,
-                    characters: [],
-                    locations: [],
                     tags: ["beginning"],
-                    created: new Date().toISOString(),
-                    lastModified: new Date().toISOString(),
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
                 },
                 {
                     id: "char-protagonist",
                     title: "Protagonist",
                     type: "character",
                     order: 1,
-                    wordCount: 0,
                     status: "draft",
                     content:
                         "# Protagonist\n\n**Role:** Main Character\n\n## Description\n\n",
-                    characters: [],
-                    locations: [],
                     tags: ["lead"],
-                    created: new Date().toISOString(),
-                    lastModified: new Date().toISOString(),
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
                 },
             ];
 
             project = newProj;
             documents = newDocs;
-            globalHistoryManager.restoreAll({}, newProj.targetWordCount);
+            globalHistoryManager.restoreAll(null, newProj.targetWordCount);
 
             const rec = buildRecentProjectRecord(
                 newProj,

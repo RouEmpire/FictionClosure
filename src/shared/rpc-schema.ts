@@ -7,6 +7,14 @@ import type {
 	ProjectInfo,
 	SaveProjectResult,
 } from "./types";
+import type {
+	GitCommitOptions,
+	GitCommitRecord,
+	GitCommitResult,
+	GitInitResult,
+	GitRevertResult,
+	GitStatusResult,
+} from "./domain/git";
 
 export type FictionClosureRPCSchema = {
 	bun: RPCSchema<{
@@ -56,6 +64,30 @@ export type FictionClosureRPCSchema = {
 					pdfBase64: string;
 				};
 				response: { success: boolean; filePath?: string; error?: string };
+			};
+			gitIsRepo: {
+				params: { folderPath: string };
+				response: { isRepo: boolean };
+			};
+			gitInit: {
+				params: { folderPath: string };
+				response: GitInitResult;
+			};
+			gitGetStatus: {
+				params: { folderPath: string };
+				response: GitStatusResult;
+			};
+			gitGetLog: {
+				params: { folderPath: string; limit?: number };
+				response: { commits: GitCommitRecord[]; error?: string };
+			};
+			gitCommit: {
+				params: { folderPath: string; options: GitCommitOptions };
+				response: GitCommitResult;
+			};
+			gitRevert: {
+				params: { folderPath: string; commitHash: string };
+				response: GitRevertResult;
 			};
 		};
 		messages: {};

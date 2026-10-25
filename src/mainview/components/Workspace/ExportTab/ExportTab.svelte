@@ -68,10 +68,15 @@
 	);
 
 	let textAlign = $state<TextAlign>(DEFAULT_PDF_EXPORT_OPTIONS.textAlign);
-	let coverConfig = $state<CoverOptionConfig>({
-		...DEFAULT_COVER_OPTIONS,
-		source: project.coverImage ? "project" : "none",
-		enabled: !!project.coverImage,
+	let coverConfig = $state<CoverOptionConfig>({ ...DEFAULT_COVER_OPTIONS });
+
+	let initializedCover = false;
+	$effect(() => {
+		if (!initializedCover && project) {
+			initializedCover = true;
+			coverConfig.source = project.coverImage ? "project" : "none";
+			coverConfig.enabled = !!project.coverImage;
+		}
 	});
 
 	const activeCoverUrl = $derived(

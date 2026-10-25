@@ -71,8 +71,6 @@
 </div>
 
 <style>
-    @import "./inspector.css";
-
     .tag-count {
         font-size: 10px;
         color: var(--text-muted);

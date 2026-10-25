@@ -9,10 +9,12 @@
         viewMode: ViewMode;
         zenMode: ZenModeType;
         showInspector: boolean;
+        showGitSidebar?: boolean;
         onSave: () => void;
         onSetViewMode: (mode: ViewMode) => void;
         onSelectZenMode: (mode: ZenModeType) => void;
         onToggleInspector: () => void;
+        onToggleGit?: () => void;
         onOpenShortcuts: () => void;
     }
 
@@ -23,10 +25,12 @@
         viewMode,
         zenMode,
         showInspector,
+        showGitSidebar = false,
         onSave,
         onSetViewMode,
         onSelectZenMode,
         onToggleInspector,
+        onToggleGit,
         onOpenShortcuts,
     }: Props = $props();
 
@@ -121,6 +125,23 @@
 
     <!-- Zen Modes Dropdown -->
     <ZenDropdown {zenMode} {onSelectZenMode} />
+
+    <!-- Toggle Git Commits & History -->
+    {#if onToggleGit}
+        <button
+            type="button"
+            class="icon-btn"
+            class:active={showGitSidebar}
+            onclick={onToggleGit}
+            title={showGitSidebar
+                ? "Hide Git Commits & History"
+                : "Show Git Commits & History"}
+            aria-label="Toggle Git panel"
+            aria-pressed={showGitSidebar}
+        >
+            <i class="fa-solid fa-code-commit"></i>
+        </button>
+    {/if}
 
     <!-- Toggle Inspector -->
     <button

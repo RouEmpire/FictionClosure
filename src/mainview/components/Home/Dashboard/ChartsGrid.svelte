@@ -74,8 +74,8 @@
     });
 
     $effect(() => {
-        const _p = recentProjects;
-        const _s = stats;
+        void recentProjects;
+        void stats;
         updateCharts();
     });
 </script>

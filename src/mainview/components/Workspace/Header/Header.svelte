@@ -21,7 +21,9 @@
         zenMode: ZenModeType;
         onSelectZenMode: (mode: ZenModeType) => void;
         showInspector: boolean;
+        showGitSidebar?: boolean;
         onToggleInspector: () => void;
+        onToggleGit?: () => void;
         onSetViewMode: (mode: ViewMode) => void;
         onSave: () => void;
         onChangeFolder: () => void;
@@ -43,7 +45,9 @@
         zenMode,
         onSelectZenMode,
         showInspector,
+        showGitSidebar = false,
         onToggleInspector,
+        onToggleGit,
         onSetViewMode,
         onSave,
         onChangeFolder: _onChangeFolder,
@@ -73,10 +77,12 @@
         {viewMode}
         {zenMode}
         {showInspector}
+        {showGitSidebar}
         {onSave}
         {onSetViewMode}
         {onSelectZenMode}
         {onToggleInspector}
+        {onToggleGit}
         {onOpenShortcuts}
     />
 </header>

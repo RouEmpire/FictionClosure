@@ -207,8 +207,6 @@
 </div>
 
 <style>
-    @import "./inspector.css";
-
     .document-inspector-content {
         display: flex;
         flex-direction: column;

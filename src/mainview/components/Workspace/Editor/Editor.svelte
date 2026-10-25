@@ -15,7 +15,6 @@
     import {
         wrapSelection,
         toggleLinePrefix,
-        toggleTaskCheckbox,
     } from "@shared/domain/textFormatting";
     import {
         computeLineHeight,
@@ -159,14 +158,14 @@
     }
 
     $effect(() => {
-        const _c = document.content;
-        const _w = wordWrap;
-        const _f = activeFont;
-        const _lh = computedLineHeight;
-        const _fs = activeTypography.fontSize;
-        const _ind = firstLineIndentCss;
-        const _t = textareaEl;
-        const _m = mirrorEl;
+        void document.content;
+        void wordWrap;
+        void activeFont;
+        void computedLineHeight;
+        void activeTypography.fontSize;
+        void firstLineIndentCss;
+        void textareaEl;
+        void mirrorEl;
         updateRenderedLines();
     });
 
@@ -583,7 +582,3 @@
         />
     {/if}
 </div>
-
-<style>
-    @import "./editorStyles.css";
-</style>

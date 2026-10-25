@@ -10,10 +10,12 @@
     import Sidebar from "./Sidebar/Sidebar.svelte";
     import WorkspaceStage from "./WorkspaceStage.svelte";
     import Inspector from "./Inspector/Inspector.svelte";
+    import GitSidebar from "./GitSidebar/GitSidebar.svelte";
 
     interface Props {
         isSidebarOpen: boolean;
-        showInspector: boolean;
+        showInspector?: boolean;
+        activeRightSidebar?: "none" | "inspector" | "git";
         zenMode: ZenModeType;
         viewMode: ViewMode;
         activeDoc: FictionDocument | null;
@@ -46,12 +48,15 @@
         onUpdateDocMeta: (updates: Partial<FictionDocument>) => void;
         onUpdateFolderMeta: (id: string, updates: Partial<ProjectFolder>) => void;
         onCloseInspector: () => void;
+        onCloseGitSidebar?: () => void;
+        onReloadProject?: () => Promise<void>;
         onShowToast: (msg: string) => void;
     }
 
     let {
         isSidebarOpen,
-        showInspector,
+        showInspector = true,
+        activeRightSidebar = "inspector",
         zenMode,
         viewMode,
         activeDoc,
@@ -84,8 +89,19 @@
         onUpdateDocMeta,
         onUpdateFolderMeta,
         onCloseInspector,
+        onCloseGitSidebar,
+        onReloadProject = async () => {},
         onShowToast,
     }: Props = $props();
+
+    const isInspectorVisible = $derived(
+        (activeRightSidebar === "inspector" || (!activeRightSidebar && showInspector)) &&
+            zenMode === "none" &&
+            (activeDoc !== null || inspectedFolder !== null),
+    );
+    const isGitVisible = $derived(
+        activeRightSidebar === "git" && zenMode === "none",
+    );
 </script>
 
 <div class="workspace-main">
@@ -131,7 +147,7 @@
         onCreateNewDoc={() => onOpenNewDocModal("manuscript")}
     />
 
-    {#if showInspector && zenMode === "none" && (activeDoc || inspectedFolder)}
+    {#if isInspectorVisible}
         <Inspector
             document={inspectedFolder ? null : activeDoc}
             folder={inspectedFolder}
@@ -146,9 +162,15 @@
             onSelectFolder={onInspectFolder}
             onClose={onCloseInspector}
         />
+    {:else if isGitVisible}
+        <GitSidebar
+            {folderPath}
+            onSaveBeforeCommit={async () => onSave()}
+            {onReloadProject}
+            onClose={() => {
+                if (onCloseGitSidebar) onCloseGitSidebar();
+            }}
+            {onShowToast}
+        />
     {/if}
 </div>
-
-<style>
-    @import "./workspace.css";
-</style>

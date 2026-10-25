@@ -17,6 +17,7 @@
     import WorkspaceModals from "./WorkspaceModals.svelte";
     import { handleWorkspaceGlobalKeyDown } from "./workspaceShortcuts";
     import {
+        applyProjectSettingsUpdate,
         cascadeDeleteFolder,
         duplicateDocument,
         renameFolderInList,
@@ -24,7 +25,12 @@
         deleteDocFromList,
         renameDocInList,
     } from "./workspaceDocActions";
-    import { executeSave, findDocOrFolderByTitle, createNewDocument } from "./workspaceOperations";
+    import {
+        executeSave,
+        findDocOrFolderByTitle,
+        createNewDocument,
+        reloadProjectFromDisk,
+    } from "./workspaceOperations";
     import type { WorkspaceProps } from "./workspaceTypes";
 
     let {
@@ -47,7 +53,9 @@
     let saveState = $state<SaveState>("saved");
     let viewMode = $state<ViewMode>("split");
     let isSidebarOpen = $state(true);
-    let showInspector = $state(true);
+    let activeRightSidebar = $state<"none" | "inspector" | "git">("inspector");
+    const showInspector = $derived(activeRightSidebar === "inspector");
+    const showGitSidebar = $derived(activeRightSidebar === "git");
     let zenMode = $state<ZenModeType>("none");
     let isCommandPaletteOpen = $state(false);
     let isNewDocModalOpen = $state(false);
@@ -57,7 +65,7 @@
     let newDocInitialType = $state<DocumentType>("manuscript");
     let newDocInitialMode = $state<"document" | "folder">("document");
     let newDocParentFolderId = $state<string | null>(null);
-    let preZenState = { sidebar: true, inspector: true };
+    let preZenState = { sidebar: true, rightSidebar: "inspector" as "none" | "inspector" | "git" };
 
     const activeDoc = $derived(documents.find((d) => d.id === activeDocId) ?? null);
     const inspectedFolder = $derived(
@@ -83,24 +91,29 @@
         onShowToast(wordWrap ? "Word wrap enabled" : "Word wrap disabled");
     }
 
+    function toggleInspector() {
+        activeRightSidebar = activeRightSidebar === "inspector" ? "none" : "inspector";
+        if (activeRightSidebar === "none") inspectedFolderId = null;
+    }
+
+    function toggleGitSidebar() {
+        activeRightSidebar = activeRightSidebar === "git" ? "none" : "git";
+    }
+
     function setZenMode(target: ZenModeType) {
         if (zenMode === target) { exitZenMode(); return; }
-        if (zenMode === "none") preZenState = { sidebar: isSidebarOpen, inspector: showInspector };
+        if (zenMode === "none") preZenState = { sidebar: isSidebarOpen, rightSidebar: activeRightSidebar };
         zenMode = target;
         isSidebarOpen = false;
-        showInspector = false;
-        const msg = target === "zen"
-            ? "Zen mode enabled (Press Esc or Ctrl+\\ to exit)"
-            : target === "focus"
-              ? "Focus Zen mode enabled (Press Esc or Ctrl+Shift+\\ to exit)"
-              : "Concentrate Zen mode enabled (Press Esc to exit)";
+        activeRightSidebar = "none";
+        const msg = target === "zen" ? "Zen mode enabled (Esc or Ctrl+\\)" : target === "focus" ? "Focus Zen mode (Esc or Ctrl+Shift+\\)" : "Concentrate Zen mode (Esc)";
         onShowToast(msg);
     }
 
     function exitZenMode() {
         if (zenMode !== "none") {
             isSidebarOpen = preZenState.sidebar;
-            showInspector = preZenState.inspector;
+            activeRightSidebar = preZenState.rightSidebar;
             zenMode = "none";
             onShowToast("Exited Zen mode");
         }
@@ -159,7 +172,7 @@
         if (match.doc) { handleSelectDoc(match.doc.id); return; }
         if (match.folder) {
             inspectedFolderId = match.folder.id;
-            showInspector = true;
+            activeRightSidebar = "inspector";
             onShowToast(`Opened folder "${match.folder.name}" in Inspector`);
             return;
         }
@@ -196,7 +209,7 @@
         folders.push(newFolder);
         project.folders = folders;
         inspectedFolderId = newFolder.id;
-        showInspector = true;
+        activeRightSidebar = "inspector";
         saveState = "unsaved";
         onShowToast(`Created folder "${newFolder.name}"`);
         void handleSave();
@@ -269,27 +282,26 @@
         onCloseProject();
     }
 
-    function handleUpdateProjectSettings(updated: {
-        name: string;
-        author: string;
-        genre: string;
-        targetWordCount: number;
-        coverImage?: string;
-        readme?: string;
-    }) {
-        project = {
-            ...project,
-            name: updated.name,
-            author: updated.author,
-            genre: updated.genre,
-            targetWordCount: updated.targetWordCount,
-            coverImage: updated.coverImage,
-            readme: updated.readme,
-        };
+    function handleUpdateProjectSettings(updated: Parameters<typeof applyProjectSettingsUpdate>[1]) {
+        project = applyProjectSettingsUpdate(project, updated);
         globalHistoryManager.setTargetWordCount(project.targetWordCount);
         saveState = "unsaved";
         onShowToast(`Updated project settings for "${project.name}"`);
         void handleSave();
+    }
+
+    async function handleReloadProject() {
+        if (!project.folderPath) return;
+        const res = await reloadProjectFromDisk(project.folderPath);
+        if (res.success && res.project && res.documents) {
+            project = res.project;
+            documents = res.documents;
+            if (res.folders) folders = res.folders;
+            if (!documents.some((d) => d.id === activeDocId) && documents.length > 0) {
+                activeDocId = documents[0].id;
+            }
+            onShowToast("Project reloaded from disk");
+        }
     }
 
     function handleKeyDown(e: KeyboardEvent) {
@@ -308,7 +320,7 @@
             onCloseCommandPalette: () => (isCommandPaletteOpen = false),
             onCloseNewDocModal: () => (isNewDocModalOpen = false),
             onExitZenMode: exitZenMode,
-            onCloseInspector: () => { showInspector = false; inspectedFolderId = null; },
+            onCloseInspector: () => { activeRightSidebar = "none"; inspectedFolderId = null; },
             onOpenShortcuts,
             onFocusSidebar: () => {
                 if (!isSidebarOpen) isSidebarOpen = true;
@@ -318,7 +330,7 @@
             onToggleWordWrap: toggleWordWrap,
             onOpenSettings,
             onToggleSidebar: () => (isSidebarOpen = !isSidebarOpen),
-            onToggleInspector: () => (showInspector = !showInspector),
+            onToggleInspector: toggleInspector,
             onToggleZenMode: (m) => (zenMode === m ? exitZenMode() : setZenMode(m)),
             onToggleCommandPalette: () => (isCommandPaletteOpen = !isCommandPaletteOpen),
             onChangeFolder: () => void handleChangeFolder(),
@@ -336,94 +348,42 @@
 >
     {#if zenMode !== "czm"}
         <Header
-            projectName={project.name}
-            folderPath={project.folderPath}
-            lastSaved={project.lastSaved}
-            {activeDoc}
-            {saveState}
-            {viewMode}
-            {isSidebarOpen}
-            onToggleSidebar={() => (isSidebarOpen = !isSidebarOpen)}
-            {zenMode}
-            onSelectZenMode={setZenMode}
-            {showInspector}
-            onToggleInspector={() => (showInspector = !showInspector)}
-            onSetViewMode={(mode) => (viewMode = mode)}
-            onSave={handleSave}
-            onChangeFolder={handleChangeFolder}
-            onOpenCommandPalette={() => (isCommandPaletteOpen = true)}
-            onOpenProjectSettings={() => (isProjectSettingsOpen = true)}
-            {onOpenShortcuts}
-            onCloseProject={handleCloseAndReturn}
+            projectName={project.name} folderPath={project.folderPath} lastSaved={project.lastSaved}
+            {activeDoc} {saveState} {viewMode} {isSidebarOpen} {zenMode} {showInspector} {showGitSidebar}
+            onToggleSidebar={() => (isSidebarOpen = !isSidebarOpen)} onSelectZenMode={setZenMode}
+            onToggleInspector={toggleInspector} onToggleGit={toggleGitSidebar}
+            onSetViewMode={(mode) => (viewMode = mode)} onSave={handleSave} onChangeFolder={handleChangeFolder}
+            onOpenCommandPalette={() => (isCommandPaletteOpen = true)} onOpenProjectSettings={() => (isProjectSettingsOpen = true)}
+            {onOpenShortcuts} onCloseProject={handleCloseAndReturn}
         />
     {/if}
 
     <WorkspaceMain
-        {isSidebarOpen}
-        {showInspector}
-        {zenMode}
-        {viewMode}
-        {activeDoc}
-        {inspectedFolder}
-        {documents}
-        {folders}
-        targetWordCount={project.targetWordCount}
-        folderPath={project.folderPath}
-        {editorFont}
-        {typography}
-        {wordWrap}
-        bind:sidebarRef
-        onSelectDoc={handleSelectDoc}
-        onSelectFolder={(id) => { inspectedFolderId = id; showInspector = true; }}
-        onOpenNewDocModal={handleOpenNewDocModal}
-        onOpenNewFolderModal={handleOpenNewFolderModal}
-        onDeleteDoc={handleDeleteDoc}
-        onDeleteFolder={handleDeleteFolder}
-        onRenameDoc={handleRenameDoc}
-        onRenameFolder={handleRenameFolder}
-        onDuplicateDoc={handleDuplicateDoc}
-        onOpenInspector={(id) => { activeDocId = id; inspectedFolderId = null; showInspector = true; }}
-        onInspectFolder={(id) => { inspectedFolderId = id; showInspector = true; }}
-        onContentChange={handleContentChange}
-        onSave={handleSave}
-        onToggleWordWrap={toggleWordWrap}
-        onToggleZenMode={(m) => (zenMode === m ? exitZenMode() : setZenMode(m))}
-        onExitZen={exitZenMode}
-        onNavigateToDocTitle={handleNavigateToDocTitle}
-        onUpdateDocMeta={handleUpdateDocMeta}
-        onUpdateFolderMeta={handleUpdateFolderMeta}
-        onCloseInspector={() => { showInspector = false; inspectedFolderId = null; }}
+        {isSidebarOpen} {activeRightSidebar} {showInspector} {zenMode} {viewMode}
+        {activeDoc} {inspectedFolder} {documents} {folders} {editorFont} {typography} {wordWrap}
+        targetWordCount={project.targetWordCount} folderPath={project.folderPath} bind:sidebarRef
+        onSelectDoc={handleSelectDoc} onOpenNewDocModal={handleOpenNewDocModal}
+        onSelectFolder={(id) => { inspectedFolderId = id; activeRightSidebar = "inspector"; }}
+        onOpenNewFolderModal={handleOpenNewFolderModal} onDeleteDoc={handleDeleteDoc} onDeleteFolder={handleDeleteFolder}
+        onRenameDoc={handleRenameDoc} onRenameFolder={handleRenameFolder} onDuplicateDoc={handleDuplicateDoc}
+        onOpenInspector={(id) => { activeDocId = id; inspectedFolderId = null; activeRightSidebar = "inspector"; }}
+        onInspectFolder={(id) => { inspectedFolderId = id; activeRightSidebar = "inspector"; }}
+        onContentChange={handleContentChange} onSave={handleSave} onToggleWordWrap={toggleWordWrap}
+        onToggleZenMode={(m) => (zenMode === m ? exitZenMode() : setZenMode(m))} onExitZen={exitZenMode}
+        onNavigateToDocTitle={handleNavigateToDocTitle} onUpdateDocMeta={handleUpdateDocMeta} onUpdateFolderMeta={handleUpdateFolderMeta}
+        onCloseInspector={() => { activeRightSidebar = "none"; inspectedFolderId = null; }}
+        onCloseGitSidebar={() => { activeRightSidebar = "none"; }} onReloadProject={handleReloadProject}
         {onShowToast}
     />
 
     <WorkspaceModals
-        {isCommandPaletteOpen}
-        {isNewDocModalOpen}
-        {isProjectSettingsOpen}
-        {project}
-        {documents}
-        {folders}
-        {newDocInitialType}
-        {newDocInitialMode}
-        {newDocParentFolderId}
-        onCloseCommandPalette={() => (isCommandPaletteOpen = false)}
-        onCloseNewDocModal={() => (isNewDocModalOpen = false)}
-        onCloseProjectSettings={() => (isProjectSettingsOpen = false)}
-        onOpenProjectSettings={() => (isProjectSettingsOpen = true)}
-        onSelectDoc={handleSelectDoc}
-        onOpenNewDocModal={handleOpenNewDocModal}
-        onSave={handleSave}
-        onSetViewMode={(mode) => (viewMode = mode)}
-        onChangeFolder={handleChangeFolder}
-        {onOpenSettings}
-        {onOpenShortcuts}
-        onCreateDoc={handleCreateDoc}
-        onCreateFolder={handleCreateFolder}
-        onSaveProjectSettings={handleUpdateProjectSettings}
-        {onShowToast}
+        {isCommandPaletteOpen} {isNewDocModalOpen} {isProjectSettingsOpen} {project} {documents} {folders}
+        {newDocInitialType} {newDocInitialMode} {newDocParentFolderId}
+        onCloseCommandPalette={() => (isCommandPaletteOpen = false)} onCloseNewDocModal={() => (isNewDocModalOpen = false)}
+        onCloseProjectSettings={() => (isProjectSettingsOpen = false)} onOpenProjectSettings={() => (isProjectSettingsOpen = true)}
+        onSelectDoc={handleSelectDoc} onOpenNewDocModal={handleOpenNewDocModal} onSave={handleSave}
+        onSetViewMode={(mode) => (viewMode = mode)} onChangeFolder={handleChangeFolder}
+        {onOpenSettings} onCreateDoc={handleCreateDoc} onCreateFolder={handleCreateFolder}
+        onSaveProjectSettings={handleUpdateProjectSettings} {onShowToast}
     />
 </div>
-
-<style>
-    @import "./workspace.css";
-</style>
