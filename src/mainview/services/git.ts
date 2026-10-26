@@ -11,6 +11,7 @@ import type {
 	GitRevertResult,
 	GitStatusResult,
 } from "@shared/domain/git";
+import type { GitLineBlame } from "@shared/domain/diff";
 import { getRpcTransport, isDesktopApp } from "./storage";
 
 /**
@@ -135,5 +136,67 @@ export async function revertCommit(
 	} catch (err) {
 		const error = err instanceof Error ? err.message : String(err);
 		return { success: false, error };
+	}
+}
+
+/**
+ * Fetches list of changed relative file paths between a selected commit and current tree.
+ */
+export async function fetchGitDiffFiles(
+	folderPath: string,
+	commitHash: string,
+): Promise<string[]> {
+	if (!folderPath || !commitHash) return [];
+	const rpc = getRpcTransport();
+	if (!rpc || !isDesktopApp()) return [];
+
+	try {
+		const res = await rpc.request.gitGetDiffFiles({ folderPath, commitHash });
+		return res.files || [];
+	} catch (err) {
+		console.warn("Failed to fetch diff files:", err);
+		return [];
+	}
+}
+
+/**
+ * Fetches the document content at a specific Git commit revision.
+ */
+export async function fetchGitFileAtCommit(
+	folderPath: string,
+	commitHash: string,
+	relativePath: string,
+): Promise<string> {
+	if (!folderPath || !commitHash || !relativePath) return "";
+	const rpc = getRpcTransport();
+	if (!rpc || !isDesktopApp()) return "";
+
+	try {
+		const res = await rpc.request.gitGetFileAtCommit({ folderPath, commitHash, relativePath });
+		return res.content || "";
+	} catch (err) {
+		console.warn("Failed to fetch file at commit:", err);
+		return "";
+	}
+}
+
+/**
+ * Fetches line blame records for a file.
+ */
+export async function fetchGitFileBlame(
+	folderPath: string,
+	relativePath: string,
+	commitHash?: string,
+): Promise<GitLineBlame[]> {
+	if (!folderPath || !relativePath) return [];
+	const rpc = getRpcTransport();
+	if (!rpc || !isDesktopApp()) return [];
+
+	try {
+		const res = await rpc.request.gitGetFileBlame({ folderPath, relativePath, commitHash });
+		return res.blame || [];
+	} catch (err) {
+		console.warn("Failed to fetch file blame:", err);
+		return [];
 	}
 }

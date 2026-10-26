@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import type { SaveState } from "@shared/types";
     import type { GitCommitRecord, GitStatusResult } from "@shared/domain/git";
     import {
         checkIsGitRepo,
@@ -14,16 +15,22 @@
 
     interface Props {
         folderPath?: string;
+        activeDiffCommitHash?: string | null;
+        saveState?: SaveState;
         onSaveBeforeCommit: () => Promise<void>;
         onReloadProject: () => Promise<void>;
+        onSelectDiff?: (commit: GitCommitRecord) => void;
         onClose: () => void;
         onShowToast: (msg: string) => void;
     }
 
     let {
         folderPath,
+        activeDiffCommitHash = null,
+        saveState = "saved",
         onSaveBeforeCommit,
         onReloadProject,
+        onSelectDiff,
         onClose,
         onShowToast,
     }: Props = $props();
@@ -41,6 +48,7 @@
     let isLoading = $state(false);
     let isInitializing = $state(false);
     let revertCandidate = $state<GitCommitRecord | null>(null);
+    let prevSaveState = $state<SaveState>("saved");
 
     async function refreshGitData() {
         if (!folderPath) {
@@ -90,13 +98,12 @@
         const candidate = revertCandidate;
 
         try {
-            // Flush any current workspace edits before revert
-            await onSaveBeforeCommit();
-
+            // Note: do not save uncommitted changes because the user explicitly confirmed
+            // in the danger modal that uncommitted changes will be discarded.
             const res = await revertCommit(folderPath, candidate.hash);
             if (res.success) {
                 revertCandidate = null;
-                onShowToast(`Reverted commit ${candidate.shortHash}`);
+                onShowToast(`Reverted commit ${candidate.shortHash} (uncommitted changes discarded)`);
                 // Reload project documents so workspace reflects the revert
                 await onReloadProject();
                 await refreshGitData();
@@ -108,6 +115,13 @@
             onShowToast(`Revert error: ${msg}`);
         }
     }
+
+    $effect(() => {
+        if (prevSaveState === "saving" && saveState === "saved" && folderPath && isRepo) {
+            void refreshGitData();
+        }
+        prevSaveState = saveState;
+    });
 
     $effect(() => {
         if (folderPath) {
@@ -194,6 +208,7 @@
             <CommitComposer
                 {folderPath}
                 {status}
+                isEditorDirty={saveState === "unsaved"}
                 {onSaveBeforeCommit}
                 onCommitSuccess={refreshGitData}
                 {onShowToast}
@@ -202,7 +217,9 @@
             <CommitHistoryList
                 {commits}
                 {isLoading}
+                {activeDiffCommitHash}
                 onSelectRevert={(c) => (revertCandidate = c)}
+                {onSelectDiff}
             />
         </div>
     {/if}

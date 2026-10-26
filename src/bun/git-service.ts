@@ -277,20 +277,29 @@ export async function createGitCommit(
 
 /**
  * Reverts a given commit by creating a new inverse commit (non-destructive rollback).
+ * Forcefully aborts unstashed/uncommitted local changes if force is true.
  */
 export async function revertGitCommit(
 	folderPath: string,
 	commitHash: string,
+	force: boolean = true,
 ): Promise<GitRevertResult> {
 	const isRepo = await isGitRepo(folderPath);
 	if (!isRepo) {
 		return { success: false, error: "Not a Git repository" };
 	}
 
+	if (force) {
+		// Discard uncommitted changes so merge conflicts with dirty files are prevented
+		await runGitCommand(folderPath, ["reset", "--hard", "HEAD"]);
+		await runGitCommand(folderPath, ["clean", "-fd"]);
+	}
+
 	const revertRes = await runGitCommand(folderPath, ["revert", "--no-edit", commitHash]);
 	if (revertRes.exitCode !== 0) {
 		// Clean up conflicted state if revert fails
 		await runGitCommand(folderPath, ["revert", "--abort"]);
+		await runGitCommand(folderPath, ["reset", "--hard", "HEAD"]);
 		return {
 			success: false,
 			error:

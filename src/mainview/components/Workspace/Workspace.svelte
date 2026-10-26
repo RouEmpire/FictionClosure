@@ -29,8 +29,10 @@
         executeSave,
         findDocOrFolderByTitle,
         createNewDocument,
-        reloadProjectFromDisk,
+        executeReloadProject,
+        executeDiffSelection,
     } from "./workspaceOperations";
+    import type { GitCommitRecord } from "@shared/domain/git";
     import type { WorkspaceProps } from "./workspaceTypes";
 
     let {
@@ -54,6 +56,8 @@
     let viewMode = $state<ViewMode>("split");
     let isSidebarOpen = $state(true);
     let activeRightSidebar = $state<"none" | "inspector" | "git">("inspector");
+    let activeDiffCommit = $state<GitCommitRecord | null>(null);
+    let diffChangedDocIds = $state<Set<string> | null>(null);
     const showInspector = $derived(activeRightSidebar === "inspector");
     const showGitSidebar = $derived(activeRightSidebar === "git");
     let zenMode = $state<ZenModeType>("none");
@@ -87,15 +91,14 @@
     });
 
     function toggleWordWrap() {
+        if (activeDiffCommit !== null) { onShowToast("Word wrap is disabled in diff mode"); return; }
         wordWrap = !wordWrap;
         onShowToast(wordWrap ? "Word wrap enabled" : "Word wrap disabled");
     }
-
     function toggleInspector() {
         activeRightSidebar = activeRightSidebar === "inspector" ? "none" : "inspector";
         if (activeRightSidebar === "none") inspectedFolderId = null;
     }
-
     function toggleGitSidebar() {
         activeRightSidebar = activeRightSidebar === "git" ? "none" : "git";
     }
@@ -186,16 +189,10 @@
     }
 
     function handleOpenNewDocModal(type: DocumentType = "manuscript", parentFolderId?: string) {
-        newDocInitialType = type;
-        newDocInitialMode = "document";
-        newDocParentFolderId = parentFolderId || null;
-        isNewDocModalOpen = true;
+        newDocInitialType = type; newDocInitialMode = "document"; newDocParentFolderId = parentFolderId || null; isNewDocModalOpen = true;
     }
-
     function handleOpenNewFolderModal(parentFolderId?: string) {
-        newDocInitialMode = "folder";
-        newDocParentFolderId = parentFolderId || null;
-        isNewDocModalOpen = true;
+        newDocInitialMode = "folder"; newDocParentFolderId = parentFolderId || null; isNewDocModalOpen = true;
     }
 
     function handleCreateDoc(newDoc: FictionDocument) {
@@ -204,7 +201,6 @@
         inspectedFolderId = null;
         void handleSave();
     }
-
     function handleCreateFolder(newFolder: ProjectFolder) {
         folders.push(newFolder);
         project.folders = folders;
@@ -214,7 +210,6 @@
         onShowToast(`Created folder "${newFolder.name}"`);
         void handleSave();
     }
-
     function handleDeleteFolder(folderId: string) {
         const { remainingFolders, deletedFolder } = cascadeDeleteFolder(folders, documents, folderId);
         if (!deletedFolder) return;
@@ -225,7 +220,6 @@
         onShowToast(`Deleted folder "${deletedFolder.name}"`);
         void handleSave();
     }
-
     function handleRenameFolder(folderId: string, newName: string) {
         const f = renameFolderInList(folders, folderId, newName);
         if (!f) return;
@@ -234,7 +228,6 @@
         onShowToast(`Renamed folder to "${f.name}"`);
         void handleSave();
     }
-
     function handleUpdateFolderMeta(folderId: string, updates: Partial<ProjectFolder>) {
         if (updateFolderMetaInList(folders, folderId, updates)) {
             project.folders = folders;
@@ -242,7 +235,6 @@
             scheduleCrashCache();
         }
     }
-
     function handleDeleteDoc(id: string) {
         const res = deleteDocFromList(documents, activeDocId, id);
         if (res.deleted) {
@@ -250,7 +242,6 @@
             void handleSave();
         }
     }
-
     function handleUpdateDocMeta(updates: Partial<FictionDocument>) {
         if (!activeDoc) return;
         Object.assign(activeDoc, updates);
@@ -258,7 +249,6 @@
         saveState = "unsaved";
         scheduleCrashCache();
     }
-
     function handleRenameDoc(id: string, newTitle: string) {
         const doc = renameDocInList(documents, id, newTitle);
         if (!doc) return;
@@ -266,7 +256,6 @@
         onShowToast(`Renamed to "${doc.title}"`);
         void handleSave();
     }
-
     function handleDuplicateDoc(id: string) {
         const newDoc = duplicateDocument(documents, id);
         if (!newDoc) return;
@@ -292,15 +281,28 @@
 
     async function handleReloadProject() {
         if (!project.folderPath) return;
-        const res = await reloadProjectFromDisk(project.folderPath);
+        const res = await executeReloadProject(project.folderPath, activeDocId, onShowToast);
         if (res.success && res.project && res.documents) {
-            project = res.project;
-            documents = res.documents;
+            project = res.project; documents = res.documents;
             if (res.folders) folders = res.folders;
-            if (!documents.some((d) => d.id === activeDocId) && documents.length > 0) {
-                activeDocId = documents[0].id;
-            }
-            onShowToast("Project reloaded from disk");
+            if (res.nextActiveDocId) activeDocId = res.nextActiveDocId;
+            saveState = "saved";
+            if (crashCacheTimer) clearTimeout(crashCacheTimer);
+        }
+    }
+
+    async function handleSelectDiff(commit: GitCommitRecord) {
+        const res = await executeDiffSelection(project.folderPath, commit, activeDiffCommit, documents, activeDocId, onShowToast);
+        activeDiffCommit = res.diffCommit;
+        diffChangedDocIds = res.changedDocIds;
+        if (res.nextActiveDocId) activeDocId = res.nextActiveDocId;
+    }
+
+    function handleExitDiff() {
+        if (activeDiffCommit !== null) {
+            activeDiffCommit = null;
+            diffChangedDocIds = null;
+            onShowToast("Exited Diff mode");
         }
     }
 
@@ -312,11 +314,8 @@
         }
 
         handleWorkspaceGlobalKeyDown(e, {
-            isCommandPaletteOpen,
-            isNewDocModalOpen,
-            zenMode,
-            showInspector,
-            isSidebarOpen,
+            isCommandPaletteOpen, isNewDocModalOpen, zenMode, showInspector, isSidebarOpen,
+            isDiffActive: activeDiffCommit !== null, onExitDiff: handleExitDiff,
             onCloseCommandPalette: () => (isCommandPaletteOpen = false),
             onCloseNewDocModal: () => (isNewDocModalOpen = false),
             onExitZenMode: exitZenMode,
@@ -362,6 +361,9 @@
         {isSidebarOpen} {activeRightSidebar} {showInspector} {zenMode} {viewMode}
         {activeDoc} {inspectedFolder} {documents} {folders} {editorFont} {typography} {wordWrap}
         targetWordCount={project.targetWordCount} folderPath={project.folderPath} bind:sidebarRef
+        diffCommit={activeDiffCommit} {diffChangedDocIds} writerName={project.author || "Author"}
+        {saveState}
+        onSelectDiff={handleSelectDiff} onExitDiff={handleExitDiff}
         onSelectDoc={handleSelectDoc} onOpenNewDocModal={handleOpenNewDocModal}
         onSelectFolder={(id) => { inspectedFolderId = id; activeRightSidebar = "inspector"; }}
         onOpenNewFolderModal={handleOpenNewFolderModal} onDeleteDoc={handleDeleteDoc} onDeleteFolder={handleDeleteFolder}

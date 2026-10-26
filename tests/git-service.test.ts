@@ -126,7 +126,12 @@ describe("Bun Git Service", () => {
 		expect(badCommit.success).toBe(true);
 		expect(badCommit.commitHash).toBeDefined();
 
-		// Revert the bad commit
+		// Introduce dirty uncommitted modifications and an untracked file to simulate workspace edits
+		fs.writeFileSync(testFile, "Dirty local edits that were not committed");
+		const untrackedFile = path.join(tempDir, "scratchpad.tmp");
+		fs.writeFileSync(untrackedFile, "Temporary scratch notes");
+
+		// Revert the bad commit with force (should discard dirty uncommitted changes and revert cleanly)
 		const revertRes = await revertGitCommit(tempDir, badCommit.commitHash!);
 		expect(revertRes.success).toBe(true);
 		expect(revertRes.revertCommitHash).toBeDefined();
@@ -134,6 +139,7 @@ describe("Bun Git Service", () => {
 		// Content should be reverted back to original
 		const revertedContent = fs.readFileSync(testFile, "utf8");
 		expect(revertedContent).toBe("Original Plot Idea");
+		expect(fs.existsSync(untrackedFile)).toBe(false);
 
 		// Git log should have 3 commits now (initial, bad, revert)
 		const logs = await getGitLog(tempDir);

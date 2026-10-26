@@ -44,13 +44,13 @@
         tabindex="-1"
     >
         <div class="modal-header">
-            <div class="header-icon-wrapper">
-                <i class="fa-solid fa-rotate-left"></i>
+            <div class="header-icon-wrapper danger">
+                <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
             <div class="header-text">
-                <span class="modal-title">Revert Manuscript Commit</span>
+                <span class="modal-title">Danger: Revert Manuscript Commit</span>
                 <span class="modal-subtitle"
-                    >Create an inverse commit to undo these changes</span
+                    >Force revert commit and discard uncommitted changes</span
                 >
             </div>
         </div>
@@ -73,12 +73,12 @@
             </div>
         </div>
 
-        <div class="safety-notice">
-            <i class="fa-solid fa-shield-halved safety-icon"></i>
-            <span class="safety-text">
-                Your history is preserved. Git will add a new revert commit
-                without deleting previous versions. Unsaved workspace changes
-                will be saved before reverting.
+        <div class="danger-notice">
+            <i class="fa-solid fa-circle-exclamation danger-icon"></i>
+            <span class="danger-text">
+                <strong>Irreversible Action:</strong> All uncommitted changes in
+                your editor and workspace will be permanently lost. The repository
+                will be forcefully reset before creating an inverse commit.
             </span>
         </div>
 
@@ -93,7 +93,7 @@
             </button>
             <button
                 type="button"
-                class="btn-revert"
+                class="btn-danger-revert"
                 onclick={handleConfirm}
                 disabled={isReverting}
             >
@@ -102,7 +102,7 @@
                     <span>Reverting...</span>
                 {:else}
                     <i class="fa-solid fa-rotate-left"></i>
-                    <span>Revert Commit</span>
+                    <span>Discard Changes &amp; Revert</span>
                 {/if}
             </button>
         </div>
@@ -151,6 +151,11 @@
         justify-content: center;
         font-size: 16px;
         flex-shrink: 0;
+    }
+
+    .header-icon-wrapper.danger {
+        background: rgba(248, 81, 73, 0.15);
+        color: #f85149;
     }
 
     .header-text {
@@ -214,22 +219,24 @@
         font-size: 15px;
     }
 
-    .safety-notice {
+    .danger-notice {
         display: flex;
         align-items: flex-start;
         gap: 8px;
-        font-size: 11px;
-        color: var(--text-muted);
-        line-height: 1.4;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid var(--border-subtle);
-        padding: 8px 10px;
+        font-size: 11.5px;
+        color: var(--text-primary);
+        line-height: 1.45;
+        background: rgba(248, 81, 73, 0.08);
+        border: 1px solid rgba(248, 81, 73, 0.35);
+        padding: 9px 11px;
         border-radius: var(--radius-md);
     }
 
-    .safety-icon {
-        color: var(--accent-primary);
-        margin-top: 2px;
+    .danger-icon {
+        color: #f85149;
+        font-size: 14px;
+        margin-top: 1px;
+        flex-shrink: 0;
     }
 
     .modal-actions {
@@ -254,25 +261,26 @@
         background: var(--surface-hover);
     }
 
-    .btn-revert {
+    .btn-danger-revert {
         display: flex;
         align-items: center;
         gap: 6px;
         padding: 7px 14px;
-        background: var(--warning-color);
-        border: none;
+        background: #da3633;
+        border: 1px solid rgba(248, 81, 73, 0.5);
         border-radius: var(--radius-md);
-        color: #1a1500;
+        color: #ffffff;
         font-size: 12px;
         font-weight: 600;
         cursor: pointer;
+        transition: background-color 0.15s ease, filter 0.15s ease;
     }
 
-    .btn-revert:hover:not(:disabled) {
-        filter: brightness(1.1);
+    .btn-danger-revert:hover:not(:disabled) {
+        background: #f85149;
     }
 
-    .btn-revert:disabled,
+    .btn-danger-revert:disabled,
     .btn-cancel:disabled {
         opacity: 0.5;
         cursor: not-allowed;

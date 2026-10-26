@@ -10,6 +10,7 @@
     interface Props {
         folderPath: string;
         status: GitStatusResult;
+        isEditorDirty?: boolean;
         onSaveBeforeCommit: () => Promise<void>;
         onCommitSuccess: () => void;
         onShowToast: (msg: string) => void;
@@ -18,6 +19,7 @@
     let {
         folderPath,
         status,
+        isEditorDirty = false,
         onSaveBeforeCommit,
         onCommitSuccess,
         onShowToast,
@@ -29,7 +31,7 @@
     let isCommitting = $state(false);
 
     const hasChangesToCommit = $derived(
-        !status.clean || status.files.length > 0,
+        isEditorDirty || !status.clean || status.files.length > 0,
     );
     const canCommit = $derived(
         commitMessage.trim().length > 0 &&
@@ -85,9 +87,13 @@
         >
             {#if hasChangesToCommit}
                 <span class="status-dot-amber"></span>
-                <span
-                    >{status.modifiedCount} modified, {status.untrackedCount} untracked</span
-                >
+                <span>
+                    {#if isEditorDirty && status.clean}
+                        Unsaved editor changes
+                    {:else}
+                        {status.modifiedCount + (isEditorDirty && status.modifiedCount === 0 ? 1 : 0)} modified, {status.untrackedCount} untracked
+                    {/if}
+                </span>
             {:else}
                 <span class="status-dot-green"></span>
                 <span>Clean</span>

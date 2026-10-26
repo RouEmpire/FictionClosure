@@ -3,9 +3,11 @@
         DocumentType,
         FictionDocument,
         ProjectFolder,
+        SaveState,
         ViewMode,
         ZenModeType,
     } from "@shared/types";
+    import type { GitCommitRecord } from "@shared/domain/git";
     import type { EditorTypographySettings } from "@shared/domain/typography";
     import Sidebar from "./Sidebar/Sidebar.svelte";
     import WorkspaceStage from "./WorkspaceStage.svelte";
@@ -28,6 +30,12 @@
         typography?: EditorTypographySettings;
         wordWrap: boolean;
         sidebarRef: ReturnType<typeof Sidebar> | null;
+        diffCommit?: GitCommitRecord | null;
+        diffChangedDocIds?: Set<string> | null;
+        writerName?: string;
+        saveState?: SaveState;
+        onSelectDiff?: (commit: GitCommitRecord) => void;
+        onExitDiff?: () => void;
         onSelectDoc: (id: string) => void;
         onSelectFolder: (id: string) => void;
         onOpenNewDocModal: (type?: DocumentType, parentId?: string) => void;
@@ -69,6 +77,12 @@
         typography,
         wordWrap,
         sidebarRef = $bindable(null),
+        diffCommit = null,
+        diffChangedDocIds = null,
+        writerName = "Author",
+        saveState = "saved",
+        onSelectDiff,
+        onExitDiff,
         onSelectDoc,
         onSelectFolder,
         onOpenNewDocModal,
@@ -114,6 +128,7 @@
             activeDocId={activeDoc?.id ?? null}
             activeFolderId={inspectedFolder?.id ?? null}
             {folderPath}
+            {diffChangedDocIds}
             {onSelectDoc}
             {onSelectFolder}
             onNewDoc={onOpenNewDocModal}
@@ -138,6 +153,10 @@
         {wordWrap}
         {viewMode}
         {zenMode}
+        {folderPath}
+        {writerName}
+        {diffCommit}
+        {onExitDiff}
         {onContentChange}
         {onSave}
         {onToggleWordWrap}
@@ -165,6 +184,9 @@
     {:else if isGitVisible}
         <GitSidebar
             {folderPath}
+            activeDiffCommitHash={diffCommit?.hash ?? null}
+            {saveState}
+            {onSelectDiff}
             onSaveBeforeCommit={async () => onSave()}
             {onReloadProject}
             onClose={() => {

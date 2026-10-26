@@ -24,6 +24,11 @@ import {
 	isGitRepo,
 	revertGitCommit,
 } from "./git-service";
+import {
+	getGitDiffFiles,
+	getGitFileAtCommit,
+	getGitFileBlame,
+} from "./git-diff-service";
 
 const DEV_SERVER_PORT = 5173;
 const DEV_SERVER_URL = `http://localhost:${DEV_SERVER_PORT}`;
@@ -160,6 +165,58 @@ const rpc = BrowserView.defineRPC<FictionClosureRPCSchema>({
 
 			gitRevert: async (params: { folderPath: string; commitHash: string }) => {
 				return await revertGitCommit(params.folderPath, params.commitHash);
+			},
+
+			gitGetDiffFiles: async (params: { folderPath: string; commitHash: string }) => {
+				try {
+					const files = await getGitDiffFiles(params.folderPath, params.commitHash);
+					return { files };
+				} catch (err) {
+					return {
+						files: [],
+						error: err instanceof Error ? err.message : String(err),
+					};
+				}
+			},
+
+			gitGetFileAtCommit: async (params: {
+				folderPath: string;
+				commitHash: string;
+				relativePath: string;
+			}) => {
+				try {
+					const content = await getGitFileAtCommit(
+						params.folderPath,
+						params.commitHash,
+						params.relativePath,
+					);
+					return { content };
+				} catch (err) {
+					return {
+						content: "",
+						error: err instanceof Error ? err.message : String(err),
+					};
+				}
+			},
+
+			gitGetFileBlame: async (params: {
+				folderPath: string;
+				relativePath: string;
+				commitHash?: string;
+			}) => {
+				try {
+					const blame = await getGitFileBlame(
+						params.folderPath,
+						params.relativePath,
+						params.commitHash,
+					);
+					return { blame };
+				} catch (err) {
+					return {
+						blame: [],
+						error: err instanceof Error ? err.message : String(err),
+					};
+				}
 			},
 		},
 		messages: {},

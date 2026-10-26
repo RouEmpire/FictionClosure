@@ -15,6 +15,7 @@ import type {
 	GitRevertResult,
 	GitStatusResult,
 } from "./domain/git";
+import type { GitLineBlame } from "./domain/diff";
 
 export type FictionClosureRPCSchema = {
 	bun: RPCSchema<{
@@ -88,6 +89,18 @@ export type FictionClosureRPCSchema = {
 			gitRevert: {
 				params: { folderPath: string; commitHash: string };
 				response: GitRevertResult;
+			};
+			gitGetDiffFiles: {
+				params: { folderPath: string; commitHash: string };
+				response: { files: string[]; error?: string };
+			};
+			gitGetFileAtCommit: {
+				params: { folderPath: string; commitHash: string; relativePath: string };
+				response: { content: string; error?: string };
+			};
+			gitGetFileBlame: {
+				params: { folderPath: string; relativePath: string; commitHash?: string };
+				response: { blame: GitLineBlame[]; error?: string };
 			};
 		};
 		messages: {};

@@ -4,10 +4,18 @@
     interface Props {
         commits: GitCommitRecord[];
         isLoading: boolean;
+        activeDiffCommitHash?: string | null;
         onSelectRevert: (commit: GitCommitRecord) => void;
+        onSelectDiff?: (commit: GitCommitRecord) => void;
     }
 
-    let { commits, isLoading, onSelectRevert }: Props = $props();
+    let {
+        commits,
+        isLoading,
+        activeDiffCommitHash = null,
+        onSelectRevert,
+        onSelectDiff,
+    }: Props = $props();
 </script>
 
 <div class="commit-history-container">
@@ -50,16 +58,32 @@
                             </span>
                         </div>
 
-                        <button
-                            type="button"
-                            class="revert-action-btn"
-                            onclick={() => onSelectRevert(commit)}
-                            title={`Revert commit ${commit.shortHash}`}
-                            aria-label={`Revert commit ${commit.shortHash}`}
-                        >
-                            <i class="fa-solid fa-rotate-left"></i>
-                            <span>Revert</span>
-                        </button>
+                        <div class="card-actions">
+                            {#if onSelectDiff}
+                                <button
+                                    type="button"
+                                    class="diff-action-btn"
+                                    class:active={activeDiffCommitHash === commit.hash}
+                                    onclick={() => onSelectDiff(commit)}
+                                    title={activeDiffCommitHash === commit.hash ? "Currently diffing" : `Diff against commit ${commit.shortHash}`}
+                                    aria-label={`Diff commit ${commit.shortHash}`}
+                                >
+                                    <i class="fa-solid fa-code-compare"></i>
+                                    <span>{activeDiffCommitHash === commit.hash ? "Diffing" : "Diff"}</span>
+                                </button>
+                            {/if}
+
+                            <button
+                                type="button"
+                                class="revert-action-btn"
+                                onclick={() => onSelectRevert(commit)}
+                                title={`Revert commit ${commit.shortHash}`}
+                                aria-label={`Revert commit ${commit.shortHash}`}
+                            >
+                                <i class="fa-solid fa-rotate-left"></i>
+                                <span>Revert</span>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="card-message">
@@ -205,6 +229,33 @@
     .card-time {
         font-size: 11px;
         color: var(--text-muted);
+    }
+
+    .card-actions {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .diff-action-btn {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 10px;
+        color: var(--accent-primary);
+        background: transparent;
+        border: 1px solid transparent;
+        padding: 2px 6px;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .diff-action-btn:hover,
+    .diff-action-btn.active {
+        background: rgba(88, 166, 255, 0.15);
+        border-color: var(--accent-primary);
+        color: var(--accent-primary);
     }
 
     .revert-action-btn {

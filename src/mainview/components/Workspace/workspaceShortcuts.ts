@@ -6,6 +6,8 @@ export interface WorkspaceKeyContext {
     zenMode: ZenModeType;
     showInspector: boolean;
     isSidebarOpen: boolean;
+    isDiffActive?: boolean;
+    onExitDiff?: () => void;
     onCloseCommandPalette: () => void;
     onCloseNewDocModal: () => void;
     onExitZenMode: () => void;
@@ -48,6 +50,11 @@ export function handleWorkspaceGlobalKeyDown(
         if (ctx.isNewDocModalOpen) {
             e.preventDefault();
             ctx.onCloseNewDocModal();
+            return true;
+        }
+        if (ctx.isDiffActive && ctx.onExitDiff) {
+            e.preventDefault();
+            ctx.onExitDiff();
             return true;
         }
         if (ctx.zenMode !== "none") {

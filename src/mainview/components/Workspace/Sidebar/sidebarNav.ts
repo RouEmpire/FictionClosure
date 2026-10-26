@@ -68,3 +68,31 @@ export function buildVisibleNavItems(
 
 	return items;
 }
+
+/**
+ * Filters documents and folders to only those relevant to an active Git diff comparison.
+ */
+export function filterDiffNavData(
+	documents: FictionDocument[],
+	folders: ProjectFolder[],
+	diffChangedDocIds?: Set<string> | null,
+): { filteredDocs: FictionDocument[]; filteredFolders: ProjectFolder[] } {
+	if (!diffChangedDocIds) {
+		return { filteredDocs: documents, filteredFolders: folders };
+	}
+
+	const relevantDocs = documents.filter((d) => diffChangedDocIds.has(d.id));
+	const relevantFolderIds = new Set<string>();
+
+	for (const doc of relevantDocs) {
+		let currentId = doc.folderId;
+		while (currentId) {
+			relevantFolderIds.add(currentId);
+			const parent = folders.find((f) => f.id === currentId)?.parentId;
+			currentId = parent || null;
+		}
+	}
+
+	const relevantFolders = folders.filter((f) => relevantFolderIds.has(f.id));
+	return { filteredDocs: relevantDocs, filteredFolders: relevantFolders };
+}

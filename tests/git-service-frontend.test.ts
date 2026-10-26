@@ -14,6 +14,9 @@ const {
 	fetchGitStatus,
 	initializeGitRepo,
 	revertCommit,
+	fetchGitDiffFiles,
+	fetchGitFileAtCommit,
+	fetchGitFileBlame,
 } = await import("../src/mainview/services/git");
 
 describe("Frontend Git Service (Browser / Fallback environment)", () => {
@@ -52,5 +55,16 @@ describe("Frontend Git Service (Browser / Fallback environment)", () => {
 		const res = await revertCommit("", "abcdef123");
 		expect(res.success).toBe(false);
 		expect(res.error).toContain("folder path is missing");
+	});
+
+	it("guards diff methods when folder path is missing", async () => {
+		const files = await fetchGitDiffFiles("", "hash123");
+		expect(files).toEqual([]);
+
+		const content = await fetchGitFileAtCommit("", "hash123", "chapter.md");
+		expect(content).toBe("");
+
+		const blame = await fetchGitFileBlame("", "chapter.md");
+		expect(blame).toEqual([]);
 	});
 });

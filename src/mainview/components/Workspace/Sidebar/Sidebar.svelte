@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { DocumentType, FictionDocument, ProjectFolder } from "@shared/types";
 	import { calculateWordCount } from "@shared/domain/markdown";
-	import { buildVisibleNavItems, type NavTreeItem } from "./sidebarNav";
+	import { buildVisibleNavItems, filterDiffNavData, type NavTreeItem } from "./sidebarNav";
 	import Toolbar from "./Toolbar.svelte";
 	import ProgressBar from "./ProgressBar.svelte";
 	import Section from "./Section.svelte";
@@ -17,6 +17,7 @@
 		activeDocId: string | null;
 		activeFolderId?: string | null;
 		folderPath?: string;
+		diffChangedDocIds?: Set<string> | null;
 		onSelectDoc: (id: string) => void;
 		onSelectFolder?: (folderId: string) => void;
 		onNewDoc: (type?: DocumentType, parentFolderId?: string) => void;
@@ -38,6 +39,7 @@
 		activeDocId,
 		activeFolderId = null,
 		folderPath,
+		diffChangedDocIds = null,
 		onSelectDoc,
 		onSelectFolder,
 		onNewDoc,
@@ -70,11 +72,16 @@
 		{ type: "note", label: "Notes & Outlines", icon: "fa-solid fa-file-lines" },
 	];
 
-	// Filter documents by search query
+	const diffNavData = $derived(
+		filterDiffNavData(documents, folders, diffChangedDocIds),
+	);
+
+	// Filter documents by search query and diff relevance
 	const filteredDocs = $derived.by(() => {
+		const baseDocs = diffNavData.filteredDocs;
 		const q = searchQuery.trim().toLowerCase();
-		if (!q) return documents;
-		return documents.filter(
+		if (!q) return baseDocs;
+		return baseDocs.filter(
 			(d) =>
 				d.title.toLowerCase().includes(q) ||
 				d.tags.some((t) => t.toLowerCase().includes(q)) ||
@@ -93,7 +100,7 @@
 		return buildVisibleNavItems(
 			sections,
 			filteredDocs,
-			folders,
+			diffNavData.filteredFolders,
 			collapsedSections,
 			collapsedFolders,
 		);
