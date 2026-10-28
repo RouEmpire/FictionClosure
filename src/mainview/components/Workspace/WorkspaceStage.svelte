@@ -13,6 +13,7 @@
     } from "@shared/domain/diff";
     import { getDocumentRelativePath } from "@shared/domain/documentPaths";
     import type { EditorTypographySettings } from "@shared/domain/typography";
+    import { DEFAULT_VIM_SETTINGS, type VimSettings } from "@shared/domain/vim";
     import { fetchGitFileAtCommit, fetchGitFileBlame } from "@services/git";
     import Editor from "./Editor/Editor.svelte";
     import EditorDiffView from "./Editor/EditorDiffView.svelte";
@@ -27,6 +28,7 @@
         folders: ProjectFolder[];
         editorFont?: string;
         typography?: EditorTypographySettings;
+        vimSettings?: VimSettings;
         wordWrap: boolean;
         viewMode: ViewMode;
         zenMode: ZenModeType;
@@ -49,6 +51,7 @@
         folders,
         editorFont = "",
         typography,
+        vimSettings = DEFAULT_VIM_SETTINGS,
         wordWrap,
         viewMode,
         zenMode,
@@ -108,6 +111,7 @@
                             {folders}
                             customFont={editorFont}
                             {typography}
+                            {vimSettings}
                             {wordWrap}
                             {zenMode}
                             {onContentChange}

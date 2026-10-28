@@ -14,6 +14,8 @@
     import SettingsFooter from "./SettingsFooter.svelte";
     import PlaceholderTab from "./PlaceholderTab.svelte";
     import EditorTab from "./Editor/EditorTab.svelte";
+    import VimModeTab from "./Vim/VimModeTab.svelte";
+    import { DEFAULT_VIM_SETTINGS, type VimSettings } from "@shared/domain/vim";
     import type { SettingsTabId } from "./settingsConstants";
     import "./settingsModal.css";
 
@@ -21,21 +23,26 @@
         isOpen: boolean;
         typography?: EditorTypographySettings;
         currentFont?: string;
+        vimSettings?: VimSettings;
         onClose: () => void;
         onFontChange?: (font: string) => void;
         onUpdateTypography?: (settings: EditorTypographySettings) => void;
+        onUpdateVimSettings?: (settings: VimSettings) => void;
     }
 
     let {
         isOpen,
         typography = DEFAULT_TYPOGRAPHY_SETTINGS,
         currentFont = "",
+        vimSettings = DEFAULT_VIM_SETTINGS,
         onClose,
         onFontChange,
         onUpdateTypography,
+        onUpdateVimSettings,
     }: Props = $props();
 
     let activeTab = $state<SettingsTabId>("editor");
+    let localVimSettings = $state<VimSettings>({ ...DEFAULT_VIM_SETTINGS });
 
     // Local editable typography state
     let fontFamily = $state("");
@@ -65,6 +72,7 @@
             customTextAutospace = initial.customTextAutospace || "";
             activeFeatures = [...(initial.fontFeatures || ["calt", "liga"])];
             customFontFeaturesText = initial.customFontFeaturesText || "";
+            localVimSettings = { ...(vimSettings || DEFAULT_VIM_SETTINGS) };
         }
     });
 
@@ -85,6 +93,10 @@
 
         onUpdateTypography?.(updated);
         onFontChange?.(updated.fontFamily);
+    }
+
+    function emitVimChange() {
+        onUpdateVimSettings?.({ ...localVimSettings });
     }
 
     function handleKeyDown(e: KeyboardEvent) {
@@ -134,6 +146,11 @@
                             bind:activeFeatures
                             bind:customFontFeaturesText
                             onChange={emitChange}
+                        />
+                    {:else if activeTab === "vim-mode"}
+                        <VimModeTab
+                            bind:settings={localVimSettings}
+                            onChange={emitVimChange}
                         />
                     {:else}
                         <PlaceholderTab tab={activeTab} />

@@ -42,6 +42,12 @@
         DEFAULT_TYPOGRAPHY_SETTINGS,
         type EditorTypographySettings,
     } from "../shared/domain/typography";
+    import {
+        loadVimSettings,
+        saveVimSettings,
+        DEFAULT_VIM_SETTINGS,
+        type VimSettings,
+    } from "../shared/domain/vim";
     import { ensureBundledFontsRegisteredInCss } from "../shared/domain/bundledFonts";
 
     // Screen navigation: starts on "home" welcome screen
@@ -66,6 +72,7 @@
     // Editor typography settings persisted in localStorage
     let typographySettings = $state<EditorTypographySettings>(DEFAULT_TYPOGRAPHY_SETTINGS);
     let editorFont = $state<string>("");
+    let vimSettings = $state<VimSettings>(DEFAULT_VIM_SETTINGS);
 
     // Modals
     let isCreateProjectModalOpen = $state(false);
@@ -105,7 +112,14 @@
         recentProjects = getRecentProjects();
         typographySettings = loadTypographySettings();
         editorFont = typographySettings.fontFamily;
+        vimSettings = loadVimSettings();
     });
+
+    function handleUpdateVimSettings(newSettings: VimSettings) {
+        vimSettings = newSettings;
+        saveVimSettings(newSettings);
+        showToast(newSettings.enabled ? "Vim mode enabled" : "Vim mode disabled");
+    }
 
     function handleUpdateTypography(newSettings: EditorTypographySettings) {
         typographySettings = newSettings;
@@ -600,6 +614,7 @@
                 bind:documents
                 {editorFont}
                 typography={typographySettings}
+                {vimSettings}
                 onCloseProject={handleCloseProject}
                 onOpenSettings={() => (isSettingsOpen = true)}
                 onOpenShortcuts={() => (isShortcutsModalOpen = true)}
@@ -621,9 +636,11 @@
         isOpen={isSettingsOpen}
         currentFont={editorFont}
         typography={typographySettings}
+        {vimSettings}
         onClose={() => (isSettingsOpen = false)}
         onFontChange={handleFontChange}
         onUpdateTypography={handleUpdateTypography}
+        onUpdateVimSettings={handleUpdateVimSettings}
     />
 
     <!-- Keyboard Shortcuts Cheatsheet Modal -->

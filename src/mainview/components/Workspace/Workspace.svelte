@@ -40,6 +40,7 @@
         documents = $bindable([]),
         editorFont = "",
         typography,
+        vimSettings,
         onCloseProject,
         onOpenSettings,
         onOpenShortcuts,
@@ -359,7 +360,7 @@
 
     <WorkspaceMain
         {isSidebarOpen} {activeRightSidebar} {showInspector} {zenMode} {viewMode}
-        {activeDoc} {inspectedFolder} {documents} {folders} {editorFont} {typography} {wordWrap}
+        {activeDoc} {inspectedFolder} {documents} {folders} {editorFont} {typography} {vimSettings} {wordWrap}
         targetWordCount={project.targetWordCount} folderPath={project.folderPath} bind:sidebarRef
         diffCommit={activeDiffCommit} {diffChangedDocIds} writerName={project.author || "Author"}
         {saveState}

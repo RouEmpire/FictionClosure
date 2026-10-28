@@ -9,6 +9,7 @@
     } from "@shared/types";
     import type { GitCommitRecord } from "@shared/domain/git";
     import type { EditorTypographySettings } from "@shared/domain/typography";
+    import { DEFAULT_VIM_SETTINGS, type VimSettings } from "@shared/domain/vim";
     import Sidebar from "./Sidebar/Sidebar.svelte";
     import WorkspaceStage from "./WorkspaceStage.svelte";
     import Inspector from "./Inspector/Inspector.svelte";
@@ -28,6 +29,7 @@
         folderPath?: string;
         editorFont?: string;
         typography?: EditorTypographySettings;
+        vimSettings?: VimSettings;
         wordWrap: boolean;
         sidebarRef: ReturnType<typeof Sidebar> | null;
         diffCommit?: GitCommitRecord | null;
@@ -75,6 +77,7 @@
         folderPath,
         editorFont,
         typography,
+        vimSettings = DEFAULT_VIM_SETTINGS,
         wordWrap,
         sidebarRef = $bindable(null),
         diffCommit = null,
@@ -150,6 +153,7 @@
         {folders}
         {editorFont}
         {typography}
+        {vimSettings}
         {wordWrap}
         {viewMode}
         {zenMode}

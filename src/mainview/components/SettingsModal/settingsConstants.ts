@@ -26,7 +26,7 @@ export const SETTINGS_TABS: SettingsTabItem[] = [
     { id: "appearance", label: "Appearance", icon: "fa-solid fa-palette", isTodo: true },
     { id: "persistence", label: "Storage & Backups", icon: "fa-solid fa-floppy-disk", isTodo: true },
     { id: "keybindings", label: "Keybindings", icon: "fa-solid fa-keyboard", isTodo: true },
-    { id: "vim-mode", label: "Vim Mode", icon: "fa-brands fa-vim", isTodo: true },
+    { id: "vim-mode", label: "Vim Mode", icon: "fa-brands fa-vim" },
     { id: "git-integration", label: "Git Integration", icon: "fa-brands fa-git-alt", isTodo: true },
     { id: "custom-extension", label: "Extension", icon: "fa-solid fa-oil-well", isTodo: true },
     { id: "language", label: "Language", icon: "fa-solid fa-language", isTodo: true },

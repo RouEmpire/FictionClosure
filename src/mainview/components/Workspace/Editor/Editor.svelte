@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { untrack } from "svelte";
     import type {
         FictionDocument,
         ProjectFolder,
@@ -44,6 +45,8 @@
         performInsertSnippet,
         performInsertTab,
     } from "./editorTextActions";
+    import { DEFAULT_VIM_SETTINGS, type VimMode, type VimSettings } from "@shared/domain/vim";
+    import { setupVimTextarea } from "./editorVim";
 
     interface Props {
         document: FictionDocument;
@@ -51,6 +54,7 @@
         folders?: ProjectFolder[];
         customFont?: string;
         typography?: EditorTypographySettings;
+        vimSettings?: VimSettings;
         wordWrap?: boolean;
         zenMode?: ZenModeType;
         onContentChange: (newContent: string) => void;
@@ -66,6 +70,7 @@
         folders = [],
         customFont = "",
         typography = DEFAULT_TYPOGRAPHY_SETTINGS,
+        vimSettings = DEFAULT_VIM_SETTINGS,
         wordWrap: externalWordWrap,
         zenMode = "none",
         onContentChange,
@@ -174,6 +179,43 @@
         const observer = new ResizeObserver(() => updateRenderedLines());
         observer.observe(textareaEl);
         return () => observer.disconnect();
+    });
+
+    let currentVimMode = $state<VimMode | null>(null);
+
+    $effect(() => {
+        const textarea = textareaEl;
+        const _docId = document.id;
+        const enabled = vimSettings?.enabled ?? false;
+        const indentStyle = vimSettings?.indentStyle ?? "space";
+        const indentWidth = vimSettings?.indentWidth ?? 2;
+
+        if (!textarea || !enabled) {
+            currentVimMode = null;
+            return;
+        }
+
+        void _docId;
+
+        const handle = untrack(() =>
+            setupVimTextarea(
+                textarea,
+                { enabled, indentStyle, indentWidth },
+                {
+                    onContentChange,
+                    onSave,
+                    onModeChange: (mode) => {
+                        currentVimMode = mode;
+                    },
+                    onAfterTextChange,
+                },
+            ),
+        );
+
+        return () => {
+            handle?.destroy();
+            currentVimMode = null;
+        };
     });
 
     function updateCursorPosition() {
@@ -348,6 +390,10 @@
     }
 
     function handleKeyDown(e: KeyboardEvent) {
+        if (e.defaultPrevented) return;
+        if (vimSettings?.enabled && currentVimMode && currentVimMode !== "normal" && e.key === "Escape") {
+            return;
+        }
         handleTypingActivity();
         handleEditorKeyDown(e, {
             zenMode,
@@ -579,6 +625,7 @@
             {wordWrap}
             {docWords}
             {charCount}
+            vimMode={vimSettings?.enabled ? currentVimMode : null}
         />
     {/if}
 </div>
