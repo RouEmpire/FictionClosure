@@ -89,14 +89,23 @@ export async function executeDiffSelection(
     }
 }
 
+export interface ExecuteSaveOptions {
+    silent?: boolean;
+}
+
 export async function executeSave(
     project: ProjectInfo,
     documents: FictionDocument[],
     folders: ProjectFolder[],
     onShowToast: (msg: string) => void,
     onProjectSaved?: (project: ProjectInfo, documents: FictionDocument[]) => void,
+    options?: ExecuteSaveOptions,
 ): Promise<{ state: SaveState; savedAt?: string }> {
     if (!project.folderPath) {
+        if (options?.silent) {
+            // Do not prompt interactive folder selection modal on background auto-save
+            return { state: "saved" };
+        }
         const selectRes = await promptSelectFolder();
         if (selectRes.canceled || !selectRes.folderPath) {
             onShowToast("Save canceled: no destination folder selected");
@@ -116,7 +125,9 @@ export async function executeSave(
             await clearCrashCache(project.folderPath);
         }
         onProjectSaved?.(project, documents);
-        onShowToast(`Saved to ${project.folderPath}`);
+        if (!options?.silent) {
+            onShowToast(`Saved to ${project.folderPath}`);
+        }
         return { state: "saved", savedAt: res.savedAt };
     } else {
         onShowToast(`Save failed: ${res.error || "Unknown error"}`);

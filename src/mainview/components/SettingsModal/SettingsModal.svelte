@@ -15,7 +15,12 @@
     import PlaceholderTab from "./PlaceholderTab.svelte";
     import EditorTab from "./Editor/EditorTab.svelte";
     import VimModeTab from "./Vim/VimModeTab.svelte";
+    import AutoSaveTab from "./AutoSave/AutoSaveTab.svelte";
     import { DEFAULT_VIM_SETTINGS, type VimSettings } from "@shared/domain/vim";
+    import {
+        DEFAULT_AUTO_SAVE_SETTINGS,
+        type AutoSaveSettings,
+    } from "@shared/domain/autoSave";
     import type { SettingsTabId } from "./settingsConstants";
     import "./settingsModal.css";
 
@@ -24,10 +29,12 @@
         typography?: EditorTypographySettings;
         currentFont?: string;
         vimSettings?: VimSettings;
+        autoSaveSettings?: AutoSaveSettings;
         onClose: () => void;
         onFontChange?: (font: string) => void;
         onUpdateTypography?: (settings: EditorTypographySettings) => void;
         onUpdateVimSettings?: (settings: VimSettings) => void;
+        onUpdateAutoSaveSettings?: (settings: AutoSaveSettings) => void;
     }
 
     let {
@@ -35,14 +42,17 @@
         typography = DEFAULT_TYPOGRAPHY_SETTINGS,
         currentFont = "",
         vimSettings = DEFAULT_VIM_SETTINGS,
+        autoSaveSettings = DEFAULT_AUTO_SAVE_SETTINGS,
         onClose,
         onFontChange,
         onUpdateTypography,
         onUpdateVimSettings,
+        onUpdateAutoSaveSettings,
     }: Props = $props();
 
     let activeTab = $state<SettingsTabId>("editor");
     let localVimSettings = $state<VimSettings>({ ...DEFAULT_VIM_SETTINGS });
+    let localAutoSaveSettings = $state<AutoSaveSettings>({ ...DEFAULT_AUTO_SAVE_SETTINGS });
 
     // Local editable typography state
     let fontFamily = $state("");
@@ -73,6 +83,7 @@
             activeFeatures = [...(initial.fontFeatures || ["calt", "liga"])];
             customFontFeaturesText = initial.customFontFeaturesText || "";
             localVimSettings = { ...(vimSettings || DEFAULT_VIM_SETTINGS) };
+            localAutoSaveSettings = { ...(autoSaveSettings || DEFAULT_AUTO_SAVE_SETTINGS) };
         }
     });
 
@@ -97,6 +108,10 @@
 
     function emitVimChange() {
         onUpdateVimSettings?.({ ...localVimSettings });
+    }
+
+    function emitAutoSaveChange() {
+        onUpdateAutoSaveSettings?.({ ...localAutoSaveSettings });
     }
 
     function handleKeyDown(e: KeyboardEvent) {
@@ -151,6 +166,11 @@
                         <VimModeTab
                             bind:settings={localVimSettings}
                             onChange={emitVimChange}
+                        />
+                    {:else if activeTab === "persistence"}
+                        <AutoSaveTab
+                            bind:settings={localAutoSaveSettings}
+                            onChange={emitAutoSaveChange}
                         />
                     {:else}
                         <PlaceholderTab tab={activeTab} />

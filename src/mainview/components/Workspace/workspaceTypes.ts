@@ -1,6 +1,7 @@
 import type { FictionDocument, ProjectInfo } from "@shared/types";
 import type { EditorTypographySettings } from "@shared/domain/typography";
 import type { VimSettings } from "@shared/domain/vim";
+import type { AutoSaveSettings } from "@shared/domain/autoSave";
 
 export interface WorkspaceProps {
     project: ProjectInfo;
@@ -8,6 +9,7 @@ export interface WorkspaceProps {
     editorFont?: string;
     typography?: EditorTypographySettings;
     vimSettings?: VimSettings;
+    autoSaveSettings?: AutoSaveSettings;
     onCloseProject: () => void;
     onOpenSettings: () => void;
     onOpenShortcuts: () => void;

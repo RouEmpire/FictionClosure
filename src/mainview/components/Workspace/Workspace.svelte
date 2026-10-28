@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import { onMount, onDestroy } from "svelte";
     import type {
         DocumentType,
         FictionDocument,
@@ -11,6 +11,8 @@
     import { initialFolders } from "@shared/fixtures/sampleData";
     import { promptSelectFolder, setRememberedFolder, saveCrashCache } from "@services/storage";
     import { globalHistoryManager } from "@services/historyManager";
+    import { AutoSaveController } from "@services/autoSaveController";
+    import { DEFAULT_AUTO_SAVE_SETTINGS } from "@shared/domain/autoSave";
     import Header from "./Header/Header.svelte";
     import Sidebar from "./Sidebar/Sidebar.svelte";
     import WorkspaceMain from "./WorkspaceMain.svelte";
@@ -41,6 +43,7 @@
         editorFont = "",
         typography,
         vimSettings,
+        autoSaveSettings,
         onCloseProject,
         onOpenSettings,
         onOpenShortcuts,
@@ -139,20 +142,41 @@
         }, 800);
     }
 
+    const autoSaveController = new AutoSaveController({
+        getSettings: () => autoSaveSettings ?? DEFAULT_AUTO_SAVE_SETTINGS,
+        hasUnsavedChanges: () => saveState === "unsaved",
+        canSave: () => Boolean(project.folderPath) && saveState !== "saving",
+        onTriggerSave: () => void handleSave({ silent: true }),
+    });
+
+    $effect(() => {
+        void autoSaveSettings;
+        autoSaveController.updateSettings();
+    });
+
+    onDestroy(() => {
+        autoSaveController.destroy();
+    });
+
     function handleContentChange(newContent: string) {
         if (!activeDoc) return;
+        const oldContent = activeDoc.content;
         activeDoc.content = newContent;
         activeDoc.updatedAt = new Date().toISOString();
         saveState = "unsaved";
         scheduleCrashCache();
+        autoSaveController.recordChange(oldContent, newContent);
     }
 
-    async function handleSave() {
+    async function handleSave(options?: { silent?: boolean }) {
         if (saveState === "saving") return;
         saveState = "saving";
-        const res = await executeSave(project, documents, folders, onShowToast, onProjectSaved);
+        const res = await executeSave(project, documents, folders, onShowToast, onProjectSaved, options);
         saveState = res.state;
-        if (res.state === "saved" && crashCacheTimer) clearTimeout(crashCacheTimer);
+        if (res.state === "saved") {
+            autoSaveController.notifySaved();
+            if (crashCacheTimer) clearTimeout(crashCacheTimer);
+        }
     }
 
     async function handleChangeFolder() {
@@ -197,74 +221,48 @@
     }
 
     function handleCreateDoc(newDoc: FictionDocument) {
-        documents.push(newDoc);
-        activeDocId = newDoc.id;
-        inspectedFolderId = null;
-        void handleSave();
+        documents.push(newDoc); activeDocId = newDoc.id; inspectedFolderId = null; void handleSave();
     }
     function handleCreateFolder(newFolder: ProjectFolder) {
-        folders.push(newFolder);
-        project.folders = folders;
-        inspectedFolderId = newFolder.id;
-        activeRightSidebar = "inspector";
-        saveState = "unsaved";
-        onShowToast(`Created folder "${newFolder.name}"`);
-        void handleSave();
+        folders.push(newFolder); project.folders = folders; inspectedFolderId = newFolder.id;
+        activeRightSidebar = "inspector"; saveState = "unsaved"; onShowToast(`Created folder "${newFolder.name}"`); void handleSave();
     }
     function handleDeleteFolder(folderId: string) {
         const { remainingFolders, deletedFolder } = cascadeDeleteFolder(folders, documents, folderId);
         if (!deletedFolder) return;
-        folders = remainingFolders;
-        project.folders = folders;
+        folders = remainingFolders; project.folders = folders;
         if (inspectedFolderId === folderId) inspectedFolderId = null;
-        saveState = "unsaved";
-        onShowToast(`Deleted folder "${deletedFolder.name}"`);
-        void handleSave();
+        saveState = "unsaved"; onShowToast(`Deleted folder "${deletedFolder.name}"`); void handleSave();
     }
     function handleRenameFolder(folderId: string, newName: string) {
         const f = renameFolderInList(folders, folderId, newName);
         if (!f) return;
-        project.folders = folders;
-        saveState = "unsaved";
-        onShowToast(`Renamed folder to "${f.name}"`);
-        void handleSave();
+        project.folders = folders; saveState = "unsaved"; onShowToast(`Renamed folder to "${f.name}"`); void handleSave();
     }
     function handleUpdateFolderMeta(folderId: string, updates: Partial<ProjectFolder>) {
         if (updateFolderMetaInList(folders, folderId, updates)) {
-            project.folders = folders;
-            saveState = "unsaved";
-            scheduleCrashCache();
+            project.folders = folders; saveState = "unsaved"; scheduleCrashCache();
         }
     }
     function handleDeleteDoc(id: string) {
         const res = deleteDocFromList(documents, activeDocId, id);
-        if (res.deleted) {
-            activeDocId = res.newActiveDocId;
-            void handleSave();
-        }
+        if (res.deleted) { activeDocId = res.newActiveDocId; void handleSave(); }
     }
     function handleUpdateDocMeta(updates: Partial<FictionDocument>) {
         if (!activeDoc) return;
-        Object.assign(activeDoc, updates);
-        activeDoc.updatedAt = new Date().toISOString();
-        saveState = "unsaved";
-        scheduleCrashCache();
+        Object.assign(activeDoc, updates); activeDoc.updatedAt = new Date().toISOString();
+        saveState = "unsaved"; scheduleCrashCache();
     }
     function handleRenameDoc(id: string, newTitle: string) {
         const doc = renameDocInList(documents, id, newTitle);
         if (!doc) return;
-        saveState = "unsaved";
-        onShowToast(`Renamed to "${doc.title}"`);
-        void handleSave();
+        saveState = "unsaved"; onShowToast(`Renamed to "${doc.title}"`); void handleSave();
     }
     function handleDuplicateDoc(id: string) {
         const newDoc = duplicateDocument(documents, id);
         if (!newDoc) return;
-        activeDocId = newDoc.id;
-        inspectedFolderId = null;
-        saveState = "unsaved";
-        onShowToast(`Duplicated "${newDoc.title.replace(" (Copy)", "")}"`);
-        void handleSave();
+        activeDocId = newDoc.id; inspectedFolderId = null; saveState = "unsaved";
+        onShowToast(`Duplicated "${newDoc.title.replace(" (Copy)", "")}"`); void handleSave();
     }
 
     async function handleCloseAndReturn() {

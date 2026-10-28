@@ -48,6 +48,12 @@
         DEFAULT_VIM_SETTINGS,
         type VimSettings,
     } from "../shared/domain/vim";
+    import {
+        loadAutoSaveSettings,
+        saveAutoSaveSettings,
+        DEFAULT_AUTO_SAVE_SETTINGS,
+        type AutoSaveSettings,
+    } from "../shared/domain/autoSave";
     import { ensureBundledFontsRegisteredInCss } from "../shared/domain/bundledFonts";
 
     // Screen navigation: starts on "home" welcome screen
@@ -73,6 +79,7 @@
     let typographySettings = $state<EditorTypographySettings>(DEFAULT_TYPOGRAPHY_SETTINGS);
     let editorFont = $state<string>("");
     let vimSettings = $state<VimSettings>(DEFAULT_VIM_SETTINGS);
+    let autoSaveSettings = $state<AutoSaveSettings>(DEFAULT_AUTO_SAVE_SETTINGS);
 
     // Modals
     let isCreateProjectModalOpen = $state(false);
@@ -113,7 +120,13 @@
         typographySettings = loadTypographySettings();
         editorFont = typographySettings.fontFamily;
         vimSettings = loadVimSettings();
+        autoSaveSettings = loadAutoSaveSettings();
     });
+
+    function handleUpdateAutoSaveSettings(newSettings: AutoSaveSettings) {
+        autoSaveSettings = newSettings;
+        saveAutoSaveSettings(newSettings);
+    }
 
     function handleUpdateVimSettings(newSettings: VimSettings) {
         vimSettings = newSettings;
@@ -615,6 +628,7 @@
                 {editorFont}
                 typography={typographySettings}
                 {vimSettings}
+                {autoSaveSettings}
                 onCloseProject={handleCloseProject}
                 onOpenSettings={() => (isSettingsOpen = true)}
                 onOpenShortcuts={() => (isShortcutsModalOpen = true)}
@@ -637,10 +651,12 @@
         currentFont={editorFont}
         typography={typographySettings}
         {vimSettings}
+        {autoSaveSettings}
         onClose={() => (isSettingsOpen = false)}
         onFontChange={handleFontChange}
         onUpdateTypography={handleUpdateTypography}
         onUpdateVimSettings={handleUpdateVimSettings}
+        onUpdateAutoSaveSettings={handleUpdateAutoSaveSettings}
     />
 
     <!-- Keyboard Shortcuts Cheatsheet Modal -->
