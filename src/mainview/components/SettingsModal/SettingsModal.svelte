@@ -16,6 +16,7 @@
     import EditorTab from "./Editor/EditorTab.svelte";
     import VimModeTab from "./Vim/VimModeTab.svelte";
     import AutoSaveTab from "./AutoSave/AutoSaveTab.svelte";
+    import ThemeSettingsTab from "./Theme/ThemeSettingsTab.svelte";
     import { DEFAULT_VIM_SETTINGS, type VimSettings } from "@shared/domain/vim";
     import {
         DEFAULT_AUTO_SAVE_SETTINGS,
@@ -35,6 +36,7 @@
         onUpdateTypography?: (settings: EditorTypographySettings) => void;
         onUpdateVimSettings?: (settings: VimSettings) => void;
         onUpdateAutoSaveSettings?: (settings: AutoSaveSettings) => void;
+        onThemeChanged?: (themeId: string) => void;
     }
 
     let {
@@ -48,6 +50,7 @@
         onUpdateTypography,
         onUpdateVimSettings,
         onUpdateAutoSaveSettings,
+        onThemeChanged,
     }: Props = $props();
 
     let activeTab = $state<SettingsTabId>("editor");
@@ -162,6 +165,8 @@
                             bind:customFontFeaturesText
                             onChange={emitChange}
                         />
+                    {:else if activeTab === "appearance"}
+                        <ThemeSettingsTab {onThemeChanged} />
                     {:else if activeTab === "vim-mode"}
                         <VimModeTab
                             bind:settings={localVimSettings}

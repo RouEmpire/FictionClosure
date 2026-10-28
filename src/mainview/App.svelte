@@ -56,6 +56,11 @@
     } from "../shared/domain/autoSave";
     import { ensureBundledFontsRegisteredInCss } from "../shared/domain/bundledFonts";
     import { ensureBundledThemesRegisteredInDom } from "../shared/domain/bundledThemes";
+    import {
+        applyActiveTheme,
+        loadActiveThemeId,
+        loadCustomThemes,
+    } from "../shared/domain/customThemes";
 
     // Screen navigation: starts on "home" welcome screen
     let currentScreen = $state<"home" | "workspace">("home");
@@ -118,6 +123,9 @@
     onMount(() => {
         ensureBundledFontsRegisteredInCss();
         ensureBundledThemesRegisteredInDom();
+        const activeThemeId = loadActiveThemeId();
+        const customThemes = loadCustomThemes();
+        applyActiveTheme(activeThemeId, customThemes);
         recentProjects = getRecentProjects();
         typographySettings = loadTypographySettings();
         editorFont = typographySettings.fontFamily;
@@ -659,6 +667,9 @@
         onUpdateTypography={handleUpdateTypography}
         onUpdateVimSettings={handleUpdateVimSettings}
         onUpdateAutoSaveSettings={handleUpdateAutoSaveSettings}
+        onThemeChanged={(themeId) => {
+            showToast(`Theme applied: ${themeId}`);
+        }}
     />
 
     <!-- Keyboard Shortcuts Cheatsheet Modal -->

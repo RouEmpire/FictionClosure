@@ -23,7 +23,7 @@ export interface SettingsTabItem {
 
 export const SETTINGS_TABS: SettingsTabItem[] = [
     { id: "editor", label: "Editor & Typography", icon: "fa-solid fa-pen-nib" },
-    { id: "appearance", label: "Appearance", icon: "fa-solid fa-palette", isTodo: true },
+    { id: "appearance", label: "Themes & Appearance", icon: "fa-solid fa-palette" },
     { id: "persistence", label: "Storage & Auto-Save", icon: "fa-solid fa-floppy-disk" },
     { id: "keybindings", label: "Keybindings", icon: "fa-solid fa-keyboard", isTodo: true },
     { id: "vim-mode", label: "Vim Mode", icon: "fa-brands fa-vim" },
