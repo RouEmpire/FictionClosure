@@ -47,6 +47,7 @@
     } from "./editorTextActions";
     import { DEFAULT_VIM_SETTINGS, type VimMode, type VimSettings } from "@shared/domain/vim";
     import { setupVimTextarea } from "./editorVim";
+    import type { KeybindingActionId } from "@shared/domain/keybindings";
 
     interface Props {
         document: FictionDocument;
@@ -55,6 +56,7 @@
         customFont?: string;
         typography?: EditorTypographySettings;
         vimSettings?: VimSettings;
+        keybindings?: Record<KeybindingActionId, string[]>;
         wordWrap?: boolean;
         zenMode?: ZenModeType;
         onContentChange: (newContent: string) => void;
@@ -71,6 +73,7 @@
         customFont = "",
         typography = DEFAULT_TYPOGRAPHY_SETTINGS,
         vimSettings = DEFAULT_VIM_SETTINGS,
+        keybindings,
         wordWrap: externalWordWrap,
         zenMode = "none",
         onContentChange,
@@ -400,6 +403,7 @@
             isMentionOpen,
             mentionCandidates,
             selectedMentionIndex,
+            keybindings,
             onSelectMentionIndex: (idx) => (selectedMentionIndex = idx),
             onInsertMention: insertMention,
             onCloseMention: () => (isMentionOpen = false),

@@ -10,9 +10,12 @@
 		isOpen,
 		onClose,
 		config = defaultShortcutsConfig,
+		keybindings,
 	}: ShortcutsModalProps = $props();
 
-	let resolvedGroups = $derived(resolveShortcutGroups(config.groups));
+	let resolvedGroups = $derived(
+		resolveShortcutGroups(config.groups, undefined, keybindings),
+	);
 
 	function handleKeyDown(e: KeyboardEvent) {
 		if (e.key === "Escape") {

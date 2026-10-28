@@ -14,6 +14,7 @@
     import { getDocumentRelativePath } from "@shared/domain/documentPaths";
     import type { EditorTypographySettings } from "@shared/domain/typography";
     import { DEFAULT_VIM_SETTINGS, type VimSettings } from "@shared/domain/vim";
+    import type { KeybindingActionId } from "@shared/domain/keybindings";
     import { fetchGitFileAtCommit, fetchGitFileBlame } from "@services/git";
     import Editor from "./Editor/Editor.svelte";
     import EditorDiffView from "./Editor/EditorDiffView.svelte";
@@ -29,6 +30,7 @@
         editorFont?: string;
         typography?: EditorTypographySettings;
         vimSettings?: VimSettings;
+        keybindings?: Record<KeybindingActionId, string[]>;
         wordWrap: boolean;
         viewMode: ViewMode;
         zenMode: ZenModeType;
@@ -52,6 +54,7 @@
         editorFont = "",
         typography,
         vimSettings = DEFAULT_VIM_SETTINGS,
+        keybindings,
         wordWrap,
         viewMode,
         zenMode,
@@ -112,6 +115,7 @@
                             customFont={editorFont}
                             {typography}
                             {vimSettings}
+                            {keybindings}
                             {wordWrap}
                             {zenMode}
                             {onContentChange}

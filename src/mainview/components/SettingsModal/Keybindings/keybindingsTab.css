@@ -1,0 +1,274 @@
+/* ==========================================================================
+   FictionClosure — Keybindings Settings Tab Styles
+   ========================================================================== */
+
+.keybindings-settings-tab {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    font-family: inherit;
+    color: var(--text-primary);
+}
+
+/* --- Hero Active Banner --- */
+.kb-hero-card {
+    background: var(--surface-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+.kb-hero-left { display: flex; align-items: center; gap: 14px; }
+.kb-hero-icon-box {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--accent-subtle);
+    color: var(--accent-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+.kb-hero-text { display: flex; flex-direction: column; gap: 3px; }
+.kb-hero-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 0; }
+.kb-hero-desc { font-size: 12px; color: var(--text-secondary); margin: 0; }
+
+.kb-reset-all-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+.kb-reset-all-btn:hover {
+    color: #f85149;
+    background: rgba(248, 81, 73, 0.1);
+    border-color: rgba(248, 81, 73, 0.3);
+}
+
+/* --- Controls Bar: Category Filters & Search --- */
+.kb-controls-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+}
+.kb-filter-chips { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.kb-chip {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: var(--radius-full, 9999px);
+    background: var(--surface-card);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-subtle);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.kb-chip:hover { color: var(--text-primary); border-color: var(--border-bold); }
+.kb-chip.active {
+    background: var(--accent-primary);
+    color: #ffffff;
+    border-color: var(--accent-primary);
+    font-weight: 600;
+}
+
+.kb-search-box { position: relative; display: flex; align-items: center; }
+.kb-search-icon {
+    position: absolute;
+    left: 10px;
+    font-size: 11px;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+.kb-search-input {
+    padding: 5px 10px 5px 28px;
+    font-size: 12px;
+    background: var(--surface-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    outline: none;
+    width: 180px;
+    transition: border-color 0.15s ease;
+}
+.kb-search-input:focus { border-color: var(--accent-primary); }
+
+/* --- Keybinding Table / List --- */
+.kb-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.kb-row {
+    background: var(--surface-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+.kb-row:hover { border-color: var(--border-bold); }
+.kb-row.is-recording {
+    border-color: var(--accent-primary);
+    background: var(--accent-subtle);
+    box-shadow: 0 0 0 1px var(--accent-primary);
+}
+.kb-row.has-conflict {
+    border-color: #f85149;
+    background: rgba(248, 81, 73, 0.05);
+}
+
+.kb-row-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+    min-width: 0;
+}
+.kb-row-header { display: flex; align-items: center; gap: 8px; }
+.kb-row-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+.kb-category-badge {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: capitalize;
+    padding: 1px 6px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+    color: var(--text-muted);
+    border: 1px solid var(--border-subtle);
+}
+.kb-custom-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: var(--radius-sm);
+    background: rgba(188, 140, 255, 0.15);
+    color: #bc8cff;
+    border: 1px solid rgba(188, 140, 255, 0.3);
+}
+.kb-row-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+.kb-conflict-msg {
+    font-size: 11px;
+    color: #f85149;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 2px;
+}
+
+/* --- Right Side: Key Combo & Actions --- */
+.kb-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+.kb-combo-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: inherit;
+}
+.kb-combo-btn:hover {
+    border-color: var(--accent-primary);
+    background: var(--bg-hover);
+}
+.kb-combo-btn.recording {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: #ffffff;
+    cursor: default;
+    animation: kbPulse 1.2s infinite ease-in-out;
+}
+
+@keyframes kbPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.75; }
+}
+
+.kb-key-kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--font-mono, monospace);
+    background: var(--surface-card);
+    border: 1px solid var(--border-bold);
+    border-radius: 4px;
+    padding: 2px 6px;
+    min-width: 20px;
+    color: var(--text-primary);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+}
+.kb-combo-btn.recording .kb-key-kbd {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    color: #ffffff;
+}
+
+.kb-btn-reset-single {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: all 0.15s ease;
+}
+.kb-btn-reset-single:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+    border-color: var(--border-subtle);
+}
+
+.kb-empty-state {
+    text-align: center;
+    padding: 30px;
+    color: var(--text-muted);
+    font-size: 13px;
+}

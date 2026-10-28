@@ -44,6 +44,7 @@
         typography,
         vimSettings,
         autoSaveSettings,
+        keybindings,
         onCloseProject,
         onOpenSettings,
         onOpenShortcuts,
@@ -315,6 +316,7 @@
         handleWorkspaceGlobalKeyDown(e, {
             isCommandPaletteOpen, isNewDocModalOpen, zenMode, showInspector, isSidebarOpen,
             isDiffActive: activeDiffCommit !== null, onExitDiff: handleExitDiff,
+            keybindings,
             onCloseCommandPalette: () => (isCommandPaletteOpen = false),
             onCloseNewDocModal: () => (isNewDocModalOpen = false),
             onExitZenMode: exitZenMode,
@@ -359,6 +361,7 @@
     <WorkspaceMain
         {isSidebarOpen} {activeRightSidebar} {showInspector} {zenMode} {viewMode}
         {activeDoc} {inspectedFolder} {documents} {folders} {editorFont} {typography} {vimSettings} {wordWrap}
+        {keybindings}
         targetWordCount={project.targetWordCount} folderPath={project.folderPath} bind:sidebarRef
         diffCommit={activeDiffCommit} {diffChangedDocIds} writerName={project.author || "Author"}
         {saveState}

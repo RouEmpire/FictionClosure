@@ -1,3 +1,5 @@
+import type { KeybindingActionId } from "@shared/domain/keybindings";
+
 export interface RawShortcutItem {
 	keys: string[];
 	desc: string;
@@ -42,4 +44,5 @@ export interface ShortcutsModalProps {
 	isOpen: boolean;
 	onClose: () => void;
 	config?: ShortcutsConfig;
+	keybindings?: Partial<Record<KeybindingActionId, string[]>>;
 }

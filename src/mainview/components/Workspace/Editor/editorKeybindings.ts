@@ -5,6 +5,7 @@ import {
   toggleTaskCheckbox,
   type TextTransformResult,
 } from "@shared/domain/textFormatting";
+import { matchesAction, type KeybindingActionId } from "@shared/domain/keybindings";
 import type { MentionItem } from "./editorMentions";
 
 export interface EditorKeyContext {
@@ -12,6 +13,7 @@ export interface EditorKeyContext {
   isMentionOpen: boolean;
   mentionCandidates: MentionItem[];
   selectedMentionIndex: number;
+  keybindings?: Partial<Record<KeybindingActionId, string[]>>;
   onSelectMentionIndex: (idx: number) => void;
   onInsertMention: (item: MentionItem) => void;
   onCloseMention: () => void;
@@ -66,11 +68,6 @@ export function handleEditorKeyDown(
     }
   }
 
-  const isMac =
-    typeof navigator !== "undefined" &&
-    /Mac|iPhone|iPad|iPod/.test(navigator.platform);
-  const modPressed = isMac ? e.metaKey : e.ctrlKey;
-
   // Escape: Close Find & Replace if open
   if (e.key === "Escape" && ctx.isFindOpen) {
     e.preventDefault();
@@ -85,118 +82,107 @@ export function handleEditorKeyDown(
     return true;
   }
 
-  // Zen mode shortcuts
-  if (
-    modPressed &&
-    (e.key === "\\" || e.key === "|" || e.code === "Backslash")
-  ) {
+  const kb = ctx.keybindings;
+
+  // Zen mode toggles
+  if (matchesAction("toggleCzm", e, kb)) {
     e.preventDefault();
-    if (e.altKey && !e.shiftKey) {
-      ctx.onToggleZenMode?.("czm");
-    } else if (e.shiftKey && !e.altKey) {
-      ctx.onToggleZenMode?.("focus");
-    } else if (!e.shiftKey && !e.altKey) {
-      ctx.onToggleZenMode?.("zen");
-    }
+    ctx.onToggleZenMode?.("czm");
+    return true;
+  }
+  if (matchesAction("toggleFocusZen", e, kb)) {
+    e.preventDefault();
+    ctx.onToggleZenMode?.("focus");
+    return true;
+  }
+  if (matchesAction("toggleZen", e, kb)) {
+    e.preventDefault();
+    ctx.onToggleZenMode?.("zen");
     return true;
   }
 
-  // Save shortcut
-  if (modPressed && e.key.toLowerCase() === "s") {
+  // Document Save
+  if (matchesAction("save", e, kb)) {
     e.preventDefault();
     ctx.onSave();
     return true;
   }
 
-  // Redo shortcut: Ctrl+Alt+Z / Ctrl+Shift+Z / Ctrl+Y
-  const isRedoKey =
-    (modPressed && e.altKey && e.key.toLowerCase() === "z") ||
-    (modPressed && e.shiftKey && e.key.toLowerCase() === "z") ||
-    (modPressed && e.key.toLowerCase() === "y");
-
-  if (isRedoKey) {
+  // History Redo & Undo
+  if (matchesAction("redo", e, kb)) {
     e.preventDefault();
     ctx.onRedo();
     return true;
   }
-
-  // Undo shortcut: Ctrl+Z
-  if (modPressed && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "z") {
+  if (matchesAction("undo", e, kb)) {
     e.preventDefault();
     ctx.onUndo();
     return true;
   }
 
-  // Find: Ctrl+F, Find & Replace: Ctrl+Shift+F
-  if (modPressed && !e.altKey && e.key.toLowerCase() === "f") {
+  // Find & Replace
+  if (matchesAction("findReplace", e, kb)) {
     e.preventDefault();
-    ctx.onOpenFind?.(e.shiftKey);
+    ctx.onOpenFind?.(true);
+    return true;
+  }
+  if (matchesAction("find", e, kb)) {
+    e.preventDefault();
+    ctx.onOpenFind?.(false);
     return true;
   }
 
-  // Toggle word wrap: Ctrl+W
-  if (modPressed && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "w") {
+  // Toggle word wrap
+  if (matchesAction("toggleWordWrap", e, kb)) {
     e.preventDefault();
     ctx.onToggleWordWrap();
     return true;
   }
 
-  // Bold: Ctrl+B
-  if (modPressed && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "b") {
+  // Text formatting
+  if (matchesAction("bold", e, kb)) {
     e.preventDefault();
     ctx.applyTransform((t, s, end) =>
       wrapSelection(t, s, end, "**", "**", "bold text"),
     );
     return true;
   }
-
-  // Italic: Ctrl+I
-  if (modPressed && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "i") {
+  if (matchesAction("italic", e, kb)) {
     e.preventDefault();
     ctx.applyTransform((t, s, end) =>
       wrapSelection(t, s, end, "*", "*", "italic text"),
     );
     return true;
   }
-
-  // Wikilink: Ctrl+L
-  if (modPressed && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "l") {
+  if (matchesAction("wikilink", e, kb)) {
     e.preventDefault();
     ctx.applyTransform((t, s, end) =>
       wrapSelection(t, s, end, "[[", "]]", "Document"),
     );
     return true;
   }
-
-  // Blockquote: Ctrl+Q
-  if (modPressed && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "q") {
+  if (matchesAction("blockquote", e, kb)) {
     e.preventDefault();
     ctx.applyTransform((t, s, end) => toggleLinePrefix(t, s, end, "> "));
     return true;
   }
-
-  // List: Ctrl+-
-  if (modPressed && !e.altKey && (e.key === "-" || e.key === "_")) {
+  if (matchesAction("bulletList", e, kb)) {
     e.preventDefault();
     ctx.applyTransform((t, s, end) => toggleLinePrefix(t, s, end, "- "));
     return true;
   }
-
-  // Task Item: Ctrl+Alt+T
-  if (modPressed && e.altKey && e.key.toLowerCase() === "t") {
+  if (matchesAction("taskItem", e, kb)) {
     e.preventDefault();
     ctx.applyTransform((t, s, end) => toggleLinePrefix(t, s, end, "- [ ] "));
     return true;
   }
-
-  // Toggle Task: Ctrl+T
-  if (modPressed && !e.altKey && !e.shiftKey && e.key.toLowerCase() === "t") {
+  if (matchesAction("toggleTask", e, kb)) {
     e.preventDefault();
     ctx.applyTransform((t, s, end) => toggleTaskCheckbox(t, s, end));
     return true;
   }
 
-  // Tab
+  // Indent Tab key
   if (e.key === "Tab") {
     e.preventDefault();
     ctx.onInsertTab();

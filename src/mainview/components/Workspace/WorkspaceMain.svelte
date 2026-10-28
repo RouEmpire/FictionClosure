@@ -10,6 +10,7 @@
     import type { GitCommitRecord } from "@shared/domain/git";
     import type { EditorTypographySettings } from "@shared/domain/typography";
     import { DEFAULT_VIM_SETTINGS, type VimSettings } from "@shared/domain/vim";
+    import type { KeybindingActionId } from "@shared/domain/keybindings";
     import Sidebar from "./Sidebar/Sidebar.svelte";
     import WorkspaceStage from "./WorkspaceStage.svelte";
     import Inspector from "./Inspector/Inspector.svelte";
@@ -30,6 +31,7 @@
         editorFont?: string;
         typography?: EditorTypographySettings;
         vimSettings?: VimSettings;
+        keybindings?: Record<KeybindingActionId, string[]>;
         wordWrap: boolean;
         sidebarRef: ReturnType<typeof Sidebar> | null;
         diffCommit?: GitCommitRecord | null;
@@ -78,6 +80,7 @@
         editorFont,
         typography,
         vimSettings = DEFAULT_VIM_SETTINGS,
+        keybindings,
         wordWrap,
         sidebarRef = $bindable(null),
         diffCommit = null,
@@ -154,6 +157,7 @@
         {editorFont}
         {typography}
         {vimSettings}
+        {keybindings}
         {wordWrap}
         {viewMode}
         {zenMode}

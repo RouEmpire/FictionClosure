@@ -61,6 +61,12 @@
         loadActiveThemeId,
         loadCustomThemes,
     } from "../shared/domain/customThemes";
+    import {
+        loadKeybindings,
+        saveKeybindings,
+        matchesAction,
+        type KeybindingActionId,
+    } from "../shared/domain/keybindings";
 
     // Screen navigation: starts on "home" welcome screen
     let currentScreen = $state<"home" | "workspace">("home");
@@ -86,6 +92,7 @@
     let editorFont = $state<string>("");
     let vimSettings = $state<VimSettings>(DEFAULT_VIM_SETTINGS);
     let autoSaveSettings = $state<AutoSaveSettings>(DEFAULT_AUTO_SAVE_SETTINGS);
+    let keybindings = $state<Record<KeybindingActionId, string[]>>(loadKeybindings());
 
     // Modals
     let isCreateProjectModalOpen = $state(false);
@@ -142,6 +149,12 @@
         vimSettings = newSettings;
         saveVimSettings(newSettings);
         showToast(newSettings.enabled ? "Vim mode enabled" : "Vim mode disabled");
+    }
+
+    function handleUpdateKeybindings(newBindings: Record<KeybindingActionId, string[]>) {
+        keybindings = newBindings;
+        saveKeybindings(newBindings);
+        showToast("Keyboard shortcuts updated");
     }
 
     function handleUpdateTypography(newSettings: EditorTypographySettings) {
@@ -563,22 +576,15 @@
     }
 
     function handleGlobalKeyDown(e: KeyboardEvent) {
-        const isMod = e.ctrlKey || e.metaKey;
-
-        // Settings shortcut: Ctrl+P
-        if (
-            isMod &&
-            (e.key === "p" || e.key === "P") &&
-            !e.shiftKey &&
-            !e.altKey
-        ) {
+        // Settings shortcut
+        if (matchesAction("settings", e, keybindings)) {
             e.preventDefault();
             isSettingsOpen = !isSettingsOpen;
             return;
         }
 
-        // Help shortcut: F1
-        if (e.key === "F1" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        // Help shortcut
+        if (matchesAction("help", e, keybindings)) {
             e.preventDefault();
             isShortcutsModalOpen = !isShortcutsModalOpen;
             return;
@@ -639,6 +645,7 @@
                 typography={typographySettings}
                 {vimSettings}
                 {autoSaveSettings}
+                {keybindings}
                 onCloseProject={handleCloseProject}
                 onOpenSettings={() => (isSettingsOpen = true)}
                 onOpenShortcuts={() => (isShortcutsModalOpen = true)}
@@ -667,6 +674,8 @@
         onUpdateTypography={handleUpdateTypography}
         onUpdateVimSettings={handleUpdateVimSettings}
         onUpdateAutoSaveSettings={handleUpdateAutoSaveSettings}
+        {keybindings}
+        onUpdateKeybindings={handleUpdateKeybindings}
         onThemeChanged={(themeId) => {
             showToast(`Theme applied: ${themeId}`);
         }}
@@ -675,6 +684,7 @@
     <!-- Keyboard Shortcuts Cheatsheet Modal -->
     <ShortcutsModal
         isOpen={isShortcutsModalOpen}
+        {keybindings}
         onClose={() => (isShortcutsModalOpen = false)}
     />
 

@@ -17,11 +17,16 @@
     import VimModeTab from "./Vim/VimModeTab.svelte";
     import AutoSaveTab from "./AutoSave/AutoSaveTab.svelte";
     import ThemeSettingsTab from "./Theme/ThemeSettingsTab.svelte";
+    import KeybindingsTab from "./Keybindings/KeybindingsTab.svelte";
     import { DEFAULT_VIM_SETTINGS, type VimSettings } from "@shared/domain/vim";
     import {
         DEFAULT_AUTO_SAVE_SETTINGS,
         type AutoSaveSettings,
     } from "@shared/domain/autoSave";
+    import {
+        loadKeybindings,
+        type KeybindingActionId,
+    } from "@shared/domain/keybindings";
     import type { SettingsTabId } from "./settingsConstants";
     import "./settingsModal.css";
 
@@ -37,6 +42,8 @@
         onUpdateVimSettings?: (settings: VimSettings) => void;
         onUpdateAutoSaveSettings?: (settings: AutoSaveSettings) => void;
         onThemeChanged?: (themeId: string) => void;
+        keybindings?: Record<KeybindingActionId, string[]>;
+        onUpdateKeybindings?: (newBindings: Record<KeybindingActionId, string[]>) => void;
     }
 
     let {
@@ -45,12 +52,14 @@
         currentFont = "",
         vimSettings = DEFAULT_VIM_SETTINGS,
         autoSaveSettings = DEFAULT_AUTO_SAVE_SETTINGS,
+        keybindings,
         onClose,
         onFontChange,
         onUpdateTypography,
         onUpdateVimSettings,
         onUpdateAutoSaveSettings,
         onThemeChanged,
+        onUpdateKeybindings,
     }: Props = $props();
 
     let activeTab = $state<SettingsTabId>("editor");
@@ -167,6 +176,11 @@
                         />
                     {:else if activeTab === "appearance"}
                         <ThemeSettingsTab {onThemeChanged} />
+                    {:else if activeTab === "keybindings"}
+                        <KeybindingsTab
+                            keybindings={keybindings || loadKeybindings()}
+                            onUpdateKeybindings={(b) => onUpdateKeybindings?.(b)}
+                        />
                     {:else if activeTab === "vim-mode"}
                         <VimModeTab
                             bind:settings={localVimSettings}
