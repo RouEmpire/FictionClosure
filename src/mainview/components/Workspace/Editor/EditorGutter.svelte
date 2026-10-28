@@ -51,11 +51,11 @@
 <style>
     .gutter {
         width: 54px;
-        background-color: var(--bg-primary);
+        background-color: var(--theme-editor-gutter-background, var(--bg-primary));
         border-right: 1px solid var(--border-subtle);
         padding: 16px 8px;
         text-align: right;
-        color: var(--text-muted);
+        color: var(--theme-editor-line-number, var(--text-muted));
         font-family: var(--active-editor-font);
         user-select: none;
         overflow-y: hidden;
@@ -86,7 +86,7 @@
 
     .gutter-number.current {
         opacity: 1;
-        color: var(--accent-primary);
+        color: var(--theme-editor-active-line-number, var(--accent-primary));
         font-weight: 700;
     }
 

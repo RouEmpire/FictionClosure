@@ -61,22 +61,31 @@ select {
 }
 
 /* Custom scrollbars */
+html {
+	scrollbar-color: var(--theme-scrollbar-thumb-background, var(--border-bold)) var(--theme-scrollbar-track-background, transparent);
+}
+
 ::-webkit-scrollbar {
 	width: 8px;
 	height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-	background: transparent;
+	background: var(--theme-scrollbar-track-background, transparent);
 }
 
 ::-webkit-scrollbar-thumb {
-	background: var(--border-bold);
+	background: var(--theme-scrollbar-thumb-background, var(--border-bold));
 	border-radius: var(--radius-sm);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-	background: var(--text-muted);
+	background: var(--theme-scrollbar-thumb-hover-background, var(--text-muted));
+}
+
+/* Global text selection */
+::selection {
+	background-color: var(--theme-selection-background, rgba(88, 166, 255, 0.25));
 }
 
 /* Keyboard hint chips */

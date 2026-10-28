@@ -50,14 +50,14 @@
 <style>
     .editor-statusbar {
         height: var(--status-height);
-        background-color: var(--bg-secondary);
+        background-color: var(--theme-status-bar-background, var(--bg-secondary));
         border-top: 1px solid var(--border-subtle);
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 0 16px;
         font-size: 11px;
-        color: var(--text-muted);
+        color: var(--theme-status-bar-foreground, var(--text-muted));
         user-select: none;
         flex-shrink: 0;
     }

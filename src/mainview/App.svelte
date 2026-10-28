@@ -55,6 +55,7 @@
         type AutoSaveSettings,
     } from "../shared/domain/autoSave";
     import { ensureBundledFontsRegisteredInCss } from "../shared/domain/bundledFonts";
+    import { ensureBundledThemesRegisteredInDom } from "../shared/domain/bundledThemes";
 
     // Screen navigation: starts on "home" welcome screen
     let currentScreen = $state<"home" | "workspace">("home");
@@ -116,6 +117,7 @@
 
     onMount(() => {
         ensureBundledFontsRegisteredInCss();
+        ensureBundledThemesRegisteredInDom();
         recentProjects = getRecentProjects();
         typographySettings = loadTypographySettings();
         editorFont = typographySettings.fontFamily;

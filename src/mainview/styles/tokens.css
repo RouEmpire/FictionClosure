@@ -2,42 +2,150 @@
  * FictionClosure — Design Tokens & Theme Variables.
  *
  * Provides a single source of truth for:
- * - Surface, border, and typography colors (dark default + light support)
- * - Semantic spacing scale, corner radii, elevation shadows, and transitions
- * - Core application layout dimensions
+ * - Zed Theme compatible tokens (--theme-*)
+ * - Semantic application surfaces, borders, and typography mapped to Zed theme variables
+ * - Markdown & Prose syntax highlighting tokens
+ * - Spacing scale, corner radii, elevation shadows, and transitions
+ * - Future capability styles (Terminal, Minimap, Git Conflicts, Indent Guides)
  */
 
 :root {
-	/* Surface Palette (Dark Mode Default) */
-	--bg-primary: #0d1117;
-	--bg-secondary: #161b22;
-	--bg-tertiary: #1f242c;
-	--bg-hover: #262c36;
-	--bg-active: #303744;
+	/* ==========================================================================
+	   1. Zed Theme Tokens (Default Dark Palette)
+	   ========================================================================== */
+
+	/* Surfaces & Backgrounds */
+	--theme-background: #0d1117;
+	--theme-surface-background: #161b22;
+	--theme-elevated-surface-background: #1f242c;
+	--theme-element-background: #161b22;
+	--theme-element-hover: #262c36;
+	--theme-element-active: #303744;
+	--theme-element-selected: #303744;
+	--theme-element-disabled: rgba(255, 255, 255, 0.05);
+	--theme-ghost-element-hover: rgba(255, 255, 255, 0.08);
+	--theme-drop-target-background: rgba(88, 166, 255, 0.15);
+
+	/* Borders */
+	--theme-border: #2b323c;
+	--theme-border-variant: #3f4756;
+	--theme-border-focused: #58a6ff;
+	--theme-border-selected: #e69d45;
+	--theme-border-disabled: #21262d;
+
+	/* Text & Icons */
+	--theme-text: #f0f3f6;
+	--theme-text-muted: #8b949e;
+	--theme-text-accent: #e69d45;
+	--theme-text-disabled: #484f58;
+	--theme-text-placeholder: #6e7681;
+	--theme-icon: #f0f3f6;
+	--theme-icon-muted: #8b949e;
+	--theme-icon-accent: #e69d45;
+
+	/* Panels, Title Bar & Status Bar */
+	--theme-title-bar-background: #161b22;
+	--theme-title-bar-inactive-background: #0d1117;
+	--theme-status-bar-background: #161b22;
+	--theme-status-bar-foreground: #8b949e;
+	--theme-panel-background: #161b22;
+	--theme-panel-focused-border: #58a6ff;
+	--theme-tab-bar-background: #161b22;
+	--theme-tab-active-background: #0d1117;
+	--theme-tab-inactive-background: #161b22;
+	--theme-toolbar-background: #161b22;
+
+	/* Editor Specific Tokens */
+	--theme-editor-background: #0d1117;
+	--theme-editor-foreground: #f0f3f6;
+	--theme-editor-gutter-background: #0d1117;
+	--theme-editor-line-number: #484f58;
+	--theme-editor-active-line-number: #f0f3f6;
+	--theme-editor-active-line-background: rgba(255, 255, 255, 0.04);
+	--theme-editor-wrap-guide: #2b323c;
+	--theme-editor-active-wrap-guide: #3f4756;
+	--theme-editor-indent-guide: rgba(255, 255, 255, 0.08);
+	--theme-editor-indent-guide-active: rgba(255, 255, 255, 0.2);
+
+	/* Scrollbar & Selection */
+	--theme-scrollbar-thumb-background: rgba(139, 148, 158, 0.3);
+	--theme-scrollbar-thumb-hover-background: rgba(139, 148, 158, 0.5);
+	--theme-scrollbar-track-background: transparent;
+	--theme-scrollbar-thumb-border: transparent;
+	--theme-selection-background: rgba(88, 166, 255, 0.25);
+	--theme-search-match-background: rgba(230, 157, 69, 0.35);
+
+	/* Status, Diagnostic & Git Version Control */
+	--theme-created: #3fb950;
+	--theme-modified: #d29922;
+	--theme-deleted: #f85149;
+	--theme-conflict: #f85149;
+	--theme-error: #f85149;
+	--theme-warning: #d29922;
+	--theme-info: #58a6ff;
+	--theme-success: #3fb950;
+	--theme-hint: #8b949e;
+	--theme-ignored: #484f58;
+
+	/* Prose & Markdown Syntax Tokens */
+	--theme-syntax-title: #e69d45;
+	--theme-syntax-emphasis: #79b8ff;
+	--theme-syntax-emphasis-strong: #ffffff;
+	--theme-syntax-link-text: #58a6ff;
+	--theme-syntax-link-uri: #8b949e;
+	--theme-syntax-comment: #6b7582;
+	--theme-syntax-string: #a5d6ff;
+	--theme-syntax-keyword: #ff7b72;
+	--theme-syntax-constant: #79c0ff;
+	--theme-syntax-number: #d2a8ff;
+	--theme-syntax-tag: #7ee787;
+
+	/* Future Capabilities: Terminal & Minimap */
+	--theme-terminal-background: #0d1117;
+	--theme-terminal-foreground: #f0f3f6;
+	--theme-minimap-thumb-background: rgba(139, 148, 158, 0.25);
+
+	/* ==========================================================================
+	   2. Semantic Application Tokens (Bridged to Zed Theme Tokens)
+	   ========================================================================== */
+
+	/* Surface Palette */
+	--bg-primary: var(--theme-background);
+	--bg-secondary: var(--theme-surface-background);
+	--bg-tertiary: var(--theme-elevated-surface-background);
+	--bg-hover: var(--theme-element-hover);
+	--bg-active: var(--theme-element-active);
+
+	--surface-card: var(--theme-elevated-surface-background);
+	--surface-header: var(--theme-title-bar-background);
+	--surface-panel: var(--theme-panel-background);
+	--surface-hover: var(--theme-element-hover);
 
 	/* Border Tokens */
-	--border-subtle: #2b323c;
-	--border-bold: #3f4756;
+	--border-subtle: var(--theme-border);
+	--border-bold: var(--theme-border-variant);
+	--border-focused: var(--theme-border-focused);
 
 	/* Text Tokens */
-	--text-primary: #f0f3f6;
-	--text-secondary: #9da7b3;
-	--text-muted: #6b7582;
+	--text-primary: var(--theme-text);
+	--text-secondary: var(--theme-text-muted);
+	--text-muted: var(--theme-text-muted);
+	--text-accent: var(--theme-text-accent);
 
-	/* Primary Brand Accent (Amber Warm) */
-	--accent-primary: #e69d45;
+	/* Primary Brand Accent (Amber Warm default or theme accent) */
+	--accent-primary: var(--theme-accent-1, #e69d45);
 	--accent-hover: #f3ae5c;
 	--accent-subtle: rgba(230, 157, 69, 0.15);
 
-	/* Secondary Accent (Cyan / Sky Blue) */
-	--accent-secondary: #58a6ff;
+	/* Secondary Accent (Cyan / Sky Blue or theme accent 2) */
+	--accent-secondary: var(--theme-accent-2, var(--theme-info, #58a6ff));
 	--accent-secondary-hover: #79b8ff;
 	--accent-secondary-subtle: rgba(88, 166, 255, 0.15);
 
 	/* Status Colors */
-	--success-color: #3fb950;
-	--warning-color: #d29922;
-	--danger-color: #f85149;
+	--success-color: var(--theme-created, var(--theme-success));
+	--warning-color: var(--theme-modified, var(--theme-warning));
+	--danger-color: var(--theme-deleted, var(--theme-error));
 	--danger-hover: #fa6b65;
 	--danger-subtle: rgba(248, 81, 73, 0.15);
 
@@ -81,6 +189,65 @@
 
 /* Light Theme Variables (Opt-in via data-theme="light") */
 [data-theme="light"] {
+	--theme-background: #f6f8fa;
+	--theme-surface-background: #ffffff;
+	--theme-elevated-surface-background: #eaeef2;
+	--theme-element-background: #ffffff;
+	--theme-element-hover: #e1e4e8;
+	--theme-element-active: #d1d5da;
+	--theme-element-disabled: rgba(0, 0, 0, 0.05);
+	--theme-ghost-element-hover: rgba(0, 0, 0, 0.06);
+	--theme-drop-target-background: rgba(9, 105, 218, 0.12);
+
+	--theme-border: #d0d7de;
+	--theme-border-variant: #afb8c1;
+	--theme-border-focused: #0969da;
+	--theme-border-selected: #d97706;
+
+	--theme-text: #1f2328;
+	--theme-text-muted: #6e7781;
+	--theme-text-accent: #d97706;
+	--theme-text-disabled: #8c959f;
+	--theme-text-placeholder: #afb8c1;
+
+	--theme-title-bar-background: #f6f8fa;
+	--theme-status-bar-background: #ffffff;
+	--theme-status-bar-foreground: #6e7781;
+	--theme-panel-background: #ffffff;
+	--theme-tab-bar-background: #f6f8fa;
+	--theme-tab-active-background: #ffffff;
+	--theme-tab-inactive-background: #f6f8fa;
+
+	--theme-editor-background: #ffffff;
+	--theme-editor-foreground: #1f2328;
+	--theme-editor-gutter-background: #ffffff;
+	--theme-editor-line-number: #8c959f;
+	--theme-editor-active-line-number: #1f2328;
+	--theme-editor-active-line-background: rgba(0, 0, 0, 0.03);
+
+	--theme-scrollbar-thumb-background: rgba(110, 119, 129, 0.3);
+	--theme-scrollbar-thumb-hover-background: rgba(110, 119, 129, 0.5);
+	--theme-selection-background: rgba(9, 105, 218, 0.2);
+	--theme-search-match-background: rgba(217, 119, 6, 0.25);
+
+	--theme-created: #1a7f37;
+	--theme-modified: #9a6700;
+	--theme-deleted: #cf222e;
+	--theme-error: #cf222e;
+	--theme-warning: #9a6700;
+	--theme-info: #0969da;
+	--theme-success: #1a7f37;
+
+	--theme-syntax-title: #d97706;
+	--theme-syntax-emphasis: #0969da;
+	--theme-syntax-emphasis-strong: #1f2328;
+	--theme-syntax-link-text: #0969da;
+	--theme-syntax-link-uri: #6e7781;
+	--theme-syntax-comment: #6e7781;
+	--theme-syntax-string: #0550ae;
+	--theme-syntax-keyword: #cf222e;
+
+	/* Explicit Light Surface & Text Tokens */
 	--bg-primary: #f6f8fa;
 	--bg-secondary: #ffffff;
 	--bg-tertiary: #eaeef2;

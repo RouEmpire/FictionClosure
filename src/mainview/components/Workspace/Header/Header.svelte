@@ -90,7 +90,7 @@
 <style>
     .app-header {
         height: var(--header-height);
-        background-color: var(--bg-secondary);
+        background-color: var(--theme-title-bar-background, var(--bg-secondary));
         border-bottom: 1px solid var(--border-subtle);
         display: flex;
         align-items: center;
